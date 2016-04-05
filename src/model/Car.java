@@ -1,5 +1,7 @@
 package model;
 
+import util.Vector2D;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -8,10 +10,48 @@ import java.awt.image.BufferedImage;
 public class Car implements FragileCar {
     public enum Cars {BLUE, GREEN, RED, YELLOW}
 
-    private Cars kind;
+    private double x,y;
+    private double heading;
+    private Vector2D vector;
 
-    public Car(Cars kind){
+    private Cars kind;
+    private BufferedImage image;
+
+    private double acceleration;
+
+    public Car(Cars kind, int x, int y){
         this.kind = kind;
+        this.x = x;
+        this.y = y;
+
+        image = ImageHandler.loadImage("car" + kind.name());
+
+        vector = new Vector2D(0,1);
+    }
+
+    @Override
+    public void update(double deltaTime){
+
+    }
+
+    @Override
+    public int getX(){
+        return (int)x;
+    }
+
+    @Override
+    public int getY(){
+        return (int)y;
+    }
+
+    @Override
+    public double getHeading(){
+        return heading;
+    }
+
+    @Override
+    public Vector2D getVector(){
+        return vector;
     }
 
     @Override
@@ -36,6 +76,11 @@ public class Car implements FragileCar {
 
     @Override
     public BufferedImage getImg() {
-        return null;
+        return image;
+    }
+
+    @Override
+    public String toString(){
+        return kind.name() + " car at (" + getX() + "," + getY() + ").";
     }
 }

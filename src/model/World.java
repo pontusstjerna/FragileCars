@@ -60,11 +60,11 @@ public class World{
         bots = new FragileCar[4 - nPlayers];
 
         for(int i = 0; i < players.length; i++){
-            players[i] = new Car(Car.Cars.values()[i]);
+            players[i] = new Car(Car.Cars.values()[i], 50*i + 100, 1000);
         }
 
         for(int i = 0; i < bots.length; i++){
-            bots[i] = new Car(Car.Cars.values()[nPlayers + i]);
+            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 50*(i+nPlayers) + 100, 1100);
         }
     }
 

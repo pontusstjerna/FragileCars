@@ -16,8 +16,15 @@ import java.awt.image.BufferedImage;
 public class MainSurface extends JPanel {
 
     private FragileCar[] cars;
-    private BufferedImage background;
-    private BufferedImage foreground;
+    private BufferedImage[] scaledCarImgs;
+    private BufferedImage scaledBackground;
+    private BufferedImage scaledForeground;
+    private BufferedImage[] worldImages;
+
+    private int currentWidth;
+    private int currentHeight;
+
+
 
     private boolean showVectors = true;
 
@@ -25,8 +32,8 @@ public class MainSurface extends JPanel {
         setFocusable(true);
 
         this.cars = cars;
-        background = images[0];
-        foreground = images[1];
+        worldImages = images;
+        scaledCarImgs = new BufferedImage[cars.length];
 
         System.out.println("Surface initialized with scale " + scale() + ". ");
 
@@ -38,8 +45,10 @@ public class MainSurface extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         super.paintComponent(g);
 
-        paintBackground(g2d);
-        paintForeground(g2d);
+        reScaleImages();
+
+        paintWorld(g2d);
+        paintCars(g2d);
     }
 
     public void switchShowVectors(){
@@ -52,12 +61,51 @@ public class MainSurface extends JPanel {
         }
     }
 
-    private void paintBackground(Graphics2D g){
-        g.drawImage(scaleImage(background), 0, 0, this);
+    private void paintWorld(Graphics2D g){
+        g.setColor(new Color(100,100,100));
+
+        int x = MainWindow.WINDOW_WIDTH - (int)(World.WORLD_WIDTH*scale());
+        int y = MainWindow.WINDOW_HEIGHT - (int)(World.WORLD_HEIGHT*scale());
+
+        if(x < 0){
+            x = 0;
+        }
+
+        if(y < 0){
+            y = 0;
+        }
+
+        g.drawImage(
+                scaledBackground,
+                x/2,
+                y/2, this);
+
+        g.drawImage(
+                scaledForeground,
+                x/2,
+                y/2, this);
     }
 
-    private void paintForeground(Graphics2D g){
-        g.drawImage(scaleImage(foreground), 0, 0, this);
+    private void paintCars(Graphics2D g){
+        for(int i = 0; i < cars.length; i++){
+
+            //Algorithm for centering image and scaling to window.
+            int x = (int)((cars[i].getX() - cars[i].getImg().getWidth()/2)*scale()) + scaleX();
+            int y = (int)((cars[i].getY() - cars[i].getImg().getHeight()/2)*scale()) + scaleY();
+            int middleX = (int)(cars[i].getX()*scale()) + scaleX();
+            int middleY = (int)(cars[i].getY()*scale()) + scaleY();
+
+            g.rotate(cars[i].getHeading(), middleX, middleY);
+
+            //Draw scaled car image
+            g.drawImage(scaledCarImgs[i], x, y, this);
+
+            g.rotate(-cars[i].getHeading(), middleX, middleY);
+
+            paintVector(cars[i].getVector(), middleX, middleY, g);
+        }
+
+
     }
 
     private BufferedImage scaleImage(BufferedImage unscaled){
@@ -96,5 +144,23 @@ public class MainSurface extends JPanel {
         }
 
         return scaleY;
+    }
+
+    private void reScaleImages(){ //Only rescale if window size has changed!
+        if(currentWidth != MainWindow.WINDOW_WIDTH || currentHeight != MainWindow.WINDOW_HEIGHT){
+            scaledBackground = scaleImage(worldImages[0]);
+            scaledForeground = scaleImage(worldImages[1]);
+
+            scaleCars();
+
+            currentWidth = MainWindow.WINDOW_WIDTH;
+            currentHeight = MainWindow.WINDOW_HEIGHT;
+        }
+    }
+
+    private void scaleCars(){
+        for(int i = 0; i < cars.length; i++){
+            scaledCarImgs[i] = scaleImage(cars[i].getImg());
+        }
     }
 }
