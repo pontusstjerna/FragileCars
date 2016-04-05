@@ -26,6 +26,8 @@ public class World{
         for(FragileCar c : players){
             c.update(deltaTime);
         }
+
+        checkCollisions();
     }
 
     public FragileCar[] getCars(){
@@ -67,16 +69,26 @@ public class World{
         bots = new FragileCar[4 - nPlayers];
 
         for(int i = 0; i < players.length; i++){
-            players[i] = new Car(Car.Cars.values()[i], 100*i + 70, 1100);
+            players[i] = new Car(Car.Cars.values()[i], 100*i + 70, 1050);
         }
 
         for(int i = 0; i < bots.length; i++){
-            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 100*(i+nPlayers) + 70, 1100);
+            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 100*(i+nPlayers) + 70, 1050);
         }
     }
 
     private void checkCollisions(){
-
+        for(FragileCar car : getCars()){
+            for(int x = 0; x < car.getImg().getWidth(); x++){
+                for(int y = 0; y < car.getImg().getHeight(); y++){
+                    if(car.getImg().getRGB(x,y) != 0){
+                        if(images[1].getRGB(car.getX() + x, car.getY() + y) != 0){
+                            car.reset();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

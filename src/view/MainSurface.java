@@ -90,10 +90,10 @@ public class MainSurface extends JPanel {
         for(int i = 0; i < cars.length; i++){
 
             //Algorithm for centering image and scaling to window.
-            int x = (int)((cars[i].getX() - cars[i].getImg().getWidth()/2)*scale()) + scaleX();
-            int y = (int)((cars[i].getY() - cars[i].getImg().getHeight()/2)*scale()) + scaleY();
-            int middleX = (int)(cars[i].getX()*scale()) + scaleX();
-            int middleY = (int)(cars[i].getY()*scale()) + scaleY();
+            int x = (int)((cars[i].getX())*scale()) + scaleX();
+            int y = (int)((cars[i].getY())*scale()) + scaleY();
+            int middleX = (int)(x + (cars[i].getImg().getWidth()/2)*scale());
+            int middleY = (int)(y + (cars[i].getImg().getHeight()/2)*scale());
 
             g.rotate(cars[i].getHeading(), middleX, middleY);
 

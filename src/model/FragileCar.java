@@ -13,6 +13,7 @@ public interface FragileCar {
     double getHeading();
 
     void update(double deltaTime);
+    void reset();
 
     void accelerate();
     void engineBrake();

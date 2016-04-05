@@ -11,6 +11,7 @@ public class Car implements FragileCar {
     public enum Cars {BLUE, GREEN, RED, YELLOW}
 
     private double x,y;
+    private final int originX, originY;
     private double heading;
     private boolean accelerating = false;
 
@@ -24,8 +25,10 @@ public class Car implements FragileCar {
 
     public Car(Cars kind, int x, int y){
         this.kind = kind;
-        this.x = x;
-        this.y = y;
+        originX = x;
+        originY = y;
+
+        reset();
 
         image = ImageHandler.loadImage("car" + kind.name());
     }
@@ -40,6 +43,15 @@ public class Car implements FragileCar {
         }else{
             accelerating = false;
         }
+    }
+
+    @Override
+    public void reset(){
+        x = originX;
+        y = originY;
+
+        acceleration = 0;
+        heading = 0;
     }
 
     @Override
