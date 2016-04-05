@@ -101,8 +101,6 @@ public class MainSurface extends JPanel {
             g.drawImage(scaledCarImgs[i], x, y, this);
 
             g.rotate(-cars[i].getHeading(), middleX, middleY);
-
-            paintVector(cars[i].getVector(), middleX, middleY, g);
         }
 
 

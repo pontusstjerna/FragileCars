@@ -23,6 +23,9 @@ public class World{
     }
 
     public void update(double deltaTime) {
+        for(FragileCar c : players){
+            c.update(deltaTime);
+        }
     }
 
     public FragileCar[] getCars(){
@@ -36,6 +39,10 @@ public class World{
         }
 
         return cars;
+    }
+
+    public FragileCar[] getPlayers(){
+        return players;
     }
 
     public BufferedImage[] getImages(){
@@ -60,11 +67,11 @@ public class World{
         bots = new FragileCar[4 - nPlayers];
 
         for(int i = 0; i < players.length; i++){
-            players[i] = new Car(Car.Cars.values()[i], 50*i + 100, 1000);
+            players[i] = new Car(Car.Cars.values()[i], 100*i + 70, 1100);
         }
 
         for(int i = 0; i < bots.length; i++){
-            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 50*(i+nPlayers) + 100, 1100);
+            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 100*(i+nPlayers) + 70, 1100);
         }
     }
 

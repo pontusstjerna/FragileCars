@@ -39,7 +39,7 @@ public class MainController implements ActionListener {
             playerController.update(getDeltaTime());
             world.update(getDeltaTime());
             frame.repaint();
-            System.out.println("Fps: " + (1/getDeltaTime()));
+            //System.out.println("Fps: " + (1/getDeltaTime()));
         }else{
             menu.actionPerformed(e);
             if(menu.done()){
@@ -53,7 +53,7 @@ public class MainController implements ActionListener {
     }
 
     private PlayerController initPlayerControls(World world){
-        return new PlayerController(world);
+        return new PlayerController(world.getPlayers());
     }
 
     private void initView(){

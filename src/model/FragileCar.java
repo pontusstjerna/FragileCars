@@ -15,11 +15,10 @@ public interface FragileCar {
     void update(double deltaTime);
 
     void accelerate();
+    void engineBrake();
     void brake();
-    void turnRight();
-    void turnLeft();
-
-    Vector2D getVector();
+    void turnRight(double deltaTime);
+    void turnLeft(double deltaTime);
 
     String toString();
 

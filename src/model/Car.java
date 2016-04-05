@@ -12,7 +12,10 @@ public class Car implements FragileCar {
 
     private double x,y;
     private double heading;
-    private Vector2D vector;
+    private boolean accelerating = false;
+
+    private final int speedLimit = 500;
+    private final int reverseLimit = -50;
 
     private Cars kind;
     private BufferedImage image;
@@ -25,13 +28,18 @@ public class Car implements FragileCar {
         this.y = y;
 
         image = ImageHandler.loadImage("car" + kind.name());
-
-        vector = new Vector2D(0,1);
     }
 
     @Override
     public void update(double deltaTime){
+        x = (x + acceleration*Math.sin(heading)*deltaTime);
+        y = (y - acceleration*Math.cos(heading)*deltaTime);
 
+        if(!accelerating){
+            engineBrake();
+        }else{
+            accelerating = false;
+        }
     }
 
     @Override
@@ -50,28 +58,50 @@ public class Car implements FragileCar {
     }
 
     @Override
-    public Vector2D getVector(){
-        return vector;
+    public void accelerate() {
+        accelerating = true;
+
+        if(acceleration < speedLimit){
+            acceleration += speedLimit/200;
+        }else{
+            acceleration = speedLimit;
+        }
     }
 
     @Override
-    public void accelerate() {
+    public void engineBrake(){
+        accelerating = false;
 
+        if(acceleration > 0){
+            acceleration -= 0.2*(speedLimit/100);
+        }else{
+            acceleration = 0;
+        }
     }
 
     @Override
     public void brake() {
+        accelerating = true;
 
+        if(acceleration > reverseLimit){
+            acceleration -= speedLimit/50;
+        }else{
+            acceleration = reverseLimit;
+        }
     }
 
     @Override
-    public void turnRight() {
-
+    public void turnRight(double deltaTime) {
+        if(acceleration > 1 || acceleration < -1){
+            heading = (heading + deltaTime*4) % (Math.PI*2);
+        }
     }
 
     @Override
-    public void turnLeft() {
-
+    public void turnLeft(double deltaTime) {
+        if(acceleration > 1 || acceleration < -1){
+            heading = (heading - deltaTime*4) % (Math.PI*2);
+        }
     }
 
     @Override
