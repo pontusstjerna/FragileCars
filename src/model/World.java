@@ -1,6 +1,7 @@
 package model;
 
 import util.CfgParser;
+import util.DirectionalRect;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -16,6 +17,8 @@ public class World implements Racetrack{
 
     private FragileCar[] players;
     private FragileCar[] bots;
+
+    private DirectionalRect goal;
 
     private int nPlayers;
     private int laps;
@@ -65,6 +68,7 @@ public class World implements Racetrack{
 
     private void createWorld(){
         initImages();
+        findGoalLine();
         createCars(nPlayers);
         startTime = System.currentTimeMillis();
         System.out.println("World created with " + nPlayers + " players and " + bots.length + " bots.");
@@ -82,6 +86,25 @@ public class World implements Racetrack{
         New lap by coming from behind, going through and leaving.
          */
 
+        //Search for the marking pixels that are RED.
+        int goalX = 0;
+        int goalY = 0;
+        for(int x = 0; x < images[0].getWidth(); x++){
+            for(int y = 0; y < images[0].getHeight(); y++){
+                //System.out.println(new Color(images[0].getRGB(x,y)) + "(" + x + "," + y + ")");
+                if(images[0].getRGB(x,y) == Color.RED.getRGB() && goalX == 0 && goalY == 0){
+                    goalX = x;
+                    goalY = y;
+                }else if(images[0].getRGB(x,y) == Color.RED.getRGB()){
+
+                    //Create the rectangle with correct alignment.
+                    goal = new DirectionalRect(goalX, goalY, Math.max(Math.abs(goalX - x), Math.abs(goalY - y)), 100,
+                            Math.abs(goalX - x) > Math.abs(goalY - y) ? DirectionalRect.Direction.UP : DirectionalRect.Direction.LEFT);
+                }
+            }
+        }
+        System.out.println("Goal created: ");
+        System.out.println(goal);
     }
 
     private void initImages(){
@@ -119,7 +142,17 @@ public class World implements Racetrack{
     }
 
     private void checkLaps(){
+        for(FragileCar car : players){
 
+        }
+
+        /*if(goal.isInside(players[0].getX(), players[0].getY())){
+            System.out.println(players[0] + " is inside " + goal);
+        }*/
+        if(goal.intersect(players[0].getX(), players[0].getY()) != null){
+            System.out.println(players[0] + " touched the " + goal.intersect(players[0].getX(),
+                    players[0].getY()) + " side.");
+        }
     }
 
     @Override

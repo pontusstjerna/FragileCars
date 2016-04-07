@@ -135,6 +135,6 @@ public class Car implements FragileCar {
 
     @Override
     public String toString(){
-        return kind.name() + " car at (" + getX() + "," + getY() + ").";
+        return kind.name() + " car at (" + getX() + "," + getY() + ")";
     }
 }

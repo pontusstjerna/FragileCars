@@ -88,10 +88,10 @@ public class DirectionalRect {
                 corners[3] = new Point2D.Double(x, y);
                 break;
             case LEFT:
-                corners[0] = new Point2D.Double(x+w,y);
-                corners[1] = new Point2D.Double(x+w, y+h);
-                corners[2] = new Point2D.Double(x, y+h);
-                corners[3] = new Point2D.Double(x, y);
+                corners[0] = new Point2D.Double(x,y+h);
+                corners[1] = new Point2D.Double(x, y);
+                corners[2] = new Point2D.Double(x+w, y+h);
+                corners[3] = new Point2D.Double(x+w, y);
                 break;
             case RIGHT:
                 corners[0] = new Point2D.Double(x,y+h);
@@ -100,5 +100,14 @@ public class DirectionalRect {
                 corners[3] = new Point2D.Double(x+w, y);
                 break;
         }
+    }
+
+    @Override
+    public String toString(){
+        return "DirectionalRect with direction " + dir + " and corners: " + "FRONT_LEFT: " +
+                "(" + corners[0].getX() + "," + corners[0].getY() + ") FRONT_RIGHT: " +
+                "(" + corners[1].getX() + "," + corners[1].getY() + ") BACK_LEFT: " +
+                "(" + corners[2].getX() + "," + corners[2].getY() + ") BACK_RIGHT: " +
+                "(" + corners[3].getX() + "," + corners[3].getY() + ").";
     }
 }
