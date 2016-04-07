@@ -11,10 +11,12 @@ public interface FragileCar {
     int getX();
     int getY();
     double getHeading();
+    double getAcceleration();
 
     void update(double deltaTime);
     void reset();
     void newLap();
+    void finish(long time, int place);
     int getLaps();
 
     void accelerate();

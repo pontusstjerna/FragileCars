@@ -58,7 +58,12 @@ public class Car implements FragileCar {
 
     @Override
     public void newLap(){
+        laps++;
+    }
 
+    @Override
+    public void finish(long time, int place){
+        System.out.println(this + " finished at place " + place + " with time " + time/1000 + ":" + time % 1000);
     }
 
     @Override
@@ -79,6 +84,11 @@ public class Car implements FragileCar {
     @Override
     public double getHeading(){
         return heading;
+    }
+
+    @Override
+    public double getAcceleration(){
+        return acceleration;
     }
 
     @Override
@@ -135,6 +145,6 @@ public class Car implements FragileCar {
 
     @Override
     public String toString(){
-        return kind.name() + " car at (" + getX() + "," + getY() + ")";
+        return kind.name() + " car at (" + getX() + "," + getY() + ") with " + laps + " laps.";
     }
 }

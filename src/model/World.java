@@ -17,6 +17,8 @@ public class World implements Racetrack{
 
     private FragileCar[] players;
     private FragileCar[] bots;
+    private FragileCar[] cars;
+    private boolean[] hasPassed;
 
     private DirectionalRect goal;
 
@@ -78,6 +80,7 @@ public class World implements Racetrack{
         CfgParser cfg = new CfgParser("src\\model\\data\\config.txt");
 
         nPlayers = cfg.readInt("nPlayers");
+        laps = cfg.readInt("laps");
     }
 
     private void findGoalLine(){
@@ -98,11 +101,12 @@ public class World implements Racetrack{
                 }else if(images[0].getRGB(x,y) == Color.RED.getRGB()){
 
                     //Create the rectangle with correct alignment.
-                    goal = new DirectionalRect(goalX, goalY, Math.max(Math.abs(goalX - x), Math.abs(goalY - y)), 100,
+                    goal = new DirectionalRect(goalX, goalY, Math.max(Math.abs(goalX - x), Math.abs(goalY - y)), 200,
                             Math.abs(goalX - x) > Math.abs(goalY - y) ? DirectionalRect.Direction.UP : DirectionalRect.Direction.LEFT);
                 }
             }
         }
+
         System.out.println("Goal created: ");
         System.out.println(goal);
     }
@@ -125,6 +129,16 @@ public class World implements Racetrack{
         for(int i = 0; i < bots.length; i++){
             bots[i] = new Car(Car.Cars.values()[nPlayers + i], 400, 100*(i+nPlayers) + 800, Math.PI*3/2);
         }
+
+        cars = new FragileCar[players.length + bots.length];
+        for(int i = 0; i < players.length; i++){
+            cars[i] = players[i];
+        }
+        for(int i = 0; i < bots.length; i++){
+            cars[i+players.length] = bots[i];
+        }
+
+        hasPassed = new boolean[cars.length];
     }
 
     private void checkCollisions(){
@@ -141,17 +155,21 @@ public class World implements Racetrack{
         }
     }
 
+    int places = 0;
     private void checkLaps(){
-        for(FragileCar car : players){
+        for(int i = 0; i < cars.length; i++){
+            if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT && hasPassed[i]){
+                cars[i].newLap();
 
-        }
-
-        /*if(goal.isInside(players[0].getX(), players[0].getY())){
-            System.out.println(players[0] + " is inside " + goal);
-        }*/
-        if(goal.intersect(players[0].getX(), players[0].getY()) != null){
-            System.out.println(players[0] + " touched the " + goal.intersect(players[0].getX(),
-                    players[0].getY()) + " side.");
+                //Finished?
+                if(cars[i].getLaps() == laps){
+                    places++;
+                    cars[i].finish(getTime(), places);
+                }else{
+                    System.out.println(cars[i]);
+                }
+            }
+            hasPassed[i] = goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK;
         }
     }
 
