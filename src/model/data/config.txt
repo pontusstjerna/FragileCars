@@ -1,0 +1,2 @@
+#nPlayers="4"
+#nLaps="2"

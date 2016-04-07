@@ -1,8 +1,11 @@
 package view;
 
 import model.FragileCar;
+import model.Racetrack;
+import model.World;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -18,22 +21,22 @@ public class MainWindow extends JFrame implements ComponentListener {
 
     private final String title;
     private MainSurface surface;
+    private UISurface ui;
     private MenuSurface menu;
 
     public MainWindow(String title){
         this.title = title;
     }
 
-    public void init(ActionListener menuListener){
+    public void init(){
         initWindow();
-        menu = new MenuSurface(menuListener);
-        add(menu);
         System.out.println("View initialized with width " + WINDOW_WIDTH + " and height " + WINDOW_HEIGHT + ". ");
     }
 
     @Override
     public void repaint(){
         surface.repaint();
+        ui.repaint();
     }
 
     private void registerKeyListener(KeyListener listener){
@@ -43,13 +46,21 @@ public class MainWindow extends JFrame implements ComponentListener {
         surface.requestFocusInWindow();
     }
 
-    public void startGame(FragileCar[] cars, BufferedImage[] images, boolean showVectors, KeyListener listener){
+    public void startGame(FragileCar[] cars, BufferedImage[] images, KeyListener listener, Racetrack track){
         setResizable(true);
-        remove(menu);
 
-        surface = new MainSurface(cars, images, showVectors);
-        add(surface);
+        JPanel container = new JPanel();
+        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
+        surface = new MainSurface(cars, images);
+        ui = new UISurface(track);
+
+        surface.setPreferredSize(new Dimension(WINDOW_WIDTH*3/5, WINDOW_HEIGHT*3/5));
+
+        container.add(surface);
+        container.add(ui);
+
+        add(container);
         registerKeyListener(listener);
     }
 

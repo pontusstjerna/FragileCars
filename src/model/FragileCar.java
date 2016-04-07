@@ -14,6 +14,8 @@ public interface FragileCar {
 
     void update(double deltaTime);
     void reset();
+    void newLap();
+    int getLaps();
 
     void accelerate();
     void engineBrake();

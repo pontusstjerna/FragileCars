@@ -1,7 +1,5 @@
 package model;
 
-import util.Vector2D;
-
 import java.awt.image.BufferedImage;
 
 /**
@@ -13,7 +11,10 @@ public class Car implements FragileCar {
     private double x,y;
     private final int originX, originY;
     private double heading;
+    private final double originHeading;
     private boolean accelerating = false;
+
+    private int laps = 0;
 
     private final int speedLimit = 500;
     private final int reverseLimit = -50;
@@ -23,10 +24,11 @@ public class Car implements FragileCar {
 
     private double acceleration;
 
-    public Car(Cars kind, int x, int y){
+    public Car(Cars kind, int x, int y, double heading){
         this.kind = kind;
         originX = x;
         originY = y;
+        originHeading = heading;
 
         reset();
 
@@ -49,9 +51,19 @@ public class Car implements FragileCar {
     public void reset(){
         x = originX;
         y = originY;
+        heading = originHeading;
 
         acceleration = 0;
-        heading = 0;
+    }
+
+    @Override
+    public void newLap(){
+
+    }
+
+    @Override
+    public int getLaps(){
+        return laps;
     }
 
     @Override

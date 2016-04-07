@@ -27,25 +27,20 @@ public class MainController implements ActionListener {
     }
 
     public void init(){
-        menu = new MenuController();
         initView();
+        startGame();
     }
 
     @Override
     public void actionPerformed(ActionEvent e){
         setDeltaTime();
 
-        if(menu == null){
-            playerController.update(getDeltaTime());
-            world.update(getDeltaTime());
-            frame.repaint();
-            //System.out.println("Fps: " + (1/getDeltaTime()));
-        }else{
-            menu.actionPerformed(e);
-            if(menu.done()){
-                startGame();
-            }
-        }
+        playerController.update(getDeltaTime());
+        world.update(getDeltaTime());
+        frame.repaint();
+
+        //System.out.println("Fps: " + (1/getDeltaTime()));
+        //System.out.println("Time: " + world.getTime());
     }
 
     public double getDeltaTime(){
@@ -58,15 +53,14 @@ public class MainController implements ActionListener {
 
     private void initView(){
         frame = new MainWindow("Fragile Cars");
-        frame.init(this);
+        frame.init();
     }
 
     private void startGame(){
         world = initWorld();
         playerController = initPlayerControls(world);
-        frame.startGame(world.getCars(), world.getImages(), menu.getShowVectors(), playerController);
+        frame.startGame(world.getCars(), world.getImages(), playerController, world);
 
-        menu = null;
         initTimer();
         timer.start();
         System.out.println("Game started!");
@@ -78,7 +72,7 @@ public class MainController implements ActionListener {
     }
 
     private World initWorld(){
-        return new World(menu.getnPlayers());
+        return new World();
     }
 
     private void setDeltaTime(){

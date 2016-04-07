@@ -1,12 +1,14 @@
 package model;
 
+import util.CfgParser;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Random;
 
 /**
  * Created by Pontus on 2016-03-04.
  */
-public class World{
+public class World implements Racetrack{
     public static final int WORLD_WIDTH = 1600;
     public static final int WORLD_HEIGHT = 1200;
 
@@ -15,11 +17,14 @@ public class World{
     private FragileCar[] players;
     private FragileCar[] bots;
 
-    private Random rand;
+    private int nPlayers;
+    private int laps;
 
-    public World(int nPlayers){
-        rand = new Random();
-        createWorld(nPlayers);
+    private long startTime;
+
+    public World(){
+        loadData();
+        createWorld();
     }
 
     public void update(double deltaTime) {
@@ -28,6 +33,7 @@ public class World{
         }
 
         checkCollisions();
+        checkLaps();
     }
 
     public FragileCar[] getCars(){
@@ -51,10 +57,31 @@ public class World{
         return images;
     }
 
-    private void createWorld(int nPlayers){
+    @Override
+    public long getTime(){
+        //Includes 3 seconds start time
+        return System.currentTimeMillis() - startTime - 3000;
+    }
+
+    private void createWorld(){
         initImages();
         createCars(nPlayers);
+        startTime = System.currentTimeMillis();
         System.out.println("World created with " + nPlayers + " players and " + bots.length + " bots.");
+    }
+
+    private void loadData(){
+        CfgParser cfg = new CfgParser("src\\model\\data\\config.txt");
+
+        nPlayers = cfg.readInt("nPlayers");
+    }
+
+    private void findGoalLine(){
+        /*
+        Do like a spawn-area with 4 pixels with certain colors for back and front. Spawn cars in the area/square to start.
+        New lap by coming from behind, going through and leaving.
+         */
+
     }
 
     private void initImages(){
@@ -69,11 +96,11 @@ public class World{
         bots = new FragileCar[4 - nPlayers];
 
         for(int i = 0; i < players.length; i++){
-            players[i] = new Car(Car.Cars.values()[i], 100*i + 70, 1050);
+            players[i] = new Car(Car.Cars.values()[i], 400, 100*i + 800, Math.PI*3/2);
         }
 
         for(int i = 0; i < bots.length; i++){
-            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 100*(i+nPlayers) + 70, 1050);
+            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 400, 100*(i+nPlayers) + 800, Math.PI*3/2);
         }
     }
 
@@ -89,6 +116,10 @@ public class World{
                 }
             }
         }
+    }
+
+    private void checkLaps(){
+
     }
 
     @Override

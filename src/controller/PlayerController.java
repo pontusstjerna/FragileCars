@@ -90,16 +90,16 @@ public class PlayerController implements KeyListener {
             if(players.length > 3){ //Fourth player
                 switch (i) {
                     case KeyEvent.VK_K:
-                        players[0].turnRight(deltaTime);
+                        players[3].turnRight(deltaTime);
                         break;
                     case KeyEvent.VK_H:
-                        players[0].turnLeft(deltaTime);
+                        players[3].turnLeft(deltaTime);
                         break;
                     case KeyEvent.VK_U:
-                        players[0].accelerate();
+                        players[3].accelerate();
                         break;
                     case KeyEvent.VK_J:
-                        players[0].brake();
+                        players[3].brake();
                         break;
                 }
             }

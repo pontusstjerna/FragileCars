@@ -24,11 +24,7 @@ public class MainSurface extends JPanel {
     private int currentWidth;
     private int currentHeight;
 
-
-
-    private boolean showVectors = true;
-
-    public MainSurface(FragileCar[] cars, BufferedImage[] images, boolean showVectors){
+    public MainSurface(FragileCar[] cars, BufferedImage[] images){
         setFocusable(true);
 
         this.cars = cars;
@@ -36,8 +32,6 @@ public class MainSurface extends JPanel {
         scaledCarImgs = new BufferedImage[cars.length];
 
         System.out.println("Surface initialized with scale " + scale() + ". ");
-
-        this.showVectors = showVectors;
     }
 
     @Override
@@ -51,39 +45,24 @@ public class MainSurface extends JPanel {
         paintCars(g2d);
     }
 
-    public void switchShowVectors(){
-        showVectors = !showVectors;
-    }
-
-    private void paintVector(Vector2D vector, int startX, int startY, Graphics2D g){
-        if(showVectors){
-            g.drawLine(startX, startY, (int)(vector.getX()*scale()) + startX, (int)(vector.getY()*scale()) + startY);
-        }
-    }
-
     private void paintWorld(Graphics2D g){
         g.setColor(new Color(100,100,100));
 
         int x = MainWindow.WINDOW_WIDTH - (int)(World.WORLD_WIDTH*scale());
-        int y = MainWindow.WINDOW_HEIGHT - (int)(World.WORLD_HEIGHT*scale());
 
         if(x < 0){
             x = 0;
         }
 
-        if(y < 0){
-            y = 0;
-        }
-
         g.drawImage(
                 scaledBackground,
                 x/2,
-                y/2, this);
+                0, this);
 
         g.drawImage(
                 scaledForeground,
                 x/2,
-                y/2, this);
+                0, this);
     }
 
     private void paintCars(Graphics2D g){
@@ -91,7 +70,7 @@ public class MainSurface extends JPanel {
 
             //Algorithm for centering image and scaling to window.
             int x = (int)((cars[i].getX())*scale()) + scaleX();
-            int y = (int)((cars[i].getY())*scale()) + scaleY();
+            int y = (int)((cars[i].getY())*scale());
             int middleX = (int)(x + (cars[i].getImg().getWidth()/2)*scale());
             int middleY = (int)(y + (cars[i].getImg().getHeight()/2)*scale());
 
@@ -119,7 +98,7 @@ public class MainSurface extends JPanel {
         return after;
     }
 
-    private double scale(){
+    public double scale(){
         return Math.min((double)MainWindow.WINDOW_WIDTH/ World.WORLD_WIDTH,
                 (double)MainWindow.WINDOW_HEIGHT/ World.WORLD_HEIGHT);
     }
@@ -132,16 +111,6 @@ public class MainSurface extends JPanel {
         }
 
         return scaleX;
-    }
-
-    private int scaleY(){
-        int scaleY = (MainWindow.WINDOW_HEIGHT - (int)(World.WORLD_HEIGHT*scale()))/2;
-
-        if(scaleY < 0){
-            scaleY = 0;
-        }
-
-        return scaleY;
     }
 
     private void reScaleImages(){ //Only rescale if window size has changed!
