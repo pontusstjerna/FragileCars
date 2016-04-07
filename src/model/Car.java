@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 /**
  * Created by pontu on 2016-04-05.
  */
-public class Car implements FragileCar {
+public class Car implements DrawableCar, FragileCar {
     public enum Cars {BLUE, GREEN, RED, YELLOW}
 
     private double x,y;
@@ -15,6 +15,10 @@ public class Car implements FragileCar {
     private boolean accelerating = false;
 
     private int laps = 0;
+    private boolean locked = true;
+    private boolean turnedOff = false;
+    private long finished = 0;
+    private int place = 0;
 
     private final int speedLimit = 500;
     private final int reverseLimit = -50;
@@ -37,13 +41,15 @@ public class Car implements FragileCar {
 
     @Override
     public void update(double deltaTime){
-        x = (x + acceleration*Math.sin(heading)*deltaTime);
-        y = (y - acceleration*Math.cos(heading)*deltaTime);
+        if(!locked){
+            x = (x + acceleration*Math.sin(heading)*deltaTime);
+            y = (y - acceleration*Math.cos(heading)*deltaTime);
 
-        if(!accelerating){
-            engineBrake();
-        }else{
-            accelerating = false;
+            if(!accelerating){
+                engineBrake();
+            }else{
+                accelerating = false;
+            }
         }
     }
 
@@ -63,12 +69,34 @@ public class Car implements FragileCar {
 
     @Override
     public void finish(long time, int place){
+        finished = time;
+        this.place = place;
         System.out.println(this + " finished at place " + place + " with time " + time/1000 + ":" + time % 1000);
+    }
+
+    @Override
+    public long getFinished(){
+        return finished;
+    }
+
+    @Override
+    public void setLocked(boolean lock){
+        locked = lock;
+    }
+
+    @Override
+    public void turnOff(boolean turnOff){
+        turnedOff = turnOff;
     }
 
     @Override
     public int getLaps(){
         return laps;
+    }
+
+    @Override
+    public int getPlace(){
+        return place;
     }
 
     @Override
@@ -93,12 +121,14 @@ public class Car implements FragileCar {
 
     @Override
     public void accelerate() {
-        accelerating = true;
+        if(!turnedOff){
+            accelerating = true;
 
-        if(acceleration < speedLimit){
-            acceleration += speedLimit/200;
-        }else{
-            acceleration = speedLimit;
+            if(acceleration < speedLimit){
+                acceleration += speedLimit/200;
+            }else{
+                acceleration = speedLimit;
+            }
         }
     }
 
@@ -126,14 +156,14 @@ public class Car implements FragileCar {
 
     @Override
     public void turnRight(double deltaTime) {
-        if(acceleration > 1 || acceleration < -1){
+        if((acceleration > 1 || acceleration < -1) && !locked){
             heading = (heading + deltaTime*4) % (Math.PI*2);
         }
     }
 
     @Override
     public void turnLeft(double deltaTime) {
-        if(acceleration > 1 || acceleration < -1){
+        if((acceleration > 1 || acceleration < -1) && !locked){
             heading = (heading - deltaTime*4) % (Math.PI*2);
         }
     }
@@ -145,6 +175,11 @@ public class Car implements FragileCar {
 
     @Override
     public String toString(){
-        return kind.name() + " car at (" + getX() + "," + getY() + ") with " + laps + " laps.";
+        return kind.name() + " car at (" + getX() + "," + getY() + ") with " + laps + " laps";
+    }
+
+    @Override
+    public String getName(){
+        return kind.name() + " car";
     }
 }

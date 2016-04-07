@@ -18,6 +18,7 @@ public class World implements Racetrack{
     private FragileCar[] players;
     private FragileCar[] bots;
     private FragileCar[] cars;
+    private DrawableCar[] drawables;
     private boolean[] hasPassed;
 
     private DirectionalRect goal;
@@ -26,6 +27,9 @@ public class World implements Racetrack{
     private int laps;
 
     private long startTime;
+    private long time;
+    private long countdown;
+    private boolean finished = false;
 
     public World(){
         loadData();
@@ -36,7 +40,7 @@ public class World implements Racetrack{
         for(FragileCar c : players){
             c.update(deltaTime);
         }
-
+        releaseCars();
         checkCollisions();
         checkLaps();
     }
@@ -54,6 +58,16 @@ public class World implements Racetrack{
         return cars;
     }
 
+    @Override
+    public DrawableCar[] getDrawables(){
+        return drawables;
+    }
+
+    @Override
+    public boolean getFinished(){
+        return finished;
+    }
+
     public FragileCar[] getPlayers(){
         return players;
     }
@@ -64,8 +78,10 @@ public class World implements Racetrack{
 
     @Override
     public long getTime(){
-        //Includes 3 seconds start time
-        return System.currentTimeMillis() - startTime - 3000;
+        if(!finished){
+            time = System.currentTimeMillis() - startTime - countdown;
+        }
+        return time;
     }
 
     private void createWorld(){
@@ -81,6 +97,7 @@ public class World implements Racetrack{
 
         nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
+        countdown = cfg.readLong("countdown");
     }
 
     private void findGoalLine(){
@@ -121,16 +138,21 @@ public class World implements Racetrack{
     private void createCars(int nPlayers){
         players = new FragileCar[nPlayers];
         bots = new FragileCar[4 - nPlayers];
+        cars = new FragileCar[players.length + bots.length];
+        drawables = new DrawableCar[cars.length];
 
         for(int i = 0; i < players.length; i++){
-            players[i] = new Car(Car.Cars.values()[i], 400, 100*i + 800, Math.PI*3/2);
+            Car car = new Car(Car.Cars.values()[i], 400, 100*i + 800, Math.PI*3/2);
+            players[i] = car;
+            drawables[i] = car;
         }
 
         for(int i = 0; i < bots.length; i++){
-            bots[i] = new Car(Car.Cars.values()[nPlayers + i], 400, 100*(i+nPlayers) + 800, Math.PI*3/2);
+            Car car = new Car(Car.Cars.values()[nPlayers + i], 400, 100*(i+nPlayers) + 800, Math.PI*3/2);
+            bots[i] = car;
+            drawables[i + players.length] = car;
         }
 
-        cars = new FragileCar[players.length + bots.length];
         for(int i = 0; i < players.length; i++){
             cars[i] = players[i];
         }
@@ -155,8 +177,9 @@ public class World implements Racetrack{
         }
     }
 
-    int places = 0;
+    private int places = 0;
     private void checkLaps(){
+        boolean allFinished = false;
         for(int i = 0; i < cars.length; i++){
             if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT && hasPassed[i]){
                 cars[i].newLap();
@@ -165,11 +188,24 @@ public class World implements Racetrack{
                 if(cars[i].getLaps() == laps){
                     places++;
                     cars[i].finish(getTime(), places);
+                    cars[i].turnOff(true);
+
+                    allFinished = true;
                 }else{
+                    allFinished = false;
                     System.out.println(cars[i]);
                 }
             }
             hasPassed[i] = goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK;
+        }
+        finished = allFinished;
+    }
+
+    private void releaseCars(){
+        if(getTime()/10 == 0){
+            for(FragileCar car : cars){
+                car.setLocked(false);
+            }
         }
     }
 

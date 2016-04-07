@@ -17,7 +17,10 @@ public interface FragileCar {
     void reset();
     void newLap();
     void finish(long time, int place);
+    long getFinished();
     int getLaps();
+    void setLocked(boolean lock);
+    void turnOff(boolean turnOff);
 
     void accelerate();
     void engineBrake();
@@ -26,6 +29,7 @@ public interface FragileCar {
     void turnLeft(double deltaTime);
 
     String toString();
+    String getName();
 
     BufferedImage getImg();
 }

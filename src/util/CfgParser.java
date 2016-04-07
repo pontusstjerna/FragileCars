@@ -18,6 +18,10 @@ public class CfgParser {
         return Integer.valueOf(readValue(varName));
     }
 
+    public long readLong(String varName) {
+        return Long.valueOf(readValue(varName));
+    }
+
     public double readDouble(String varName){
         return Double.valueOf(readValue(varName));
     }

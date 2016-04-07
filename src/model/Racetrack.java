@@ -5,4 +5,6 @@ package model;
  */
 public interface Racetrack {
     long getTime();
+    DrawableCar[] getDrawables();
+    boolean getFinished();
 }
