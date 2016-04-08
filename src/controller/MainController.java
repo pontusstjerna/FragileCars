@@ -59,7 +59,7 @@ public class MainController implements ActionListener {
     private void startGame(){
         world = initWorld();
         playerController = initPlayerControls(world);
-        frame.startGame(world.getCars(), world.getImages(), playerController, world);
+        frame.startGame(world, playerController);
 
         initTimer();
         timer.start();

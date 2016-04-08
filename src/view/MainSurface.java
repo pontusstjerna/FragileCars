@@ -1,8 +1,7 @@
 package view;
 
-import model.FragileCar;
+import model.Racetrack;
 import model.World;
-import util.Vector2D;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,21 +14,20 @@ import java.awt.image.BufferedImage;
  */
 public class MainSurface extends JPanel {
 
-    private FragileCar[] cars;
+    private Racetrack track;
+
     private BufferedImage[] scaledCarImgs;
     private BufferedImage scaledBackground;
     private BufferedImage scaledForeground;
-    private BufferedImage[] worldImages;
 
     private int currentWidth;
     private int currentHeight;
 
-    public MainSurface(FragileCar[] cars, BufferedImage[] images){
+    public MainSurface(Racetrack track){
         setFocusable(true);
 
-        this.cars = cars;
-        worldImages = images;
-        scaledCarImgs = new BufferedImage[cars.length];
+        this.track = track;
+        scaledCarImgs = new BufferedImage[track.getDrawables().length];
 
         System.out.println("Surface initialized with scale " + scale() + ". ");
     }
@@ -66,20 +64,20 @@ public class MainSurface extends JPanel {
     }
 
     private void paintCars(Graphics2D g){
-        for(int i = 0; i < cars.length; i++){
+        for(int i = 0; i < track.getDrawables().length; i++){
 
             //Algorithm for centering image and scaling to window.
-            int x = (int)((cars[i].getX())*scale()) + scaleX();
-            int y = (int)((cars[i].getY())*scale());
-            int middleX = (int)(x + (cars[i].getImg().getWidth()/2)*scale());
-            int middleY = (int)(y + (cars[i].getImg().getHeight()/2)*scale());
+            int x = (int)((track.getDrawables()[i].getX())*scale()) + scaleX();
+            int y = (int)((track.getDrawables()[i].getY())*scale());
+            int middleX = (int)(x + (track.getDrawables()[i].getImg().getWidth()/2)*scale());
+            int middleY = (int)(y + (track.getDrawables()[i].getImg().getHeight()/2)*scale());
 
-            g.rotate(cars[i].getHeading(), middleX, middleY);
+            g.rotate(track.getDrawables()[i].getHeading(), middleX, middleY);
 
             //Draw scaled car image
             g.drawImage(scaledCarImgs[i], x, y, this);
 
-            g.rotate(-cars[i].getHeading(), middleX, middleY);
+            g.rotate(-track.getDrawables()[i].getHeading(), middleX, middleY);
         }
 
 
@@ -115,8 +113,8 @@ public class MainSurface extends JPanel {
 
     private void reScaleImages(){ //Only rescale if window size has changed!
         if(currentWidth != MainWindow.WINDOW_WIDTH || currentHeight != MainWindow.WINDOW_HEIGHT){
-            scaledBackground = scaleImage(worldImages[0]);
-            scaledForeground = scaleImage(worldImages[1]);
+            scaledBackground = scaleImage(track.getBackground());
+            scaledForeground = scaleImage(track.getForeground());
 
             scaleCars();
 
@@ -126,8 +124,8 @@ public class MainSurface extends JPanel {
     }
 
     private void scaleCars(){
-        for(int i = 0; i < cars.length; i++){
-            scaledCarImgs[i] = scaleImage(cars[i].getImg());
+        for(int i = 0; i < track.getDrawables().length; i++){
+            scaledCarImgs[i] = scaleImage(track.getDrawables()[i].getImg());
         }
     }
 }

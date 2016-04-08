@@ -1,16 +1,12 @@
 package view;
 
-import model.FragileCar;
 import model.Racetrack;
-import model.World;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
 
 /**
  * Created by Pontus on 2016-03-04.
@@ -46,13 +42,13 @@ public class MainWindow extends JFrame implements ComponentListener {
         surface.requestFocusInWindow();
     }
 
-    public void startGame(FragileCar[] cars, BufferedImage[] images, KeyListener listener, Racetrack track){
+    public void startGame(Racetrack track, KeyListener listener){
         setResizable(true);
 
         JPanel container = new JPanel();
         container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 
-        surface = new MainSurface(cars, images);
+        surface = new MainSurface(track);
         ui = new UISurface(track);
 
         surface.setPreferredSize(new Dimension(WINDOW_WIDTH*3/5, WINDOW_HEIGHT*3/5));

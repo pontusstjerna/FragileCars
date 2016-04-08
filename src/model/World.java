@@ -1,7 +1,11 @@
 package model;
 
+import model.cars.Car;
+import model.cars.DrawableCar;
+import model.cars.FragileCar;
 import util.CfgParser;
 import util.DirectionalRect;
+import util.ImageHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -72,8 +76,14 @@ public class World implements Racetrack{
         return players;
     }
 
-    public BufferedImage[] getImages(){
-        return images;
+    @Override
+    public BufferedImage getBackground(){
+        return images[0];
+    }
+
+    @Override
+    public BufferedImage getForeground(){
+        return images[1];
     }
 
     @Override

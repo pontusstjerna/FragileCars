@@ -1,4 +1,4 @@
-package model;
+package model.cars;
 
 import util.Vector2D;
 

@@ -1,4 +1,6 @@
-package model;
+package model.cars;
+
+import util.ImageHandler;
 
 import java.awt.image.BufferedImage;
 

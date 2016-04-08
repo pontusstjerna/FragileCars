@@ -1,7 +1,6 @@
 package controller;
 
-import model.FragileCar;
-import model.World;
+import model.cars.FragileCar;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
