@@ -1,5 +1,7 @@
 package model;
 
+import model.carcontrollers.AfraidBot;
+import model.carcontrollers.CarController;
 import model.cars.Car;
 import model.cars.DrawableCar;
 import model.cars.FragileCar;
@@ -22,8 +24,10 @@ public class World implements Racetrack{
     private FragileCar[] players;
     private FragileCar[] bots;
     private FragileCar[] cars;
+    private CarController[] controllers;
     private DrawableCar[] drawables;
-    private boolean[] hasPassed;
+    private boolean[] passedBack;
+    private boolean[] passedFront;
 
     private DirectionalRect goal;
 
@@ -41,11 +45,10 @@ public class World implements Racetrack{
     }
 
     public void update(double deltaTime) {
-        for(FragileCar c : players){
-            c.update(deltaTime);
-        }
+        updateCars(deltaTime);
         releaseCars();
         checkCollisions();
+        controlCars(deltaTime);
         checkLaps();
     }
 
@@ -128,7 +131,7 @@ public class World implements Racetrack{
                 }else if(images[0].getRGB(x,y) == Color.RED.getRGB()){
 
                     //Create the rectangle with correct alignment.
-                    goal = new DirectionalRect(goalX, goalY, Math.max(Math.abs(goalX - x), Math.abs(goalY - y)), 200,
+                    goal = new DirectionalRect(goalX, goalY, Math.max(Math.abs(goalX - x), Math.abs(goalY - y)), 400,
                             Math.abs(goalX - x) > Math.abs(goalY - y) ? DirectionalRect.Direction.UP : DirectionalRect.Direction.LEFT);
                 }
             }
@@ -150,27 +153,33 @@ public class World implements Racetrack{
         bots = new FragileCar[4 - nPlayers];
         cars = new FragileCar[players.length + bots.length];
         drawables = new DrawableCar[cars.length];
+        controllers = new CarController[bots.length];
 
+        //Create player cars and add to drawables and cars
         for(int i = 0; i < players.length; i++){
-            Car car = new Car(Car.Cars.values()[i], 400, 100*i + 800, Math.PI*3/2);
+            Car car = new Car(Car.Cars.values()[i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
+                    100*i + 800, Math.PI*3/2);
             players[i] = car;
+            cars[i] = players[i];
             drawables[i] = car;
         }
 
+        //Create bots and add to drawables and cars
         for(int i = 0; i < bots.length; i++){
-            Car car = new Car(Car.Cars.values()[nPlayers + i], 400, 100*(i+nPlayers) + 800, Math.PI*3/2);
+            Car car = new Car(Car.Cars.values()[nPlayers + i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
+                    100*(i+nPlayers) + 800, Math.PI*3/2);
             bots[i] = car;
+            cars[i+players.length] = bots[i];
             drawables[i + players.length] = car;
         }
 
-        for(int i = 0; i < players.length; i++){
-            cars[i] = players[i];
-        }
-        for(int i = 0; i < bots.length; i++){
-            cars[i+players.length] = bots[i];
+        //Create car controllers for bots
+        for(int i = 0; i < controllers.length; i ++){
+            controllers[i] = new AfraidBot(bots[i], "1", countdown);
         }
 
-        hasPassed = new boolean[cars.length];
+        passedBack = new boolean[cars.length];
+        passedFront = new boolean[cars.length];
     }
 
     private void checkCollisions(){
@@ -191,22 +200,26 @@ public class World implements Racetrack{
     private void checkLaps(){
         boolean allFinished = false;
         for(int i = 0; i < cars.length; i++){
-            if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT && hasPassed[i]){
+            if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT && passedBack[i]) {
                 cars[i].newLap();
 
                 //Finished?
-                if(cars[i].getLaps() == laps){
+                if (cars[i].getLaps() == laps) {
                     places++;
                     cars[i].finish(getTime(), places);
                     cars[i].turnOff(true);
 
                     allFinished = true;
-                }else{
+                } else {
                     allFinished = false;
                     System.out.println(cars[i]);
                 }
+            }else if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK && passedFront[i]){
+                cars[i].reset();
             }
-            hasPassed[i] = goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK;
+
+            passedBack[i] = (goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK);
+            passedFront[i] = (goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT);
         }
         finished = allFinished;
     }
@@ -215,6 +228,20 @@ public class World implements Racetrack{
         if(getTime()/10 == 0){
             for(FragileCar car : cars){
                 car.setLocked(false);
+            }
+        }
+    }
+
+    private void updateCars(double dTime){
+        for(FragileCar c : cars){
+            c.update(dTime);
+        }
+    }
+
+    private void controlCars(double dTime){
+        for(CarController ctrlr : controllers){
+            if(ctrlr != null){
+                ctrlr.update(dTime);
             }
         }
     }

@@ -43,13 +43,13 @@ public class Car implements DrawableCar, FragileCar {
 
     @Override
     public void update(double deltaTime){
-        if(!locked){
-            x = (x + acceleration*Math.sin(heading)*deltaTime);
-            y = (y - acceleration*Math.cos(heading)*deltaTime);
+        if(!locked) {
+            x = (x + acceleration * Math.sin(heading) * deltaTime);
+            y = (y - acceleration * Math.cos(heading) * deltaTime);
 
-            if(!accelerating){
+            if (!accelerating) {
                 engineBrake();
-            }else{
+            } else {
                 accelerating = false;
             }
         }
