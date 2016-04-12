@@ -23,12 +23,12 @@ public class AfraidBot implements CarController{
     private boolean hasTurned = false;
     private long startTime;
     private long longestTime = 0;
-    private int timesDied = 0;
     private long moved = 0;
     private long longestMove = 0;
 
     private final int DEATH_THRESHOLD = 5;
-    private final int WALL_THRESHOLD = 100;
+    private final int WALL_THRESHOLD = 200;
+    private final int STICK_LENGTH = 10;
 
     private Random rand;
 
@@ -78,7 +78,7 @@ public class AfraidBot implements CarController{
     private void avoid(double dTime){
 
         //Do same turns as went best so far
-        if(bestRoute != null){
+        /*if(bestRoute != null){
             for(TurnPoint p : bestRoute){
                 if(p.getPoint().distance(car.getX(), car.getY()) < 1){
                     turnLeft = p.isTurnedLeft();
@@ -86,28 +86,21 @@ public class AfraidBot implements CarController{
                     //System.out.println(car + " turned at " + p.getPoint());
                 }
             }
-        }
+        }*/
 
-        if(true){ //If end of route has been reached
-            if(walls.size() > 0){
-                if(getClosestWallPoint().distance(car.getX(), car.getY()) < getClosestWallPoint().distance(lastX, lastY)
-                        && !hasTurned){
-                    turnLeft = !turnLeft;
-                    hasTurned = true;
-                    currentTurnPoints.add(new TurnPoint(car.getX(), car.getY(), moved, turnLeft));
-                    timesDied--;
-                }else if(getClosestWallPoint().distance(car.getX(), car.getY()) > getClosestWallPoint().distance(lastX, lastY)){
-                    hasTurned = false;
-                }else{
-                    turn(dTime);
-                }
-            }else{
-                turnLeft = startTurnLeft;
+        if(walls.size() > 0){
+            Point closestPointStick = getClosestWallPointStick(car.getX(), car.getY());
+            double stickX = car.getX() + Math.sin(car.getHeading())*STICK_LENGTH;
+            double stickY = car.getY() + Math.cos(car.getHeading())*STICK_LENGTH;
+
+            //If stick is close to a point
+            if(closestPointStick.distance(stickX, stickY) < WALL_THRESHOLD){
+                turn(turnLeft(stickX, stickY, closestPointStick), dTime);
             }
         }
     }
 
-    private void turn(double dTime){
+    private void turn(boolean turnLeft, double dTime){
         if(turnLeft){
             car.turnLeft(dTime);
         }else{
@@ -128,6 +121,28 @@ public class AfraidBot implements CarController{
         return null;
     }
 
+    private Point getClosestWallPointStick(double x, double y){
+        if(walls.size() > 0){
+            Point closest = walls.get(0);
+            double stickX = x + Math.sin(car.getHeading())*STICK_LENGTH;
+            double stickY = y + Math.cos(car.getHeading())*STICK_LENGTH;
+            for(Point p : walls){
+                if(p.distance(stickX, stickY) < closest.distance(stickX, stickY)){
+                    closest = p;
+                }
+            }
+            return closest;
+        }
+        return null;
+    }
+
+    private boolean turnLeft(double x, double y, Point wallPoint){
+        double position = Math.signum((Math.sin(x)) * (wallPoint.y - y) - (Math.cos(y))
+                * (wallPoint.x - x));
+
+        return position < 0;
+    }
+
     private void updateBestTrack(){
         if(moved > longestMove){
             longestMove = moved;
@@ -136,9 +151,6 @@ public class AfraidBot implements CarController{
                 bestRoute = new TurnPoint[currentTurnPoints.size()];
                 currentTurnPoints.toArray(bestRoute);
             }
-            timesDied = 0;
-        }else{
-            timesDied++;
         }
 
         /*if(timesDied > 20){
