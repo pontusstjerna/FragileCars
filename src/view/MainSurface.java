@@ -2,6 +2,8 @@ package view;
 
 import model.Racetrack;
 import model.World;
+import model.carcontrollers.DrawableBot;
+import util.CfgParser;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,6 +17,7 @@ import java.awt.image.BufferedImage;
 public class MainSurface extends JPanel {
 
     private Racetrack track;
+    private CfgParser cfg;
 
     private BufferedImage[] scaledCarImgs;
     private BufferedImage scaledBackground;
@@ -29,6 +32,7 @@ public class MainSurface extends JPanel {
         this.track = track;
         scaledCarImgs = new BufferedImage[track.getDrawables().length];
 
+        cfg = new CfgParser("src\\model\\data\\config.txt");
         System.out.println("Surface initialized with scale " + scale() + ". ");
     }
 
@@ -41,6 +45,7 @@ public class MainSurface extends JPanel {
 
         paintWorld(g2d);
         paintCars(g2d);
+        paintBots(g2d);
     }
 
     private void paintWorld(Graphics2D g){
@@ -67,8 +72,8 @@ public class MainSurface extends JPanel {
         for(int i = 0; i < track.getDrawables().length; i++){
 
             //Algorithm for centering image and scaling to window.
-            int x = (int)((track.getDrawables()[i].getX())*scale()) + scaleX();
-            int y = (int)((track.getDrawables()[i].getY())*scale());
+            int x = (int)((track.getDrawables()[i].getX() - track.getDrawables()[i].getImg().getWidth()/2)*scale()) + scaleX();
+            int y = (int)((track.getDrawables()[i].getY() - track.getDrawables()[i].getImg().getHeight()/2)*scale());
             int middleX = (int)(x + (track.getDrawables()[i].getImg().getWidth()/2)*scale());
             int middleY = (int)(y + (track.getDrawables()[i].getImg().getHeight()/2)*scale());
 
@@ -79,8 +84,49 @@ public class MainSurface extends JPanel {
 
             g.rotate(-track.getDrawables()[i].getHeading(), middleX, middleY);
         }
+    }
 
+    private void paintBots(Graphics2D g){
+        if(cfg.readBoolean("showWallPoints")){
+            paintWallPoints(g);
+        }
 
+        if(cfg.readBoolean("showBlindSticks")){
+            paintBlindSticks(g);
+        }
+    }
+
+    private void paintWallPoints(Graphics2D g){
+        for(DrawableBot b : track.getBots()){
+            if(b.getCar().getName().equals("BLUE car")){
+                g.setColor(Color.BLUE);
+            }else if(b.getCar().getName().equals("GREEN car"))
+            {
+                g.setColor(Color.GREEN);
+            }else if(b.getCar().getName().equals("RED car")){
+                g.setColor(Color.RED);
+            }else if(b.getCar().getName().equals("YELLOW car")){
+                g.setColor(Color.YELLOW);
+            }
+
+            for(Point p : b.getWallPoints()){
+                int s = (int)(scale()*10);
+                g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
+                int dist = (int)(scale()*b.getWallThreshold());
+                g.drawRoundRect((int)(p.x*scale())-(dist/2) + scaleX(), (int)(p.y*scale())-(dist/2),
+                        dist, dist, dist, dist);
+            }
+        }
+    }
+
+    private void paintBlindSticks(Graphics2D g){
+        for(DrawableBot b : track.getBots()){
+            int stickX = (int)(b.getStickX()*scale()) + scaleX();
+            int stickY = (int)(b.getStickY()*scale());
+
+            g.drawLine((int)(b.getCar().getX()*scale()) + scaleX(), (int)(b.getCar().getY()*scale()),
+                    stickX, stickY);
+        }
     }
 
     private BufferedImage scaleImage(BufferedImage unscaled){

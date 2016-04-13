@@ -2,6 +2,7 @@ package model;
 
 import model.carcontrollers.AfraidBot;
 import model.carcontrollers.CarController;
+import model.carcontrollers.DrawableBot;
 import model.cars.Car;
 import model.cars.DrawableCar;
 import model.cars.FragileCar;
@@ -25,6 +26,7 @@ public class World implements Racetrack{
     private FragileCar[] bots;
     private FragileCar[] cars;
     private CarController[] controllers;
+    private DrawableBot[] drawableBots;
     private DrawableCar[] drawables;
     private boolean[] passedBack;
     private boolean[] passedFront;
@@ -68,6 +70,11 @@ public class World implements Racetrack{
     @Override
     public DrawableCar[] getDrawables(){
         return drawables;
+    }
+
+    @Override
+    public DrawableBot[] getBots(){
+        return drawableBots;
     }
 
     @Override
@@ -154,6 +161,7 @@ public class World implements Racetrack{
         cars = new FragileCar[players.length + bots.length];
         drawables = new DrawableCar[cars.length];
         controllers = new CarController[bots.length];
+        drawableBots = new DrawableBot[bots.length];
 
         //Create player cars and add to drawables and cars
         for(int i = 0; i < players.length; i++){
@@ -175,7 +183,9 @@ public class World implements Racetrack{
 
         //Create car controllers for bots
         for(int i = 0; i < controllers.length; i ++){
-            controllers[i] = new AfraidBot(bots[i], "1", countdown);
+            AfraidBot bot = new AfraidBot(bots[i], "1", countdown);
+            controllers[i] = bot;
+            drawableBots[i] = bot;
         }
 
         passedBack = new boolean[cars.length];
@@ -186,11 +196,17 @@ public class World implements Racetrack{
         for(FragileCar car : getCars()){
             for(int x = 0; x < car.getImg().getWidth(); x++){
                 for(int y = 0; y < car.getImg().getHeight(); y++){
-                    if(car.getImg().getRGB(x,y) != 0){
-                        if(images[1].getRGB(car.getX() + x, car.getY() + y) != 0){
-                            car.reset();
+                    try{
+                        if(car.getImg().getRGB(x,y) != 0){
+                            if(images[1].getRGB(car.getX() - car.getImg().getWidth()/2 + x,
+                                                car.getY() - car.getImg().getHeight()/2 + y) != 0){
+                                car.reset();
+                            }
                         }
+                    }catch(ArrayIndexOutOfBoundsException e){
+                        car.reset();
                     }
+
                 }
             }
         }

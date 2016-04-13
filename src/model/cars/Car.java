@@ -103,12 +103,12 @@ public class Car implements DrawableCar, FragileCar {
 
     @Override
     public int getX(){
-        return (int)x;
+        return (int)(x - image.getWidth()/2);
     }
 
     @Override
     public int getY(){
-        return (int)y;
+        return (int)(y - image.getHeight()/2);
     }
 
     @Override

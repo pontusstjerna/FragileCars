@@ -1,3 +1,5 @@
 #nPlayers="0"
 #laps="2"
-#countdown="5000"
+#countdown="1000"
+#showWallPoints="true"
+#showBlindSticks="true"

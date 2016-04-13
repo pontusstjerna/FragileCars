@@ -3,32 +3,31 @@ package model.carcontrollers;
 import model.cars.FragileCar;
 
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Created by pontu on 2016-04-08.
  */
-public class AfraidBot implements CarController{
+public class AfraidBot implements CarController, DrawableBot{
     private FragileCar car;
     private List<Point> walls;
-    private List<TurnPoint> currentTurnPoints;
     private TurnPoint[] bestRoute;
+
+    private enum Dir {LEFT, RIGHT, STRAIGHT}
 
     private Point spawnPoint;
     private int lastX, lastY;
-    private boolean turnLeft = false;
-    private boolean startTurnLeft;
-    private boolean hasTurned = false;
+    private int nPointsInRange = 0;
     private long startTime;
     private long longestTime = 0;
     private long moved = 0;
     private long longestMove = 0;
 
-    private final int DEATH_THRESHOLD = 5;
-    private final int WALL_THRESHOLD = 200;
-    private final int STICK_LENGTH = 10;
+    private final int DEATH_THRESHOLD = 10;
+    private final int WALL_THRESHOLD;
+    private final int STICK_LENGTH = 30;
+    private final int GAS_THRESHOLD = 100;
 
     private Random rand;
 
@@ -36,36 +35,67 @@ public class AfraidBot implements CarController{
         this.car = car;
 
         walls = new ArrayList<>();
-        currentTurnPoints = new ArrayList<>();
         spawnPoint = new Point(car.getX(), car.getY());
         lastX = car.getX();
         lastY = car.getY();
         startTime = System.currentTimeMillis() + countdown;
 
+        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight());
+
         rand = new Random();
-        startTurnLeft = rand.nextBoolean();
+        //walls.add(new Point(200, 1108));
     }
 
     @Override
     public void update(double dTime){
         checkReset();
 
-        if(System.currentTimeMillis() > startTime){
+        if((nPointsInRange < DEATH_THRESHOLD || car.getAcceleration() < GAS_THRESHOLD)){
             car.accelerate();
         }
         avoid(dTime);
         moved += car.getAcceleration();
 
-                //Should always be last
+        //Should always be last
         updateCoords();
     }
+
+    @Override
+    public List<Point> getWallPoints() {
+        return walls;
+    }
+
+    @Override
+    public int getWallThreshold() {
+        return WALL_THRESHOLD;
+    }
+
+    @Override
+    public int getStickLength() {
+        return STICK_LENGTH;
+    }
+
+    @Override
+    public FragileCar getCar() {
+        return car;
+    }
+
+    @Override
+    public int getStickX(){
+        return (int)stickX();
+    }
+
+    @Override
+    public int getStickY(){
+        return (int)stickY();
+    }
+
 
     private void checkReset(){
         //If car has been reset and not just standing on the spawn point
         if(car.getX() == spawnPoint.x && car.getY() == spawnPoint.y && (lastX != car.getX() || lastY != car.getY())){
             walls.add(new Point(lastX, lastY));
 
-            updateBestTrack();
           //  System.out.println(car + " added wallpoint at (" + lastX + "," + lastY + ")");
         }
     }
@@ -89,78 +119,109 @@ public class AfraidBot implements CarController{
         }*/
 
         if(walls.size() > 0){
-            Point closestPointStick = getClosestWallPointStick(car.getX(), car.getY());
-            double stickX = car.getX() + Math.sin(car.getHeading())*STICK_LENGTH;
-            double stickY = car.getY() + Math.cos(car.getHeading())*STICK_LENGTH;
+            Point closestPointStick = getClosestWallPoint(car.getX(), car.getY());
 
-            //If stick is close to a point
-            if(closestPointStick.distance(stickX, stickY) < WALL_THRESHOLD){
-                turn(turnLeft(stickX, stickY, closestPointStick), dTime);
+           /* //If stick is close to a point
+            if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
+                turn(turnLeft(stickX(), stickY(), closestPointStick), dTime);
+            }*/
+
+            //Turn to the side where there are LEAST crashes
+            if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
+                turn(optimalLeftTurn(stickX(), stickY()), dTime);
             }
         }
     }
 
-    private void turn(boolean turnLeft, double dTime){
-        if(turnLeft){
-            car.turnLeft(dTime);
+    private void turn(Dir dir, double dTime){
+        switch(dir){
+            case LEFT:
+                car.turnLeft(dTime);
+                break;
+            case RIGHT:
+                car.turnRight(dTime);
+                break;
+            case STRAIGHT:
+                break;
+        }
+    }
+
+    private Point getClosestWallPoint(double x, double y){
+        if(walls.size() > 0){
+            Point closest = walls.get(0);
+            for(Point p : walls){
+                if(p.distance(stickX(), stickY()) < closest.distance(stickX(), stickY())){
+                    closest = p;
+                }
+            }
+            return closest;
+        }
+        return null;
+    }
+
+    private Dir getSide(double x, double y, Point wallPoint){
+        int ax = car.getX();
+        int ay = car.getY();
+
+        int bx = (int)x;
+        int by = (int)y;
+
+        Point c = wallPoint;
+
+
+        double position = Math.signum(((bx - ax)*(c.y - ay) - (by - ay)*(c.x - ax)));
+
+        /*if(position > 0){
+            System.out.println("Point to the right, turning left.");
         }else{
-            car.turnRight(dTime);
-        }
-    }
-
-    private Point getClosestWallPoint(){
-        if(walls.size() > 0){
-            Point closest = walls.get(0);
-            for(Point p : walls){
-                if(p.distance(car.getX(),car.getY()) < closest.distance(car.getX(), car.getY())){
-                    closest = p;
-                }
-            }
-            return closest;
-        }
-        return null;
-    }
-
-    private Point getClosestWallPointStick(double x, double y){
-        if(walls.size() > 0){
-            Point closest = walls.get(0);
-            double stickX = x + Math.sin(car.getHeading())*STICK_LENGTH;
-            double stickY = y + Math.cos(car.getHeading())*STICK_LENGTH;
-            for(Point p : walls){
-                if(p.distance(stickX, stickY) < closest.distance(stickX, stickY)){
-                    closest = p;
-                }
-            }
-            return closest;
-        }
-        return null;
-    }
-
-    private boolean turnLeft(double x, double y, Point wallPoint){
-        double position = Math.signum((Math.sin(x)) * (wallPoint.y - y) - (Math.cos(y))
-                * (wallPoint.x - x));
-
-        return position < 0;
-    }
-
-    private void updateBestTrack(){
-        if(moved > longestMove){
-            longestMove = moved;
-            if(currentTurnPoints.size() > 1){
-                currentTurnPoints.remove(currentTurnPoints.size()-1);
-                bestRoute = new TurnPoint[currentTurnPoints.size()];
-                currentTurnPoints.toArray(bestRoute);
-            }
-        }
-
-        /*if(timesDied > 20){
-            bestRoute = null;
+            System.out.println("Point to the left, turning right.");
         }*/
 
-        //System.out.println(car + " longest move: " + longestMove);
+        if(position > 0){
+            return Dir.RIGHT;
+        }else{
+            return Dir.LEFT;
+        }
+    }
 
-        currentTurnPoints.clear();
-        moved = 0;
-        turnLeft = startTurnLeft;
+    private Dir optimalLeftTurn(double x, double y){
+        int nLeftPoints = 0;
+        int nRightPoints = 0;
+
+        Dir side = getSide(x,y,getClosestWallPoint(x,y));
+
+        for(Point p : walls){
+            if(p.distance(x,y) < WALL_THRESHOLD){
+                if(getSide(x,y,p) == Dir.LEFT){
+                    nLeftPoints++;
+                }else{
+                    nRightPoints++;
+                }
+            }
+        }
+
+        nPointsInRange = nLeftPoints + nRightPoints;
+        final int TURN_THRESHOLD = 1;
+
+        if(nLeftPoints - nRightPoints > TURN_THRESHOLD){
+            return Dir.RIGHT;
+        }else if(nRightPoints - nLeftPoints > TURN_THRESHOLD){
+            return Dir.LEFT;
+        }else{
+            if(side == Dir.LEFT){
+                return Dir.RIGHT;
+            }else{
+                return Dir.LEFT;
+            }
+        }
+    }
+
+
+    private double stickX(){
+        return car.getX() + Math.sin(car.getHeading())*STICK_LENGTH;
+    }
+
+    private double stickY(){
+        return car.getY() - Math.cos(car.getHeading())*STICK_LENGTH;
     }
 }
