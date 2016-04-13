@@ -94,6 +94,10 @@ public class MainSurface extends JPanel {
         if(cfg.readBoolean("showBlindSticks")){
             paintBlindSticks(g);
         }
+
+        if(cfg.readBoolean("showCheckPoints")){
+            paintCheckPoints(g);
+        }
     }
 
     private void paintWallPoints(Graphics2D g){
@@ -115,6 +119,26 @@ public class MainSurface extends JPanel {
                 int dist = (int)(scale()*b.getWallThreshold());
                 g.drawRoundRect((int)(p.x*scale())-(dist/2) + scaleX(), (int)(p.y*scale())-(dist/2),
                         dist, dist, dist, dist);
+            }
+        }
+    }
+
+    private void paintCheckPoints(Graphics2D g){
+        for(DrawableBot b : track.getBots()){
+            if(b.getCar().getName().equals("BLUE car")){
+                g.setColor(Color.BLUE);
+            }else if(b.getCar().getName().equals("GREEN car"))
+            {
+                g.setColor(Color.GREEN);
+            }else if(b.getCar().getName().equals("RED car")){
+                g.setColor(Color.RED);
+            }else if(b.getCar().getName().equals("YELLOW car")){
+                g.setColor(Color.YELLOW);
+            }
+
+            for(Point p : b.getCheckPoints()){
+                int s = (int)(scale()*10);
+                g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
             }
         }
     }

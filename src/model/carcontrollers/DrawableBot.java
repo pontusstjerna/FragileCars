@@ -10,6 +10,7 @@ import java.util.List;
  */
 public interface DrawableBot {
     List<Point> getWallPoints();
+    List<Point> getCheckPoints();
     int getWallThreshold();
     int getStickLength();
     int getStickX();

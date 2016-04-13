@@ -12,7 +12,7 @@ import java.util.List;
 public class AfraidBot implements CarController, DrawableBot{
     private FragileCar car;
     private List<Point> walls;
-    private TurnPoint[] bestRoute;
+    private List<Point> checkPoints;
 
     private enum Dir {LEFT, RIGHT, STRAIGHT}
 
@@ -21,13 +21,14 @@ public class AfraidBot implements CarController, DrawableBot{
     private int nPointsInRange = 0;
     private long startTime;
     private long longestTime = 0;
-    private long moved = 0;
+    private double moved = 0;
     private long longestMove = 0;
 
     private final int DEATH_THRESHOLD = 10;
     private final int WALL_THRESHOLD;
-    private final int STICK_LENGTH = 30;
+    private final int STICK_LENGTH = 50;
     private final int GAS_THRESHOLD = 100;
+    private final int CHECKPOINT_DENSITY = 20;
 
     private Random rand;
 
@@ -35,6 +36,7 @@ public class AfraidBot implements CarController, DrawableBot{
         this.car = car;
 
         walls = new ArrayList<>();
+        checkPoints = new ArrayList<>();
         spawnPoint = new Point(car.getX(), car.getY());
         lastX = car.getX();
         lastY = car.getY();
@@ -54,7 +56,8 @@ public class AfraidBot implements CarController, DrawableBot{
             car.accelerate();
         }
         avoid(dTime);
-        moved += car.getAcceleration();
+
+        addCheckPoint(dTime);
 
         //Should always be last
         updateCoords();
@@ -63,6 +66,11 @@ public class AfraidBot implements CarController, DrawableBot{
     @Override
     public List<Point> getWallPoints() {
         return walls;
+    }
+
+    @Override
+    public List<Point> getCheckPoints(){
+        return checkPoints;
     }
 
     @Override
@@ -97,7 +105,10 @@ public class AfraidBot implements CarController, DrawableBot{
             walls.add(new Point(lastX, lastY));
 
           //  System.out.println(car + " added wallpoint at (" + lastX + "," + lastY + ")");
+            moved = 0;
         }
+
+
     }
 
     private void updateCoords(){
@@ -108,8 +119,8 @@ public class AfraidBot implements CarController, DrawableBot{
     private void avoid(double dTime){
 
         //Do same turns as went best so far
-        /*if(bestRoute != null){
-            for(TurnPoint p : bestRoute){
+        /*if(checkPoints != null){
+            for(CheckPoint p : checkPoints){
                 if(p.getPoint().distance(car.getX(), car.getY()) < 1){
                     turnLeft = p.isTurnedLeft();
                     hasTurned = true;
@@ -201,7 +212,7 @@ public class AfraidBot implements CarController, DrawableBot{
         }
 
         nPointsInRange = nLeftPoints + nRightPoints;
-        final int TURN_THRESHOLD = 1;
+        final int TURN_THRESHOLD = 2;
 
         if(nLeftPoints - nRightPoints > TURN_THRESHOLD){
             return Dir.RIGHT;
@@ -223,5 +234,14 @@ public class AfraidBot implements CarController, DrawableBot{
 
     private double stickY(){
         return car.getY() - Math.cos(car.getHeading())*STICK_LENGTH;
+    }
+
+    private void addCheckPoint(double dTime){
+        moved = moved + (car.getAcceleration()*dTime);
+
+        if(moved > CHECKPOINT_DENSITY){
+            checkPoints.add(new Point(car.getX(), car.getY()));
+            moved = 0;
+        }
     }
 }
