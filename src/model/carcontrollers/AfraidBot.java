@@ -14,21 +14,24 @@ public class AfraidBot implements CarController, DrawableBot{
     private List<Point> walls;
     private List<Point> checkPoints;
 
-    private enum Dir {LEFT, RIGHT, STRAIGHT}
+    public enum Dir {LEFT, RIGHT, STRAIGHT}
 
     private Point spawnPoint;
     private int lastX, lastY;
     private int nPointsInRange = 0;
-    private long startTime;
-    private long longestTime = 0;
     private double moved = 0;
-    private long longestMove = 0;
+    private Dir currentDir = Dir.STRAIGHT;
+
+    private int cpIndex = 1;
+
+    private long startTime;
 
     private final int DEATH_THRESHOLD = 10;
     private final int WALL_THRESHOLD;
     private final int STICK_LENGTH = 50;
     private final int GAS_THRESHOLD = 100;
-    private final int CHECKPOINT_DENSITY = 20;
+    private final int CHECKPOINT_DENSITY = 300;
+    private final int MIN_CHECKPOINT_DISTANCE = 300;
 
     private Random rand;
 
@@ -55,8 +58,10 @@ public class AfraidBot implements CarController, DrawableBot{
         if((nPointsInRange < DEATH_THRESHOLD || car.getAcceleration() < GAS_THRESHOLD)){
             car.accelerate();
         }
-        avoid(dTime);
 
+        //follow(dTime);
+        avoid(dTime);
+       // checkCheckpoint();
         addCheckPoint(dTime);
 
         //Should always be last
@@ -106,9 +111,8 @@ public class AfraidBot implements CarController, DrawableBot{
 
           //  System.out.println(car + " added wallpoint at (" + lastX + "," + lastY + ")");
             moved = 0;
+            removeCheckpoints();
         }
-
-
     }
 
     private void updateCoords(){
@@ -118,28 +122,50 @@ public class AfraidBot implements CarController, DrawableBot{
 
     private void avoid(double dTime){
 
-        //Do same turns as went best so far
-        /*if(checkPoints != null){
-            for(CheckPoint p : checkPoints){
-                if(p.getPoint().distance(car.getX(), car.getY()) < 1){
-                    turnLeft = p.isTurnedLeft();
-                    hasTurned = true;
-                    //System.out.println(car + " turned at " + p.getPoint());
-                }
-            }
-        }*/
-
         if(walls.size() > 0){
             Point closestPointStick = getClosestWallPoint(car.getX(), car.getY());
 
-           /* //If stick is close to a point
-            if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
-                turn(turnLeft(stickX(), stickY(), closestPointStick), dTime);
-            }*/
-
             //Turn to the side where there are LEAST crashes
             if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
-                turn(optimalLeftTurn(stickX(), stickY()), dTime);
+                turn(optimalTurn(stickX(), stickY()), dTime);
+            }else{
+                follow(dTime);
+            }
+        }
+    }
+
+    private void follow(double dTime){
+        if(checkPoints.size() > 0){
+            Point closest = getClosestCheckPoint(car.getX(), car.getY());
+
+            double headingToCP = Math.atan2(closest.y - car.getY(), closest.x - car.getX());
+            double toTurn = getPI(headingToCP - getPI(car.getHeading()));
+            //double toTurn = headingToCP - car.getHeading();
+
+
+            final double turnThreshold = 0;
+
+
+            if(toTurn > turnThreshold){
+                turn(Dir.RIGHT, dTime);
+            }else if(toTurn < -turnThreshold){
+                turn(Dir.LEFT, dTime);
+            }else{
+                turn(Dir.STRAIGHT, dTime);
+            }
+        }
+    }
+
+    private void checkCheckpoint(){
+        if(cpIndex < checkPoints.size())
+        {
+            double headingToCP = Math.atan2(checkPoints.get(cpIndex).getY() - car.getY(), checkPoints.get(cpIndex).getX() - car.getX());
+
+            //If close enough and in front of check point
+            if(checkPoints.get(cpIndex).distance(car.getX(), car.getY()) < MIN_CHECKPOINT_DISTANCE &&
+                    (headingToCP > Math.PI/4) && headingToCP < Math.PI*3/4){
+                System.out.println("Checked with " + checkPoints.get(cpIndex).distance(car.getX(), car.getY()));
+                cpIndex++;
             }
         }
     }
@@ -148,11 +174,14 @@ public class AfraidBot implements CarController, DrawableBot{
         switch(dir){
             case LEFT:
                 car.turnLeft(dTime);
+                currentDir = Dir.LEFT;
                 break;
             case RIGHT:
                 car.turnRight(dTime);
+                currentDir = Dir.RIGHT;
                 break;
             case STRAIGHT:
+                currentDir = Dir.STRAIGHT;
                 break;
         }
     }
@@ -165,6 +194,22 @@ public class AfraidBot implements CarController, DrawableBot{
                     closest = p;
                 }
             }
+            return closest;
+        }
+        return null;
+    }
+
+    private Point getClosestCheckPoint(double x, double y){
+        if(checkPoints.size() > 0){
+            Point closest = checkPoints.get(0);
+            for(Point p : checkPoints){
+                double headingToCP = Math.atan2(p.y - car.getY(), p.x - car.getX());
+                if(p.distance(stickX(), stickY()) < closest.distance(car.getX(), car.getY()) &&
+                        headingToCP < Math.PI/4 && headingToCP < -Math.PI/4){
+                    closest = p;
+                }
+            }
+
             return closest;
         }
         return null;
@@ -195,7 +240,7 @@ public class AfraidBot implements CarController, DrawableBot{
         }
     }
 
-    private Dir optimalLeftTurn(double x, double y){
+    private Dir optimalTurn(double x, double y){
         int nLeftPoints = 0;
         int nRightPoints = 0;
 
@@ -239,9 +284,42 @@ public class AfraidBot implements CarController, DrawableBot{
     private void addCheckPoint(double dTime){
         moved = moved + (car.getAcceleration()*dTime);
 
-        if(moved > CHECKPOINT_DENSITY){
+        //System.out.println("Moved: " + moved + " cpIndex: " + cpIndex + " Cps: " + checkPoints.size());
+
+        //Only add checkpoints with a certain density and only if you have gone through all the old ones
+        if(moved > CHECKPOINT_DENSITY && cpIndex >= checkPoints.size()){
             checkPoints.add(new Point(car.getX(), car.getY()));
+            cpIndex++;
             moved = 0;
         }
+    }
+
+    private void removeCheckpoints(){
+        final int CP_THRESHOLD = 1;
+        int cpSize = checkPoints.size();
+
+        //System.out.println("CPSize: " + cpSize);
+
+        if(checkPoints.size() >= CP_THRESHOLD){
+            for(int i = cpSize - 1; i > cpSize - CP_THRESHOLD; i--){
+                checkPoints.remove(i);
+            }
+        }else{
+            for(int i = cpSize - 1; i > 0; i--){
+                checkPoints.remove(i);
+            }
+        }
+
+        cpIndex = 1;
+    }
+
+    private double getPI(double angle) {
+        angle = angle % Math.PI*2;
+        if (angle >= Math.PI && angle > 0) {
+            return angle - Math.PI*2;
+        }else if(angle <= -Math.PI){
+            return angle + Math.PI*2;
+        }
+        return angle;
     }
 }

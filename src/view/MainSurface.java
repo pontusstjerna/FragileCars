@@ -2,6 +2,7 @@ package view;
 
 import model.Racetrack;
 import model.World;
+import model.carcontrollers.CheckPoint;
 import model.carcontrollers.DrawableBot;
 import util.CfgParser;
 

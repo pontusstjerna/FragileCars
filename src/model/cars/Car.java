@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
  * Created by pontu on 2016-04-05.
  */
 public class Car implements DrawableCar, FragileCar {
-    public enum Cars {BLUE, GREEN, RED, YELLOW}
+    public enum Cars {GREEN, YELLOW, RED, BLUE}
 
     private double x,y;
     private final int originX, originY;
