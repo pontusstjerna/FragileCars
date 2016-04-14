@@ -135,10 +135,10 @@ public class AfraidBot implements CarController, DrawableBot{
     }
 
     private void follow(double dTime){
-        if(checkPoints.size() > 0){
+        if(checkPoints.size() > 0 && getClosestCheckPoint(car.getX(), car.getY()) != null){
             Point closest = getClosestCheckPoint(car.getX(), car.getY());
 
-            double headingToCP = Math.atan2(closest.y - car.getY(), closest.x - car.getX());
+            double headingToCP = getHeadingToPoint(closest, car.getX(), car.getY());
             double toTurn = getPI(headingToCP - getPI(car.getHeading()));
             //double toTurn = headingToCP - car.getHeading();
 
@@ -199,18 +199,19 @@ public class AfraidBot implements CarController, DrawableBot{
         return null;
     }
 
-    private Point getClosestCheckPoint(double x, double y){
+    private Point getClosestCheckPoint(int x, int y){
         if(checkPoints.size() > 0){
             Point closest = checkPoints.get(0);
             for(Point p : checkPoints){
-                double headingToCP = Math.atan2(p.y - car.getY(), p.x - car.getX());
-                if(p.distance(stickX(), stickY()) < closest.distance(car.getX(), car.getY()) &&
+                double headingToCP = getHeadingToPoint(p, x, y);
+                if(p.distance(x, y) < closest.distance(x,y) &&
                         headingToCP < Math.PI/4 && headingToCP < -Math.PI/4){
                     closest = p;
                 }
             }
-
-            return closest;
+            if(getHeadingToPoint(closest, x,y) < Math.PI/4 && getHeadingToPoint(closest, x,y) < -Math.PI/4 ) {
+                return closest;
+            }
         }
         return null;
     }
@@ -289,8 +290,7 @@ public class AfraidBot implements CarController, DrawableBot{
         //Only add checkpoints with a certain density and only if you have gone through all the old ones
         if(moved > CHECKPOINT_DENSITY && cpIndex >= checkPoints.size()){
             checkPoints.add(new Point(car.getX(), car.getY()));
-            cpIndex++;
-            moved = 0;
+            //CHECK HERE IF THE CLOSEST CHECKPOINT IS CLOSE, OTHERWISE, CREATE A NEW ONE!!
         }
     }
 
@@ -321,5 +321,9 @@ public class AfraidBot implements CarController, DrawableBot{
             return angle + Math.PI*2;
         }
         return angle;
+    }
+
+    private double getHeadingToPoint(Point p, int x, int y){
+        return Math.atan2(p.y - y, p.x - x);
     }
 }
