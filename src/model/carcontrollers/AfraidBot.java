@@ -45,7 +45,7 @@ public class AfraidBot implements CarController, DrawableBot{
         lastY = car.getY();
         startTime = System.currentTimeMillis() + countdown;
 
-        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight());
+        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight())/2;
 
         rand = new Random();
         //walls.add(new Point(200, 1108));
@@ -294,7 +294,7 @@ public class AfraidBot implements CarController, DrawableBot{
 
         //Only add checkpoints with a certain density and only if you have gone through all the old ones
         if(moved > CHECKPOINT_DENSITY && getClosestCheckPoint(stickX(), stickY()) == null){
-            checkPoints.add(new Point(car.getX(), car.getY()));
+            //checkPoints.add(new Point(car.getX(), car.getY()));
             //CHECK HERE IF THE CLOSEST CHECKPOINT IS CLOSE, OTHERWISE, CREATE A NEW ONE!!
             moved = 0;
         }
