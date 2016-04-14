@@ -117,7 +117,7 @@ public class MainSurface extends JPanel {
             for(Point p : b.getWallPoints()){
                 int s = (int)(scale()*10);
                 g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
-                int dist = (int)(scale()*b.getWallThreshold());
+                int dist = (int)(scale()*b.getWallThreshold()*2);
                 g.drawRoundRect((int)(p.x*scale())-(dist/2) + scaleX(), (int)(p.y*scale())-(dist/2),
                         dist, dist, dist, dist);
             }

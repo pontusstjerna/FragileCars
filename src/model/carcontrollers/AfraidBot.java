@@ -28,7 +28,7 @@ public class AfraidBot implements CarController, DrawableBot{
 
     private final int DEATH_THRESHOLD = 10;
     private final int WALL_THRESHOLD;
-    private final int STICK_LENGTH = 50;
+    private final int STICK_LENGTH = 100;
     private final int GAS_THRESHOLD = 100;
     private final int CHECKPOINT_DENSITY = 300;
     private final int MIN_CHECKPOINT_DISTANCE = 300;
@@ -129,16 +129,21 @@ public class AfraidBot implements CarController, DrawableBot{
             if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
                 turn(optimalTurn(stickX(), stickY()), dTime);
             }else{
-                follow(dTime);
+             //   follow(dTime);
+
+                /*
+                NEW IDEA!!! MERGE WALLPOINTS SO THAT IF ONE IS SPAWNED CLOSE, MAKE ONE BIG SO THE TURNS WILL BE FUCKING
+                ---->>>>DYNAMIC<<<<----
+                 */
             }
         }
     }
 
     private void follow(double dTime){
-        if(checkPoints.size() > 0 && getClosestCheckPoint(car.getX(), car.getY()) != null){
-            Point closest = getClosestCheckPoint(car.getX(), car.getY());
+        if(checkPoints.size() > 0 && getClosestCheckPoint(stickX(), stickY()) != null){
+            Point closest = getClosestCheckPoint(stickX(), stickY());
 
-            double headingToCP = getHeadingToPoint(closest, car.getX(), car.getY());
+            double headingToCP = getHeadingToPoint(closest, stickX(), stickY());
             double toTurn = getPI(headingToCP - getPI(car.getHeading()));
             //double toTurn = headingToCP - car.getHeading();
 
@@ -199,7 +204,7 @@ public class AfraidBot implements CarController, DrawableBot{
         return null;
     }
 
-    private Point getClosestCheckPoint(int x, int y){
+    private Point getClosestCheckPoint(double x, double y){
         if(checkPoints.size() > 0){
             Point closest = checkPoints.get(0);
             for(Point p : checkPoints){
@@ -288,14 +293,15 @@ public class AfraidBot implements CarController, DrawableBot{
         //System.out.println("Moved: " + moved + " cpIndex: " + cpIndex + " Cps: " + checkPoints.size());
 
         //Only add checkpoints with a certain density and only if you have gone through all the old ones
-        if(moved > CHECKPOINT_DENSITY && cpIndex >= checkPoints.size()){
+        if(moved > CHECKPOINT_DENSITY && getClosestCheckPoint(stickX(), stickY()) == null){
             checkPoints.add(new Point(car.getX(), car.getY()));
             //CHECK HERE IF THE CLOSEST CHECKPOINT IS CLOSE, OTHERWISE, CREATE A NEW ONE!!
+            moved = 0;
         }
     }
 
     private void removeCheckpoints(){
-        final int CP_THRESHOLD = 1;
+        final int CP_THRESHOLD = 2;
         int cpSize = checkPoints.size();
 
         //System.out.println("CPSize: " + cpSize);
@@ -323,7 +329,7 @@ public class AfraidBot implements CarController, DrawableBot{
         return angle;
     }
 
-    private double getHeadingToPoint(Point p, int x, int y){
+    private double getHeadingToPoint(Point p, double x, double y){
         return Math.atan2(p.y - y, p.x - x);
     }
 }
