@@ -9,7 +9,7 @@ import java.util.List;
  * Created by Pontus on 2016-04-13.
  */
 public interface DrawableBot {
-    List<Point> getWallPoints();
+    List<WallPoint> getWallPoints();
     List<Point> getCheckPoints();
     int getWallThreshold();
     int getStickLength();

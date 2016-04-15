@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class AfraidBot implements CarController, DrawableBot{
+public class BallsBot implements CarController, DrawableBot{
     private FragileCar car;
-    private List<Point> walls;
+    private List<WallPoint> walls;
     private List<Point> checkPoints;
 
     public enum Dir {LEFT, RIGHT, STRAIGHT}
@@ -35,7 +35,7 @@ public class AfraidBot implements CarController, DrawableBot{
 
     private Random rand;
 
-    public AfraidBot(FragileCar car, String trackName, long countdown){
+    public BallsBot(FragileCar car, String trackName, long countdown){
         this.car = car;
 
         walls = new ArrayList<>();
@@ -69,7 +69,7 @@ public class AfraidBot implements CarController, DrawableBot{
     }
 
     @Override
-    public List<Point> getWallPoints() {
+    public List<WallPoint> getWallPoints() {
         return walls;
     }
 
@@ -107,7 +107,7 @@ public class AfraidBot implements CarController, DrawableBot{
     private void checkReset(){
         //If car has been reset and not just standing on the spawn point
         if(car.getX() == spawnPoint.x && car.getY() == spawnPoint.y && (lastX != car.getX() || lastY != car.getY())){
-            walls.add(new Point(lastX, lastY));
+            addWallPoint();
 
           //  System.out.println(car + " added wallpoint at (" + lastX + "," + lastY + ")");
             moved = 0;
@@ -120,13 +120,43 @@ public class AfraidBot implements CarController, DrawableBot{
         lastY = car.getY();
     }
 
+    private void addWallPoint(){
+        WallPoint closest = getClosestWallPoint(lastX, lastY);
+
+        //If they overlap, basically
+        if(merge(closest, lastX, lastY)){
+
+        }else{
+            walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
+        }
+    }
+
+    private boolean merge(WallPoint closest, int x, int y){
+
+        //If they overlap, basically
+        if(closest != null && closest.distance(x, y) < closest.getRadius() && closest.getRadius() < WALL_THRESHOLD*3) {
+            int newX = x + (closest.x - x);
+            int newY = y + (closest.y - y);
+            //walls.remove(closest);
+
+            //Recursively merge all balls
+            WallPoint merged = new WallPoint(newX, newY, WALL_THRESHOLD + closest.getRadius());
+           // merge(getClosestWallPoint(merged.x, merged.y), merged.x, merged.y);
+
+            walls.add(merged);
+
+            return true;
+        }
+        return false;
+    }
+
     private void avoid(double dTime){
 
         if(walls.size() > 0){
-            Point closestPointStick = getClosestWallPoint(car.getX(), car.getY());
+            WallPoint closestPointStick = getClosestWallPoint(car.getX(), car.getY());
 
             //Turn to the side where there are LEAST crashes
-            if(closestPointStick.distance(stickX(), stickY()) < WALL_THRESHOLD){
+            if(closestPointStick.distance(stickX(), stickY()) < closestPointStick.getRadius()){
                 turn(optimalTurn(stickX(), stickY()), dTime);
             }else{
              //   follow(dTime);
@@ -191,11 +221,11 @@ public class AfraidBot implements CarController, DrawableBot{
         }
     }
 
-    private Point getClosestWallPoint(double x, double y){
+    private WallPoint getClosestWallPoint(double x, double y){
         if(walls.size() > 0){
-            Point closest = walls.get(0);
-            for(Point p : walls){
-                if(p.distance(stickX(), stickY()) < closest.distance(stickX(), stickY())){
+            WallPoint closest = walls.get(0);
+            for(WallPoint p : walls){
+                if(p.distance(x, y) - p.getRadius() < closest.distance(x, y) - closest.getRadius()){
                     closest = p;
                 }
             }

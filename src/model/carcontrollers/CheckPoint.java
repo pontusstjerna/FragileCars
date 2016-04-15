@@ -8,18 +8,18 @@ import java.awt.*;
 public class CheckPoint {
     private Point turn;
     private double moved;
-    private AfraidBot.Dir dir;
+    private BallsBot.Dir dir;
     private double dTime;
     private double heading;
 
-    public CheckPoint(Point turn, long distanceMoved, AfraidBot.Dir dir, double dTime){
+    public CheckPoint(Point turn, long distanceMoved, BallsBot.Dir dir, double dTime){
         this.turn = turn;
         moved = distanceMoved;
         this.dir = dir;
         this.dTime = dTime;
     }
 
-    public CheckPoint(int x, int y, double distanceMoved, AfraidBot.Dir dir, double dTime){
+    public CheckPoint(int x, int y, double distanceMoved, BallsBot.Dir dir, double dTime){
         turn = new Point(x,y);
         moved = distanceMoved;
         this.dir = dir;
@@ -34,7 +34,7 @@ public class CheckPoint {
         return moved;
     }
 
-    public AfraidBot.Dir getDir(){
+    public BallsBot.Dir getDir(){
         return dir;
     }
 
