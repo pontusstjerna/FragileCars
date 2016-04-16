@@ -1,4 +1,4 @@
-package model.carcontrollers;
+package model.carcontrollers.util;
 
 import java.awt.*;
 

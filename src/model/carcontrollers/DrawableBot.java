@@ -1,8 +1,8 @@
 package model.carcontrollers;
 
+import model.carcontrollers.util.WallPoint;
 import model.cars.FragileCar;
 
-import java.awt.Point;
 import java.util.List;
 
 /**
@@ -10,7 +10,6 @@ import java.util.List;
  */
 public interface DrawableBot {
     List<WallPoint> getWallPoints();
-    List<Point> getCheckPoints();
     int getWallThreshold();
     int getStickLength();
     int getStickX();

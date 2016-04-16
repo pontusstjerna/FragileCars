@@ -111,6 +111,13 @@ public class Vector2D
         return this;
     }
 
+    public Vector2D sub(Vector2D term){
+        x -= term.getX();
+        y -= term.getY();
+
+        return this;
+    }
+
     public Vector2D multiply(double k){
         x *= k;
         y *= k;

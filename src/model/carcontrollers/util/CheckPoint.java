@@ -1,4 +1,6 @@
-package model.carcontrollers;
+package model.carcontrollers.util;
+
+import model.carcontrollers.BallsBot;
 
 import java.awt.*;
 

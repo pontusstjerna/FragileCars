@@ -1,6 +1,8 @@
 package model.carcontrollers;
 
+import model.carcontrollers.util.WallPoint;
 import model.cars.FragileCar;
+import util.Vector2D;
 
 import java.awt.*;
 import java.util.*;
@@ -12,7 +14,6 @@ import java.util.List;
 public class BallsBot implements CarController, DrawableBot{
     private FragileCar car;
     private List<WallPoint> walls;
-    private List<Point> checkPoints;
 
     public enum Dir {LEFT, RIGHT, STRAIGHT}
 
@@ -20,34 +21,25 @@ public class BallsBot implements CarController, DrawableBot{
     private int lastX, lastY;
     private int nPointsInRange = 0;
     private double moved = 0;
-    private Dir currentDir = Dir.STRAIGHT;
+    private WallPoint currentWallPoint;
 
-    private int cpIndex = 1;
-
-    private long startTime;
 
     private final int DEATH_THRESHOLD = 10;
     private final int WALL_THRESHOLD;
     private final int STICK_LENGTH = 100;
     private final int GAS_THRESHOLD = 100;
-    private final int CHECKPOINT_DENSITY = 300;
-    private final int MIN_CHECKPOINT_DISTANCE = 300;
 
-    private Random rand;
 
-    public BallsBot(FragileCar car, String trackName, long countdown){
+    public BallsBot(FragileCar car, String trackName){
         this.car = car;
 
         walls = new ArrayList<>();
-        checkPoints = new ArrayList<>();
         spawnPoint = new Point(car.getX(), car.getY());
         lastX = car.getX();
         lastY = car.getY();
-        startTime = System.currentTimeMillis() + countdown;
 
-        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight())/2;
+        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight());
 
-        rand = new Random();
         //walls.add(new Point(200, 1108));
     }
 
@@ -59,10 +51,7 @@ public class BallsBot implements CarController, DrawableBot{
             car.accelerate();
         }
 
-        //follow(dTime);
         avoid(dTime);
-       // checkCheckpoint();
-        addCheckPoint(dTime);
 
         //Should always be last
         updateCoords();
@@ -73,10 +62,6 @@ public class BallsBot implements CarController, DrawableBot{
         return walls;
     }
 
-    @Override
-    public List<Point> getCheckPoints(){
-        return checkPoints;
-    }
 
     @Override
     public int getWallThreshold() {
@@ -110,8 +95,6 @@ public class BallsBot implements CarController, DrawableBot{
             addWallPoint();
 
           //  System.out.println(car + " added wallpoint at (" + lastX + "," + lastY + ")");
-            moved = 0;
-            removeCheckpoints();
         }
     }
 
@@ -121,27 +104,27 @@ public class BallsBot implements CarController, DrawableBot{
     }
 
     private void addWallPoint(){
-        WallPoint closest = getClosestWallPoint(lastX, lastY);
-
         //If they overlap, basically
-        if(merge(closest, lastX, lastY)){
+        if(false && currentWallPoint != null && merge(currentWallPoint, lastX, lastY)){
 
         }else{
             walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
         }
+
+        //walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
     }
 
     private boolean merge(WallPoint closest, int x, int y){
 
         //If they overlap, basically
-        if(closest != null && closest.distance(x, y) < closest.getRadius() && closest.getRadius() < WALL_THRESHOLD*3) {
-            int newX = x + (closest.x - x);
-            int newY = y + (closest.y - y);
-            //walls.remove(closest);
+        if(closest != null && closest.distance(x, y) < closest.getRadius() + WALL_THRESHOLD) {
+            int newX = x + (closest.x - x)/2;
+            int newY = y + (closest.y - y)/2;
+            walls.remove(closest);
 
             //Recursively merge all balls
             WallPoint merged = new WallPoint(newX, newY, WALL_THRESHOLD + closest.getRadius());
-           // merge(getClosestWallPoint(merged.x, merged.y), merged.x, merged.y);
+            merge(getClosestWallPoint(merged.x, merged.y), merged.x, merged.y);
 
             walls.add(merged);
 
@@ -153,11 +136,14 @@ public class BallsBot implements CarController, DrawableBot{
     private void avoid(double dTime){
 
         if(walls.size() > 0){
-            WallPoint closestPointStick = getClosestWallPoint(car.getX(), car.getY());
+
+            if(currentWallPoint == null || currentWallPoint.distance(stickX(), stickY()) > currentWallPoint.getRadius()){
+                currentWallPoint = getClosestWallPoint(car.getX(), car.getY());
+            }
 
             //Turn to the side where there are LEAST crashes
-            if(closestPointStick.distance(stickX(), stickY()) < closestPointStick.getRadius()){
-                turn(optimalTurn(stickX(), stickY()), dTime);
+            if(currentWallPoint != null && currentWallPoint.distance(stickX(), stickY()) < currentWallPoint.getRadius()){
+                turn(optimalTurn(car.getX(), car.getY()), dTime);
             }else{
              //   follow(dTime);
 
@@ -169,54 +155,15 @@ public class BallsBot implements CarController, DrawableBot{
         }
     }
 
-    private void follow(double dTime){
-        if(checkPoints.size() > 0 && getClosestCheckPoint(stickX(), stickY()) != null){
-            Point closest = getClosestCheckPoint(stickX(), stickY());
-
-            double headingToCP = getHeadingToPoint(closest, stickX(), stickY());
-            double toTurn = getPI(headingToCP - getPI(car.getHeading()));
-            //double toTurn = headingToCP - car.getHeading();
-
-
-            final double turnThreshold = 0;
-
-
-            if(toTurn > turnThreshold){
-                turn(Dir.RIGHT, dTime);
-            }else if(toTurn < -turnThreshold){
-                turn(Dir.LEFT, dTime);
-            }else{
-                turn(Dir.STRAIGHT, dTime);
-            }
-        }
-    }
-
-    private void checkCheckpoint(){
-        if(cpIndex < checkPoints.size())
-        {
-            double headingToCP = Math.atan2(checkPoints.get(cpIndex).getY() - car.getY(), checkPoints.get(cpIndex).getX() - car.getX());
-
-            //If close enough and in front of check point
-            if(checkPoints.get(cpIndex).distance(car.getX(), car.getY()) < MIN_CHECKPOINT_DISTANCE &&
-                    (headingToCP > Math.PI/4) && headingToCP < Math.PI*3/4){
-                System.out.println("Checked with " + checkPoints.get(cpIndex).distance(car.getX(), car.getY()));
-                cpIndex++;
-            }
-        }
-    }
-
     private void turn(Dir dir, double dTime){
         switch(dir){
             case LEFT:
                 car.turnLeft(dTime);
-                currentDir = Dir.LEFT;
                 break;
             case RIGHT:
                 car.turnRight(dTime);
-                currentDir = Dir.RIGHT;
                 break;
             case STRAIGHT:
-                currentDir = Dir.STRAIGHT;
                 break;
         }
     }
@@ -229,23 +176,30 @@ public class BallsBot implements CarController, DrawableBot{
                     closest = p;
                 }
             }
-            return closest;
+            if(closest.x != x || closest.y != y){
+                return closest;
+            }
         }
         return null;
     }
 
-    private Point getClosestCheckPoint(double x, double y){
-        if(checkPoints.size() > 0){
-            Point closest = checkPoints.get(0);
-            for(Point p : checkPoints){
-                double headingToCP = getHeadingToPoint(p, x, y);
-                if(p.distance(x, y) < closest.distance(x,y) &&
-                        headingToCP < Math.PI/4 && headingToCP < -Math.PI/4){
-                    closest = p;
-                }
-            }
-            if(getHeadingToPoint(closest, x,y) < Math.PI/4 && getHeadingToPoint(closest, x,y) < -Math.PI/4 ) {
-                return closest;
+
+    private WallPoint getClosestWallPointBetween(double x, double y){
+        WallPoint P = getClosestWallPoint(x,y);
+
+
+        if(P != null){
+            WallPoint Q = getClosestWallPoint(P.x, P.y);
+            if(Q != null && P.distance(Q) < WALL_THRESHOLD){
+                //DANIELS MAGISKA ALGORITM
+
+                Vector2D PQ = new Vector2D(Q.x - P.x, Q.y - P.y);
+                Vector2D Pr = new Vector2D(P.x - x, P.y - y);
+                Vector2D v = Pr.sub(PQ.multiply((Pr.dot(PQ)/PQ.dot(PQ))));
+
+                return new WallPoint((int)v.getX(), (int)v.getY(), WALL_THRESHOLD);
+            }else{
+                return P;
             }
         }
         return null;
@@ -255,32 +209,44 @@ public class BallsBot implements CarController, DrawableBot{
         int ax = car.getX();
         int ay = car.getY();
 
-        int bx = (int)x;
+      /*  int bx = (int)x;
         int by = (int)y;
 
         Point c = wallPoint;
 
 
         double position = Math.signum(((bx - ax)*(c.y - ay) - (by - ay)*(c.x - ax)));
-
+*/
         /*if(position > 0){
             System.out.println("Point to the right, turning left.");
         }else{
             System.out.println("Point to the left, turning right.");
         }*/
-
+/*
         if(position > 0){
             return Dir.RIGHT;
         }else{
             return Dir.LEFT;
+        }*/
+
+        double heading = getPI(getHeadingToPoint(wallPoint, x,y) - getPI(car.getHeading()));
+        if(heading > Math.toRadians(160) || heading < Math.toRadians(-160)){
+            return Dir.STRAIGHT;
+        }else{
+            if(heading > 0){
+                return Dir.RIGHT;
+            }else{
+                return Dir.LEFT;
+            }
         }
+
     }
 
     private Dir optimalTurn(double x, double y){
         int nLeftPoints = 0;
         int nRightPoints = 0;
 
-        Dir side = getSide(x,y,getClosestWallPoint(x,y));
+        Dir side = getSide(x,y,currentWallPoint);
 
         for(Point p : walls){
             if(p.distance(x,y) < WALL_THRESHOLD){
@@ -293,7 +259,7 @@ public class BallsBot implements CarController, DrawableBot{
         }
 
         nPointsInRange = nLeftPoints + nRightPoints;
-        final int TURN_THRESHOLD = 2;
+        final int TURN_THRESHOLD = 200;
 
         if(nLeftPoints - nRightPoints > TURN_THRESHOLD){
             return Dir.RIGHT;
@@ -302,8 +268,10 @@ public class BallsBot implements CarController, DrawableBot{
         }else{
             if(side == Dir.LEFT){
                 return Dir.RIGHT;
-            }else{
+            }else if(side == Dir.RIGHT){
                 return Dir.LEFT;
+            }else{
+                return Dir.STRAIGHT;
             }
         }
     }
@@ -315,38 +283,6 @@ public class BallsBot implements CarController, DrawableBot{
 
     private double stickY(){
         return car.getY() - Math.cos(car.getHeading())*STICK_LENGTH;
-    }
-
-    private void addCheckPoint(double dTime){
-        moved = moved + (car.getAcceleration()*dTime);
-
-        //System.out.println("Moved: " + moved + " cpIndex: " + cpIndex + " Cps: " + checkPoints.size());
-
-        //Only add checkpoints with a certain density and only if you have gone through all the old ones
-        if(moved > CHECKPOINT_DENSITY && getClosestCheckPoint(stickX(), stickY()) == null){
-            //checkPoints.add(new Point(car.getX(), car.getY()));
-            //CHECK HERE IF THE CLOSEST CHECKPOINT IS CLOSE, OTHERWISE, CREATE A NEW ONE!!
-            moved = 0;
-        }
-    }
-
-    private void removeCheckpoints(){
-        final int CP_THRESHOLD = 2;
-        int cpSize = checkPoints.size();
-
-        //System.out.println("CPSize: " + cpSize);
-
-        if(checkPoints.size() >= CP_THRESHOLD){
-            for(int i = cpSize - 1; i > cpSize - CP_THRESHOLD; i--){
-                checkPoints.remove(i);
-            }
-        }else{
-            for(int i = cpSize - 1; i > 0; i--){
-                checkPoints.remove(i);
-            }
-        }
-
-        cpIndex = 1;
     }
 
     private double getPI(double angle) {

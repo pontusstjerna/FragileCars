@@ -1,8 +1,6 @@
 package model;
 
-import model.carcontrollers.BallsBot;
-import model.carcontrollers.CarController;
-import model.carcontrollers.DrawableBot;
+import model.carcontrollers.*;
 import model.cars.Car;
 import model.cars.DrawableCar;
 import model.cars.FragileCar;
@@ -183,7 +181,7 @@ public class World implements Racetrack{
 
         //Create car controllers for bots
         for(int i = 0; i < controllers.length; i ++){
-            BallsBot bot = new BallsBot(bots[i], "1", countdown);
+            BruteBot bot = new BruteBot(bots[i], "1");
             controllers[i] = bot;
             drawableBots[i] = bot;
         }
