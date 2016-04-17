@@ -26,8 +26,8 @@ public class BruteBot implements CarController, DrawableBot{
 
     private final int DEATH_THRESHOLD = 3;
     private final int WALL_THRESHOLD;
-    private int STICK_LENGTH;
-    private final int GAS_THRESHOLD = 70;
+    private int STICK_LENGTH = 150;
+    private final int GAS_THRESHOLD = 120;
 
 
     public BruteBot(FragileCar car, String trackName){
@@ -56,7 +56,7 @@ public class BruteBot implements CarController, DrawableBot{
             car.brake();
         }
 
-        STICK_LENGTH = (int)(car.getAcceleration());
+        //adjustStick();
 
         avoid(dTime);
 
@@ -253,6 +253,10 @@ public class BruteBot implements CarController, DrawableBot{
         }
     }
 
+    private void adjustStick(){
+        WallPoint closest = getClosestWallPoint(stickX(), stickY());
+        STICK_LENGTH = closest != null ? (int)closest.distance(car.getX(), car.getY()) - 1 : 100;
+    }
 
     private double stickX(){
         return car.getX() + Math.sin(car.getHeading())*STICK_LENGTH;
@@ -263,10 +267,20 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private double checkStickX(double radians){
+        //Need to make dynamic
+
+
         return car.getX() + Math.sin(radians)*STICK_LENGTH;
     }
 
     private double checkStickY(double radians){
+        //Need to make dynamic
+        double dynStickLength = WALL_THRESHOLD;
+        final double MAX_SEARCH_LENGTH = 500;
+        while(dynStickLength < MAX_SEARCH_LENGTH){
+
+        }
+
         return car.getY() - Math.cos(radians)*STICK_LENGTH;
     }
 
