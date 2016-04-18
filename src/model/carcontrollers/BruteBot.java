@@ -26,7 +26,7 @@ public class BruteBot implements CarController, DrawableBot{
 
     private final int DEATH_THRESHOLD = 3;
     private final int WALL_THRESHOLD;
-    private int STICK_LENGTH = 150;
+    private int STICK_LENGTH = 110;
     private final int GAS_THRESHOLD = 120;
 
 
@@ -39,7 +39,7 @@ public class BruteBot implements CarController, DrawableBot{
         lastY = car.getY();
 
         WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight())/3;
-        STICK_LENGTH = WALL_THRESHOLD*2;
+        //STICK_LENGTH = WALL_THRESHOLD*2;
 
         rand = new Random();
 
@@ -116,42 +116,7 @@ public class BruteBot implements CarController, DrawableBot{
 
 
     private void avoid(double dTime){
-        if(walls.size() > 0){
-            optimalTurn(stickX(), stickY());
-
-            WallPoint closest = getClosestWallPoint(stickX(), stickY());
-            if(closest.distance(stickX(),stickY()) < WALL_THRESHOLD){
-                double radsLeft = 0;
-                double radsRight = 0;
-
-                while(radsRight < Math.PI &&
-                        getClosestWallPoint(checkStickX(car.getHeading() + radsRight),
-                                checkStickY(car.getHeading() + radsRight)).distance(checkStickX(car.getHeading() + radsRight),
-                                checkStickY(car.getHeading() + radsRight)) < WALL_THRESHOLD*2){
-                    radsRight += Math.toRadians(1);
-                }
-                while(radsLeft < Math.PI &&
-                        getClosestWallPoint(checkStickX(car.getHeading() - radsLeft),
-                                checkStickY(car.getHeading() - radsLeft)).distance(checkStickX(car.getHeading() - radsLeft),
-                                checkStickY(car.getHeading() - radsLeft)) < WALL_THRESHOLD*2){
-                    radsLeft += Math.toRadians(1);
-                }
-
-               // System.out.println("RadsLeft: " + radsLeft + " RadsRight: " + radsRight);
-
-                final double MIN_DIFFERENCE = 5;
-
-                if(Math.abs(radsLeft - radsRight) > Math.toRadians(MIN_DIFFERENCE)){
-                    if(radsLeft > radsRight){
-                        turn(Dir.RIGHT, dTime);
-                    }else{
-                        turn(Dir.LEFT, dTime);
-                    }
-                }else{
-                    turn(optimalTurn(stickX(), stickY()), dTime);
-                }
-            }
-        }
+       turn(bestTurn(car.getX(), car.getY(), car.getHeading()), dTime);
     }
 
     private void turn(Dir dir, double dTime){
@@ -236,7 +201,7 @@ public class BruteBot implements CarController, DrawableBot{
         }
 
         nPointsInRange = nLeftPoints + nRightPoints;
-        final int TURN_THRESHOLD = 200;
+        final int TURN_THRESHOLD = 2;
 
         if(nLeftPoints - nRightPoints > TURN_THRESHOLD){
             return Dir.RIGHT;
@@ -266,6 +231,14 @@ public class BruteBot implements CarController, DrawableBot{
         return car.getY() - Math.cos(car.getHeading())*STICK_LENGTH;
     }
 
+    private double stickX(double radians, double stickLength){
+        return car.getX() + Math.sin(radians)*stickLength;
+    }
+
+    private double stickY(double radians, double stickLength){
+        return car.getY() - Math.cos(radians)*stickLength;
+    }
+
     private double checkStickX(double radians){
         //Need to make dynamic
 
@@ -282,6 +255,57 @@ public class BruteBot implements CarController, DrawableBot{
         }
 
         return car.getY() - Math.cos(radians)*STICK_LENGTH;
+    }
+
+    public Dir bestTurn(int x, int y, double heading){
+        if(walls.size() > 0)
+        {
+            double dynStickLength = STICK_LENGTH;
+            final double MAX_SEARCH_LENGTH = 500;
+            final double DIFF_THRESHOLD = 5;
+
+            double sxR = stickX();
+            double syR = stickY();
+
+            double sxL = stickX();
+            double syL = stickY();
+
+            double radsLeft = 0;
+            double radsRight = 0;
+            double distLeft = 0;
+            double distRight = 0;
+
+            try{
+                while(radsRight < Math.PI/2 && getClosestWallPoint(sxR,syR).distance(sxR,syR) < WALL_THRESHOLD + 10){
+                    radsRight += Math.toRadians(1);
+                    distRight = getClosestWallPoint(sxR,syR).distance(sxR,syR);
+                    sxR = stickX(heading + radsRight, dynStickLength);
+                    syR = stickY(heading + radsRight, dynStickLength);
+                }
+                while(radsLeft < Math.PI/2 && getClosestWallPoint(sxL,syL).distance(sxL,syL) < WALL_THRESHOLD + 10){
+                    radsLeft += Math.toRadians(1);
+                    distLeft = getClosestWallPoint(sxL,syL).distance(sxL,syL);
+                    sxL = stickX(heading - radsLeft, dynStickLength);
+                    syL = stickY(heading - radsLeft, dynStickLength);
+                }
+
+                optimalTurn(x,y);
+
+                if(radsRight == 0 || radsLeft == 0){
+                    return Dir.STRAIGHT;
+                }
+                else if(Math.abs(radsRight - radsLeft) < Math.toRadians(DIFF_THRESHOLD)){
+                    return optimalTurn(x,y);
+                }else if(radsLeft > radsRight){
+                    return Dir.RIGHT;
+                }else{
+                    return Dir.LEFT;
+                }
+            }catch(NullPointerException e){
+                System.out.println("NULL! " + e.getLocalizedMessage());
+            }
+        }
+        return Dir.STRAIGHT;
     }
 
     private double getPI(double angle) {
