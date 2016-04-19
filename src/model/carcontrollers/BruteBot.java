@@ -56,6 +56,8 @@ public class BruteBot implements CarController, DrawableBot{
             car.brake();
         }
 
+        STICK_LENGTH = rayTrace(car.getHeading());
+
         //adjustStick();
 
         avoid(dTime);
@@ -148,28 +150,6 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private Dir getSide(double x, double y, Point wallPoint){
-        int ax = car.getX();
-        int ay = car.getY();
-
-      /*  int bx = (int)x;
-        int by = (int)y;
-
-        Point c = wallPoint;
-
-
-        double position = Math.signum(((bx - ax)*(c.y - ay) - (by - ay)*(c.x - ax)));
-*/
-        /*if(position > 0){
-            System.out.println("Point to the right, turning left.");
-        }else{
-            System.out.println("Point to the left, turning right.");
-        }*/
-/*
-        if(position > 0){
-            return Dir.RIGHT;
-        }else{
-            return Dir.LEFT;
-        }*/
 
         double heading = getPI(getHeadingToPoint(wallPoint, x,y) - getPI(car.getHeading()));
         if(heading > Math.toRadians(160) || heading < Math.toRadians(-160)){
@@ -177,11 +157,28 @@ public class BruteBot implements CarController, DrawableBot{
         }else{
             if(heading > 0){
                 return Dir.RIGHT;
-            }else{
+            }else if(heading < 0){
                 return Dir.LEFT;
+            }else{
+                return Dir.STRAIGHT;
             }
         }
+    }
 
+    private Dir getSide(double x, double y, Point wallPoint, double radians){
+
+        double heading = getPI(getHeadingToPoint(wallPoint, x,y) - getPI(radians));
+        if(heading > Math.toRadians(160) || heading < Math.toRadians(-160)){
+            return Dir.STRAIGHT;
+        }else{
+            if(heading > 0){
+                return Dir.RIGHT;
+            }else if(heading < 0){
+                return Dir.LEFT;
+            }else{
+                return Dir.STRAIGHT;
+            }
+        }
     }
 
     private Dir optimalTurn(double x, double y){
@@ -257,12 +254,11 @@ public class BruteBot implements CarController, DrawableBot{
         return car.getY() - Math.cos(radians)*STICK_LENGTH;
     }
 
-    public Dir bestTurn(int x, int y, double heading){
+    private Dir bestTurn(int x, int y, double heading){
         if(walls.size() > 0)
         {
-            double dynStickLength = STICK_LENGTH;
-            final double MAX_SEARCH_LENGTH = 500;
-            final double DIFF_THRESHOLD = 5;
+
+            final double DIFF_THRESHOLD = 2;
 
             double sxR = stickX();
             double syR = stickY();
@@ -276,36 +272,102 @@ public class BruteBot implements CarController, DrawableBot{
             double distRight = 0;
 
             try{
-                while(radsRight < Math.PI/2 && getClosestWallPoint(sxR,syR).distance(sxR,syR) < WALL_THRESHOLD + 10){
+
+                //Try to turn right
+                while((radsRight < Math.PI/2 && getClosestWallPoint(sxR,syR).distance(sxR,syR) < WALL_THRESHOLD + 10)
+                        || mostWalls(sxR, syR, WALL_THRESHOLD*2, radsRight) == Dir.RIGHT){
                     radsRight += Math.toRadians(1);
                     distRight = getClosestWallPoint(sxR,syR).distance(sxR,syR);
+
+                    double dynStickLength = rayTrace(car.getHeading() + radsRight);
                     sxR = stickX(heading + radsRight, dynStickLength);
                     syR = stickY(heading + radsRight, dynStickLength);
+
+
                 }
-                while(radsLeft < Math.PI/2 && getClosestWallPoint(sxL,syL).distance(sxL,syL) < WALL_THRESHOLD + 10){
+
+                /*
+                IDEA!!
+                If the ray never reaches max length (500), then turn to the dir where the longest ray was reached!!!
+                 */
+
+                //Try to turn left
+                while((radsLeft < Math.PI/2 && getClosestWallPoint(sxL,syL).distance(sxL,syL) < WALL_THRESHOLD + 10)
+                        || mostWalls(sxL, syL, WALL_THRESHOLD*2, radsLeft) == Dir.LEFT){
                     radsLeft += Math.toRadians(1);
                     distLeft = getClosestWallPoint(sxL,syL).distance(sxL,syL);
+
+                    if(walls.size() > 3){
+                        stickX();
+                    }
+
+                    double dynStickLength = rayTrace(car.getHeading() - radsLeft);
                     sxL = stickX(heading - radsLeft, dynStickLength);
                     syL = stickY(heading - radsLeft, dynStickLength);
                 }
 
-                optimalTurn(x,y);
-
-                if(radsRight == 0 || radsLeft == 0){
+                //optimalTurn(x,y);
+                if(radsLeft == 0 && radsRight == 0){
                     return Dir.STRAIGHT;
-                }
-                else if(Math.abs(radsRight - radsLeft) < Math.toRadians(DIFF_THRESHOLD)){
-                    return optimalTurn(x,y);
+                }else if(radsLeft == radsRight){
+                    if(rand.nextBoolean()){
+                        return Dir.LEFT;
+                    }else{
+                        return Dir.RIGHT;
+                    }
+                }else if(Math.abs(radsRight - radsLeft) < Math.toRadians(DIFF_THRESHOLD)){
+                    return optimalTurn(lastX,lastY);
                 }else if(radsLeft > radsRight){
                     return Dir.RIGHT;
                 }else{
                     return Dir.LEFT;
                 }
             }catch(NullPointerException e){
-                System.out.println("NULL! " + e.getLocalizedMessage());
+                System.out.println("NULL! " + e.toString());
             }
         }
         return Dir.STRAIGHT;
+    }
+
+    private Dir mostWalls(double x, double y, double distance, double heading){
+        int right = 0;
+        int left = 0;
+
+        for(WallPoint p : walls){
+            if(p.distance(x,y) < distance){
+                //Check side
+                if(getSide(x,y,p, heading) == Dir.RIGHT){
+                    right++;
+                }else if(getSide(x,y,p, heading) == Dir.LEFT){
+                    left++;
+                }
+            }
+        }
+
+        if(right > 10){
+            stickX();
+        }
+
+        if(right > left){
+            return Dir.RIGHT;
+        }else if(left > right){
+            return Dir.LEFT;
+        }else{
+            return Dir.STRAIGHT;
+        }
+    }
+
+    private int rayTrace(double radians){
+        final double MAX_SEARCH_LENGTH = 200;
+
+        int stickLength = 100;
+
+        while(walls.size() > 0 && stickLength < MAX_SEARCH_LENGTH &&
+                getClosestWallPoint(stickX(radians,stickLength),stickY(radians,stickLength)).
+                        distance(stickX(radians,stickLength),stickY(radians,stickLength)) > WALL_THRESHOLD){
+            stickLength++;
+        }
+        return stickLength;
     }
 
     private double getPI(double angle) {
