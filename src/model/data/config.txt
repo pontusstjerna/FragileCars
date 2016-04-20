@@ -1,4 +1,4 @@
-#nPlayers="3"
+#nPlayers="2"
 #laps="2"
 #countdown="1000"
 #showWallPoints="true"

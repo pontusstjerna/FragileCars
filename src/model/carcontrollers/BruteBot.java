@@ -28,6 +28,7 @@ public class BruteBot implements CarController, DrawableBot{
     private final int WALL_THRESHOLD;
     private int STICK_LENGTH = 110;
     private final int GAS_THRESHOLD = 120;
+    private final double MAX_SEARCH_LENGTH = 200;
 
 
     public BruteBot(FragileCar car, String trackName){
@@ -39,7 +40,7 @@ public class BruteBot implements CarController, DrawableBot{
         lastY = car.getY();
 
         WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight())/3;
-        //STICK_LENGTH = WALL_THRESHOLD*2;
+        STICK_LENGTH = WALL_THRESHOLD*2;
 
         rand = new Random();
 
@@ -50,7 +51,7 @@ public class BruteBot implements CarController, DrawableBot{
     public void update(double dTime){
         checkReset();
 
-        if((nPointsInRange < DEATH_THRESHOLD || car.getAcceleration() < GAS_THRESHOLD)){
+        if((STICK_LENGTH >= MAX_SEARCH_LENGTH || car.getAcceleration() < GAS_THRESHOLD)){
             car.accelerate();
         }else{
             car.brake();
@@ -182,36 +183,15 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private Dir optimalTurn(double x, double y){
-        int nLeftPoints = 0;
-        int nRightPoints = 0;
 
-        Dir side = getSide(x,y,getClosestWallPoint(x,y));
+        Dir side = mostWalls(x,y, WALL_THRESHOLD*4, car.getHeading());
 
-        for(Point p : walls){
-            if(p.distance(x,y) < WALL_THRESHOLD*2){
-                if(getSide(x,y,p) == Dir.LEFT){
-                    nLeftPoints++;
-                }else{
-                    nRightPoints++;
-                }
-            }
-        }
-
-        nPointsInRange = nLeftPoints + nRightPoints;
-        final int TURN_THRESHOLD = 2;
-
-        if(nLeftPoints - nRightPoints > TURN_THRESHOLD){
+        if(side == Dir.LEFT){
             return Dir.RIGHT;
-        }else if(nRightPoints - nLeftPoints > TURN_THRESHOLD){
+        }else if(side == Dir.RIGHT){
             return Dir.LEFT;
         }else{
-            if(side == Dir.LEFT){
-                return Dir.RIGHT;
-            }else if(side == Dir.RIGHT){
-                return Dir.LEFT;
-            }else{
-                return Dir.STRAIGHT;
-            }
+            return Dir.STRAIGHT;
         }
     }
 
@@ -271,10 +251,13 @@ public class BruteBot implements CarController, DrawableBot{
             double distLeft = 0;
             double distRight = 0;
 
+            double stickRight = 0;
+            double stickLeft = 0;
+
             try{
 
                 //Try to turn right
-                while((radsRight < Math.PI/2 && getClosestWallPoint(sxR,syR).distance(sxR,syR) < WALL_THRESHOLD + 10)
+                while(radsRight < Math.PI/2 && (getClosestWallPoint(sxR,syR).distance(sxR,syR) < WALL_THRESHOLD + 1)
                         || mostWalls(sxR, syR, WALL_THRESHOLD*2, radsRight) == Dir.RIGHT){
                     radsRight += Math.toRadians(1);
                     distRight = getClosestWallPoint(sxR,syR).distance(sxR,syR);
@@ -282,6 +265,10 @@ public class BruteBot implements CarController, DrawableBot{
                     double dynStickLength = rayTrace(car.getHeading() + radsRight);
                     sxR = stickX(heading + radsRight, dynStickLength);
                     syR = stickY(heading + radsRight, dynStickLength);
+
+                    if(dynStickLength >= stickRight){
+                        stickRight = dynStickLength;
+                    }
 
 
                 }
@@ -292,7 +279,7 @@ public class BruteBot implements CarController, DrawableBot{
                  */
 
                 //Try to turn left
-                while((radsLeft < Math.PI/2 && getClosestWallPoint(sxL,syL).distance(sxL,syL) < WALL_THRESHOLD + 10)
+                while(radsLeft < Math.PI/2 && (getClosestWallPoint(sxL,syL).distance(sxL,syL) < WALL_THRESHOLD + 1)
                         || mostWalls(sxL, syL, WALL_THRESHOLD*2, radsLeft) == Dir.LEFT){
                     radsLeft += Math.toRadians(1);
                     distLeft = getClosestWallPoint(sxL,syL).distance(sxL,syL);
@@ -304,23 +291,25 @@ public class BruteBot implements CarController, DrawableBot{
                     double dynStickLength = rayTrace(car.getHeading() - radsLeft);
                     sxL = stickX(heading - radsLeft, dynStickLength);
                     syL = stickY(heading - radsLeft, dynStickLength);
+
+                    if(dynStickLength >= stickLeft){
+                        stickLeft = dynStickLength;
+                    }
                 }
 
-                //optimalTurn(x,y);
-                if(radsLeft == 0 && radsRight == 0){
-                    return Dir.STRAIGHT;
-                }else if(radsLeft == radsRight){
-                    if(rand.nextBoolean()){
-                        return Dir.LEFT;
-                    }else{
+                if((stickRight >= MAX_SEARCH_LENGTH && stickLeft >= MAX_SEARCH_LENGTH) ||
+                (stickRight == 0 && stickLeft == 0)){
+                    if(radsLeft == 0 && radsRight == 0){
+                        return Dir.STRAIGHT;
+                    }else if(Math.abs(radsRight - radsLeft) < Math.toRadians(DIFF_THRESHOLD)){
+                        return optimalTurn(lastX,lastY);
+                    }else if(radsLeft > radsRight){
                         return Dir.RIGHT;
+                    }else{
+                        return Dir.LEFT;
                     }
-                }else if(Math.abs(radsRight - radsLeft) < Math.toRadians(DIFF_THRESHOLD)){
-                    return optimalTurn(lastX,lastY);
-                }else if(radsLeft > radsRight){
-                    return Dir.RIGHT;
                 }else{
-                    return Dir.LEFT;
+                    return Dir.STRAIGHT;
                 }
             }catch(NullPointerException e){
                 System.out.println("NULL! " + e.toString());
@@ -344,9 +333,7 @@ public class BruteBot implements CarController, DrawableBot{
             }
         }
 
-        if(right > 10){
-            stickX();
-        }
+      //  System.out.println("nLRight: " + right + " nLeft: " + left);
 
         if(right > left){
             return Dir.RIGHT;
@@ -358,8 +345,6 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private int rayTrace(double radians){
-        final double MAX_SEARCH_LENGTH = 200;
-
         int stickLength = 100;
 
         while(walls.size() > 0 && stickLength < MAX_SEARCH_LENGTH &&
@@ -368,6 +353,14 @@ public class BruteBot implements CarController, DrawableBot{
             stickLength++;
         }
         return stickLength;
+    }
+
+    private Dir randomDir(){
+        if(rand.nextBoolean()){
+            return Dir.LEFT;
+        }else {
+            return Dir.RIGHT;
+        }
     }
 
     private double getPI(double angle) {
