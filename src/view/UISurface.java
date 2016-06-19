@@ -36,7 +36,7 @@ public class UISurface extends JPanel {
                                     track.getDrawables()[i].getPlace() + " with time " +
                                     track.getDrawables()[i].getFinished()/1000 + ":" +
                                     (track.getDrawables()[i].getFinished() % 1000) : ""),
-                    getWidth()*2/5, getHeight()/4 + i*20);
+                    getWidth()*2/5, getHeight()/5 + i*15);
         }
     }
 }

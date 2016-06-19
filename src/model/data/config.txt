@@ -1,4 +1,5 @@
-#nPlayers="2"
+#nCars="2"
+#nPlayers="1"
 #laps="2"
 #countdown="1000"
 #showWallPoints="true"

@@ -18,7 +18,6 @@ public class MainWindow extends JFrame implements ComponentListener {
     private final String title;
     private MainSurface surface;
     private UISurface ui;
-    private MenuSurface menu;
 
     public MainWindow(String title){
         this.title = title;
@@ -51,7 +50,7 @@ public class MainWindow extends JFrame implements ComponentListener {
         surface = new MainSurface(track);
         ui = new UISurface(track);
 
-        surface.setPreferredSize(new Dimension(WINDOW_WIDTH*3/5, WINDOW_HEIGHT*3/5));
+        surface.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT*7/10));
 
         container.add(surface);
         container.add(ui);

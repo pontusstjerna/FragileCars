@@ -31,6 +31,7 @@ public class World implements Racetrack{
 
     private DirectionalRect goal;
 
+    private int nCars;
     private int nPlayers;
     private int laps;
 
@@ -105,7 +106,7 @@ public class World implements Racetrack{
     private void createWorld(){
         initImages();
         findGoalLine();
-        createCars(nPlayers);
+        createCars();
         startTime = System.currentTimeMillis();
         System.out.println("World created with " + nPlayers + " players and " + bots.length + " bots.");
     }
@@ -113,6 +114,7 @@ public class World implements Racetrack{
     private void loadData(){
         CfgParser cfg = new CfgParser("src\\model\\data\\config.txt");
 
+        nCars = cfg.readInt("nCars");
         nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
         countdown = cfg.readLong("countdown");
@@ -153,9 +155,9 @@ public class World implements Racetrack{
         images[1] = ImageHandler.loadImage("foreground");
     }
 
-    private void createCars(int nPlayers){
-        players = new FragileCar[nPlayers];
-        bots = new FragileCar[4 - nPlayers];
+    private void createCars(){
+        players = new FragileCar[Math.min(nCars, nPlayers)];
+        bots = new FragileCar[Math.max(nCars - nPlayers, 0)];
         cars = new FragileCar[players.length + bots.length];
         drawables = new DrawableCar[cars.length];
         controllers = new CarController[bots.length];
@@ -164,7 +166,7 @@ public class World implements Racetrack{
         //Create player cars and add to drawables and cars
         for(int i = 0; i < players.length; i++){
             Car car = new Car(Car.Cars.values()[i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
-                    100*i + 800, Math.PI*3/2);
+                    100*i + 850, Math.PI*3/2);
             players[i] = car;
             cars[i] = players[i];
             drawables[i] = car;
@@ -173,7 +175,7 @@ public class World implements Racetrack{
         //Create bots and add to drawables and cars
         for(int i = 0; i < bots.length; i++){
             Car car = new Car(Car.Cars.values()[nPlayers + i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
-                    100*(i+nPlayers) + 800, Math.PI*3/2);
+                    100*(i+nPlayers) + 850, Math.PI*3/2);
             bots[i] = car;
             cars[i+players.length] = bots[i];
             drawables[i + players.length] = car;
@@ -181,7 +183,7 @@ public class World implements Racetrack{
 
         //Create car controllers for bots
         for(int i = 0; i < controllers.length; i ++){
-            BruteBot bot = new BruteBot(bots[i], "1");
+            CheckBot bot = new CheckBot(bots[i], "1");
             controllers[i] = bot;
             drawableBots[i] = bot;
         }
