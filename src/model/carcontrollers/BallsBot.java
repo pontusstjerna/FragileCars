@@ -1,6 +1,6 @@
 package model.carcontrollers;
 
-import model.carcontrollers.util.WallPoint;
+import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
 import util.Vector2D;
 
@@ -13,7 +13,7 @@ import java.util.List;
  */
 public class BallsBot implements CarController, DrawableBot{
     private FragileCar car;
-    private List<WallPoint> walls;
+    private List<BotPoint> walls;
 
     public enum Dir {LEFT, RIGHT, STRAIGHT}
 
@@ -21,7 +21,7 @@ public class BallsBot implements CarController, DrawableBot{
     private int lastX, lastY;
     private int nPointsInRange = 0;
     private double moved = 0;
-    private WallPoint currentWallPoint;
+    private BotPoint currentBotPoint;
 
 
     private final int DEATH_THRESHOLD = 10;
@@ -58,7 +58,7 @@ public class BallsBot implements CarController, DrawableBot{
     }
 
     @Override
-    public List<WallPoint> getWallPoints() {
+    public List<BotPoint> getBotPoints() {
         return walls;
     }
 
@@ -105,16 +105,16 @@ public class BallsBot implements CarController, DrawableBot{
 
     private void addWallPoint(){
         //If they overlap, basically
-        if(false && currentWallPoint != null && merge(currentWallPoint, lastX, lastY)){
+        if(false && currentBotPoint != null && merge(currentBotPoint, lastX, lastY)){
 
         }else{
-            walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
+            walls.add(new BotPoint(lastX, lastY, WALL_THRESHOLD));
         }
 
-        //walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
+        //walls.add(new BotPoint(lastX, lastY, WALL_THRESHOLD));
     }
 
-    private boolean merge(WallPoint closest, int x, int y){
+    private boolean merge(BotPoint closest, int x, int y){
 
         //If they overlap, basically
         if(closest != null && closest.distance(x, y) < closest.getRadius() + WALL_THRESHOLD) {
@@ -123,7 +123,7 @@ public class BallsBot implements CarController, DrawableBot{
             walls.remove(closest);
 
             //Recursively merge all balls
-            WallPoint merged = new WallPoint(newX, newY, WALL_THRESHOLD + closest.getRadius());
+            BotPoint merged = new BotPoint(newX, newY, WALL_THRESHOLD + closest.getRadius());
             merge(getClosestWallPoint(merged.x, merged.y), merged.x, merged.y);
 
             walls.add(merged);
@@ -137,12 +137,12 @@ public class BallsBot implements CarController, DrawableBot{
 
         if(walls.size() > 0){
 
-            if(currentWallPoint == null || currentWallPoint.distance(stickX(), stickY()) > currentWallPoint.getRadius()){
-                currentWallPoint = getClosestWallPoint(car.getX(), car.getY());
+            if(currentBotPoint == null || currentBotPoint.distance(stickX(), stickY()) > currentBotPoint.getRadius()){
+                currentBotPoint = getClosestWallPoint(car.getX(), car.getY());
             }
 
             //Turn to the side where there are LEAST crashes
-            if(currentWallPoint != null && currentWallPoint.distance(stickX(), stickY()) < currentWallPoint.getRadius()){
+            if(currentBotPoint != null && currentBotPoint.distance(stickX(), stickY()) < currentBotPoint.getRadius()){
                 turn(optimalTurn(car.getX(), car.getY()), dTime);
             }else{
              //   follow(dTime);
@@ -168,10 +168,10 @@ public class BallsBot implements CarController, DrawableBot{
         }
     }
 
-    private WallPoint getClosestWallPoint(double x, double y){
+    private BotPoint getClosestWallPoint(double x, double y){
         if(walls.size() > 0){
-            WallPoint closest = walls.get(0);
-            for(WallPoint p : walls){
+            BotPoint closest = walls.get(0);
+            for(BotPoint p : walls){
                 if(p.distance(x, y) - p.getRadius() < closest.distance(x, y) - closest.getRadius()){
                     closest = p;
                 }
@@ -184,12 +184,12 @@ public class BallsBot implements CarController, DrawableBot{
     }
 
 
-    private WallPoint getClosestWallPointBetween(double x, double y){
-        WallPoint P = getClosestWallPoint(x,y);
+    private BotPoint getClosestWallPointBetween(double x, double y){
+        BotPoint P = getClosestWallPoint(x,y);
 
 
         if(P != null){
-            WallPoint Q = getClosestWallPoint(P.x, P.y);
+            BotPoint Q = getClosestWallPoint(P.x, P.y);
             if(Q != null && P.distance(Q) < WALL_THRESHOLD){
                 //DANIELS MAGISKA ALGORITM
 
@@ -197,7 +197,7 @@ public class BallsBot implements CarController, DrawableBot{
                 Vector2D Pr = new Vector2D(P.x - x, P.y - y);
                 Vector2D v = Pr.sub(PQ.multiply((Pr.dot(PQ)/PQ.dot(PQ))));
 
-                return new WallPoint((int)v.getX(), (int)v.getY(), WALL_THRESHOLD);
+                return new BotPoint((int)v.getX(), (int)v.getY(), WALL_THRESHOLD);
             }else{
                 return P;
             }
@@ -246,7 +246,7 @@ public class BallsBot implements CarController, DrawableBot{
         int nLeftPoints = 0;
         int nRightPoints = 0;
 
-        Dir side = getSide(x,y,currentWallPoint);
+        Dir side = getSide(x,y, currentBotPoint);
 
         for(Point p : walls){
             if(p.distance(x,y) < WALL_THRESHOLD){

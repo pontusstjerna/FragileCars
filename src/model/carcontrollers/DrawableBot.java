@@ -1,6 +1,6 @@
 package model.carcontrollers;
 
-import model.carcontrollers.util.WallPoint;
+import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
  * Created by Pontus on 2016-04-13.
  */
 public interface DrawableBot {
-    List<WallPoint> getWallPoints();
+    List<BotPoint> getBotPoints();
     int getWallThreshold();
     int getStickLength();
     int getStickX();

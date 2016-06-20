@@ -1,8 +1,7 @@
 package model.carcontrollers;
 
-import model.carcontrollers.util.WallPoint;
+import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
-import util.Vector2D;
 
 import java.awt.*;
 import java.util.*;
@@ -13,7 +12,7 @@ import java.util.List;
  */
 public class BruteBot implements CarController, DrawableBot{
     private FragileCar car;
-    private List<WallPoint> walls;
+    private List<BotPoint> walls;
 
     public enum Dir {LEFT, RIGHT, STRAIGHT}
 
@@ -68,7 +67,7 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     @Override
-    public List<WallPoint> getWallPoints() {
+    public List<BotPoint> getBotPoints() {
         return walls;
     }
 
@@ -114,7 +113,7 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private void addWallPoint(){
-        walls.add(new WallPoint(lastX, lastY, WALL_THRESHOLD));
+        walls.add(new BotPoint(lastX, lastY, WALL_THRESHOLD));
     }
 
 
@@ -135,10 +134,10 @@ public class BruteBot implements CarController, DrawableBot{
         }
     }
 
-    private WallPoint getClosestWallPoint(double x, double y){
+    private BotPoint getClosestWallPoint(double x, double y){
         if(walls.size() > 0){
-            WallPoint closest = walls.get(0);
-            for(WallPoint p : walls){
+            BotPoint closest = walls.get(0);
+            for(BotPoint p : walls){
                 if(p.distance(x, y) - p.getRadius() < closest.distance(x, y) - closest.getRadius()){
                     closest = p;
                 }
@@ -196,7 +195,7 @@ public class BruteBot implements CarController, DrawableBot{
     }
 
     private void adjustStick(){
-        WallPoint closest = getClosestWallPoint(stickX(), stickY());
+        BotPoint closest = getClosestWallPoint(stickX(), stickY());
         STICK_LENGTH = closest != null ? (int)closest.distance(car.getX(), car.getY()) - 1 : 100;
     }
 
@@ -322,7 +321,7 @@ public class BruteBot implements CarController, DrawableBot{
         int right = 0;
         int left = 0;
 
-        for(WallPoint p : walls){
+        for(BotPoint p : walls){
             if(p.distance(x,y) < distance){
                 //Check side
                 if(getSide(x,y,p, heading) == Dir.RIGHT){

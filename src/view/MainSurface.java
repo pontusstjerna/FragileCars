@@ -3,7 +3,7 @@ package view;
 import model.Racetrack;
 import model.World;
 import model.carcontrollers.DrawableBot;
-import model.carcontrollers.util.WallPoint;
+import model.carcontrollers.util.BotPoint;
 import util.CfgParser;
 
 import javax.swing.*;
@@ -114,7 +114,7 @@ public class MainSurface extends JPanel {
                 g.setColor(Color.YELLOW);
             }
 
-            for(WallPoint p : b.getWallPoints()){
+            for(BotPoint p : b.getBotPoints()){
                 int s = (int)(scale()*10);
                 g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
                 int dist = (int)(scale()*p.getRadius()*2);
