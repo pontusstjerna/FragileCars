@@ -22,7 +22,7 @@ public class Car implements DrawableCar, FragileCar {
     private long finished = 0;
     private int place = 0;
 
-    private final int speedLimit = 500;
+    public static final int speedLimit = 500;
     private final int reverseLimit = -50;
 
     private Cars kind;
