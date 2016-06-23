@@ -7,7 +7,6 @@ import model.cars.FragileCar;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
 
 /**
  * Created by pontu on 2016-04-08.
@@ -81,10 +80,20 @@ public class CheckBot implements CarController, DrawableBot{
 
     //Follow the previous best path
     private void drive(double dTime){
-        if(cpIndex >= checkPoints.size()){
+        if(cpIndex >= checkPoints.size()){ //If passed all checkpoints
             car.accelerate();
-            search(dTime);
-        }else{
+            BotPoint closestCrashInFront = closestInFront(car, crashes);
+            if(closestCrashInFront == null){
+                search(dTime);
+            }else{
+                turn(turnFromPoint(car, closestCrashInFront), dTime);
+            }
+
+            //Add checkpoints only if enough speed
+            if (car.getAcceleration() > Car.speedLimit / 2) {
+                addCheckPoints();
+            }
+        }else{ //Follow the points
             BotPoint currentCP = checkPoints.get(cpIndex);
             if(isInFront(car, currentCP)){
                 car.accelerate();
@@ -102,6 +111,16 @@ public class CheckBot implements CarController, DrawableBot{
             return Dir.RIGHT;
         }else if(getBearing(car, p) < 0){
             return Dir.LEFT;
+        }
+
+        return Dir.STRAIGHT;
+    }
+
+    private Dir turnFromPoint(FragileCar car, BotPoint p){
+        if(getBearing(car, p) >= 0){
+            return Dir.LEFT;
+        }else if(getBearing(car, p) < 0){
+            return Dir.RIGHT;
         }
 
         return Dir.STRAIGHT;
@@ -127,20 +146,16 @@ public class CheckBot implements CarController, DrawableBot{
             turn(dir, dTime);
             turnTimer++;
         }
-
-        if (car.getAcceleration() > Car.speedLimit / 2) {
-            addCheckPoints();
-        }
     }
-
 
     //If searching, regularly add new checkpoints as long as not dying
     private void addCheckPoints(){
-        final int spawn_freq = 80;
+        final int spawn_freq = 150;
 
-        if((int)distance % spawn_freq == 0){
+        if(distance > spawn_freq){
             checkPoints.add(new BotPoint(getStickX(), getStickY()));
             cpIndex++;
+            distance = 0;
         }
     }
 
@@ -164,6 +179,7 @@ public class CheckBot implements CarController, DrawableBot{
         }
     }
 
+    private int deathCounter = 0;
     private void reset(){
         addCrash();
 
@@ -180,20 +196,31 @@ public class CheckBot implements CarController, DrawableBot{
                     remove = true;
                 }
             }
+
+            //If in any way got stuck
+            final int DEATH_LIMIT = 2;
             if(remove){
                 removeCheckPoints(1);
+            }else if(deathCounter >= DEATH_LIMIT){
+                removeCheckPoints(1);
+                deathCounter = 0;
+            }else{
+                //Died without removing anything yet
+                deathCounter++;
             }
         }
-        System.out.println("Distance traveled: " + distance + " nCheckPoints: " + checkPoints.size());
+        System.out.println("nCheckPoints: " + checkPoints.size());
         distance = 0;
         cpIndex = 0;
     }
 
-    private final int crashRadius = 50;
+    private final int crashRadius = 40;
     private void addCrash(){
+        final int maxCrashes = 3;
+
         //Add new crash to queue
         crashes.add(new BotPoint(lastX, lastY, crashRadius));
-        if(crashes.size() > 3){
+        if(crashes.size() > maxCrashes){
             crashes.remove();
         }
     }
@@ -205,8 +232,22 @@ public class CheckBot implements CarController, DrawableBot{
         }
     }
 
-    private BotPoint closestInFront(FragileCar car){
-        return null;
+    private BotPoint closestInFront(FragileCar car, Iterable<BotPoint> points){
+
+        if(points.iterator().hasNext()){
+            BotPoint closestInFront = points.iterator().next();
+
+            for(BotPoint p : points){
+                if(isInFront(car, p) &&
+                        p.distance(car.getX(), car.getY()) < closestInFront.distance(car.getX(), car.getY())){
+                    closestInFront = p;
+                }
+            }
+
+            return closestInFront;
+        }else{
+            return null;
+        }
     }
 
     private void turn(Dir dir, double dTime){
