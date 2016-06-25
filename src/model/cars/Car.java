@@ -13,6 +13,7 @@ public class Car implements DrawableCar, FragileCar {
     private double x,y;
     private final int originX, originY;
     private double heading;
+    private double physHeading;
     private final double originHeading;
     private boolean accelerating = false;
 
@@ -44,8 +45,11 @@ public class Car implements DrawableCar, FragileCar {
     @Override
     public void update(double deltaTime){
         if(!locked) {
-            x = (x + acceleration * Math.sin(heading) * deltaTime);
-            y = (y - acceleration * Math.cos(heading) * deltaTime);
+            final double friction = 4;
+            physHeading = drift(friction, acceleration/speedLimit, heading, physHeading);
+
+            x = (x + acceleration * Math.sin(physHeading) * deltaTime);
+            y = (y - acceleration * Math.cos(physHeading) * deltaTime);
 
             if (!accelerating) {
                 engineBrake();
@@ -60,6 +64,7 @@ public class Car implements DrawableCar, FragileCar {
         x = originX;
         y = originY;
         heading = originHeading;
+        physHeading = originHeading;
 
         acceleration = 0;
     }
@@ -158,14 +163,14 @@ public class Car implements DrawableCar, FragileCar {
 
     @Override
     public void turnRight(double deltaTime) {
-        if((acceleration > 1 || acceleration < -1) && !locked){
+        if((acceleration > 10 || acceleration < -10) && !locked){
             heading = (heading + deltaTime*4) % (Math.PI*2);
         }
     }
 
     @Override
     public void turnLeft(double deltaTime) {
-        if((acceleration > 1 || acceleration < -1) && !locked){
+        if((acceleration > 10 || acceleration < -10) && !locked){
             heading = (heading - deltaTime*4) % (Math.PI*2);
         }
     }
@@ -183,5 +188,30 @@ public class Car implements DrawableCar, FragileCar {
     @Override
     public String getName(){
         return kind.name() + " car";
+    }
+
+    private double drift(double driftFactor, double speedFrac, double carHeading, double physHeading){
+        //Rescale the driftFactor
+        driftFactor = 1 - driftFactor/100;
+
+        //skillnad > 180 = snurra upp ett varv
+        //skillnad < -180 = snurra ner ett varv
+
+        double deltaAngle = carHeading - physHeading;
+        if(deltaAngle < -Math.PI){
+            physHeading -= Math.PI*2;
+        }else if(deltaAngle > Math.PI){
+            physHeading += Math.PI*2;
+        }
+        deltaAngle = carHeading - physHeading;
+
+        double newAngle = (carHeading - deltaAngle*speedFrac*driftFactor) % (Math.PI*2);
+        if(newAngle > Math.PI){
+            newAngle = (carHeading - (deltaAngle*speedFrac*driftFactor + Math.PI*2)) % (Math.PI*2);
+        }else if(newAngle < -Math.PI){
+            newAngle = (carHeading - (deltaAngle*speedFrac*driftFactor - Math.PI*2)) % (Math.PI*2);
+        }
+
+        return newAngle;
     }
 }
