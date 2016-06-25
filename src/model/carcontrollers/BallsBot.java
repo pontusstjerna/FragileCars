@@ -58,6 +58,11 @@ public class BallsBot implements CarController, DrawableBot{
     }
 
     @Override
+    public void paint(Graphics2D g, double scale, int scaleX) {
+
+    }
+
+    @Override
     public List<BotPoint> getBotPoints() {
         return walls;
     }

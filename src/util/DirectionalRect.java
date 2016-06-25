@@ -118,7 +118,7 @@ public class DirectionalRect {
         if(isInside(x,y)){
             if(dir == Direction.UP || dir == Direction.DOWN )
             {
-                if(Math.abs(y - getSide(Side.FRONT, true).y) > Math.abs(y - getSide(Side.BACK, true).y)){
+                if(Math.abs(y - getSide(Side.FRONT, true).y) < Math.abs(y - getSide(Side.BACK, true).y)){
                     return Side.FRONT;
                 }else{
                     return Side.BACK;
@@ -132,6 +132,10 @@ public class DirectionalRect {
             }
         }
         return null;
+    }
+
+    public Direction getDir(){
+        return dir;
     }
 
     private void setCorners(Direction direction)

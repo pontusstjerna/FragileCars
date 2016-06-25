@@ -2,6 +2,7 @@ package view;
 
 import model.Racetrack;
 import model.World;
+import model.carcontrollers.CarController;
 import model.carcontrollers.DrawableBot;
 import model.carcontrollers.util.BotPoint;
 import util.CfgParser;
@@ -88,69 +89,11 @@ public class MainSurface extends JPanel {
     }
 
     private void paintBots(Graphics2D g){
-        if(cfg.readBoolean("showWallPoints")){
-            paintWallPoints(g);
-        }
 
-        if(cfg.readBoolean("showBlindSticks")){
-            paintBlindSticks(g);
-        }
-
-        if(cfg.readBoolean("showCheckPoints")){
-            paintCheckPoints(g);
-        }
-    }
-
-    private void paintWallPoints(Graphics2D g){
-        for(DrawableBot b : track.getBots()){
-            if(b.getCar().getName().equals("BLUE car")){
-                g.setColor(Color.BLUE);
-            }else if(b.getCar().getName().equals("GREEN car"))
-            {
-                g.setColor(Color.GREEN);
-            }else if(b.getCar().getName().equals("RED car")){
-                g.setColor(Color.RED);
-            }else if(b.getCar().getName().equals("YELLOW car")){
-                g.setColor(Color.YELLOW);
+        if(cfg.readBoolean("showBotPaint")){
+            for(CarController bot : track.getBots()){
+                bot.paint(g, scale(), scaleX());
             }
-
-            for(BotPoint p : b.getBotPoints()){
-                int s = (int)(scale()*10);
-                g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
-                int dist = (int)(scale()*p.getRadius()*2);
-                g.drawRoundRect((int)(p.x*scale())-(dist/2) + scaleX(), (int)(p.y*scale())-(dist/2),
-                        dist, dist, dist, dist);
-            }
-        }
-    }
-
-    private void paintCheckPoints(Graphics2D g){
-        for(DrawableBot b : track.getBots()){
-            if(b.getCar().getName().equals("BLUE car")){
-                g.setColor(Color.BLUE);
-            }else if(b.getCar().getName().equals("GREEN car"))
-            {
-                g.setColor(Color.GREEN);
-            }else if(b.getCar().getName().equals("RED car")){
-                g.setColor(Color.RED);
-            }else if(b.getCar().getName().equals("YELLOW car")){
-                g.setColor(Color.YELLOW);
-            }
-
-           /* for(Point p : b.getCheckPoints()){
-                int s = (int)(scale()*10);
-                g.fillRoundRect((int)(p.x*scale())-(s/2) + scaleX(), (int)(p.y*scale())-(s/2), s,s,s,s);
-            }*/
-        }
-    }
-
-    private void paintBlindSticks(Graphics2D g){
-        for(DrawableBot b : track.getBots()){
-            int stickX = (int)(b.getStickX()*scale()) + scaleX();
-            int stickY = (int)(b.getStickY()*scale());
-
-            g.drawLine((int)(b.getCar().getX()*scale()) + scaleX(), (int)(b.getCar().getY()*scale()),
-                    stickX, stickY);
         }
     }
 

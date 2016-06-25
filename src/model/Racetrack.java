@@ -1,5 +1,6 @@
 package model;
 
+import model.carcontrollers.CarController;
 import model.carcontrollers.DrawableBot;
 import model.cars.DrawableCar;
 
@@ -12,7 +13,7 @@ public interface Racetrack {
     long getTime();
     double getFPS();
     DrawableCar[] getDrawables();
-    DrawableBot[] getBots();
+    CarController[] getBots();
     boolean getFinished();
     BufferedImage getBackground();
     BufferedImage getForeground();

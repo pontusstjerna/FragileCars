@@ -18,6 +18,7 @@ public class World implements Racetrack{
     public static final int WORLD_WIDTH = 1600;
     public static final int WORLD_HEIGHT = 1200;
 
+    private String track;
     private BufferedImage[] images;
 
     private FragileCar[] players;
@@ -76,8 +77,8 @@ public class World implements Racetrack{
     }
 
     @Override
-    public DrawableBot[] getBots(){
-        return drawableBots;
+    public CarController[] getBots(){
+        return controllers;
     }
 
     @Override
@@ -123,6 +124,7 @@ public class World implements Racetrack{
     private void loadData(){
         CfgParser cfg = new CfgParser("src\\model\\data\\config.txt");
 
+        track = cfg.readString("trackName");
         nCars = cfg.readInt("nCars");
         nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
@@ -166,8 +168,8 @@ public class World implements Racetrack{
     private void initImages(){
         images = new BufferedImage[2];
 
-        images[0] = ImageHandler.loadImage("background");
-        images[1] = ImageHandler.loadImage("foreground");
+        images[0] = ImageHandler.loadImage(track + "_bg");
+        images[1] = ImageHandler.loadImage(track + "_fg");
     }
 
     private void createCars(){
@@ -180,20 +182,20 @@ public class World implements Racetrack{
 
         //Create player cars and add to drawables and cars
         for(int i = 0; i < players.length; i++){
-            Car car = new Car(Car.Cars.values()[i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
-                    100*i + 850, Math.PI*3/2);
-            players[i] = car;
-            cars[i] = players[i];
-            drawables[i] = car;
+            if(goal.getDir() == DirectionalRect.Direction.LEFT){
+                spawnCarsLeft(i, false);
+            }else{
+                spawnCarsUp(i, false);
+            }
         }
 
         //Create bots and add to drawables and cars
         for(int i = 0; i < bots.length; i++){
-            Car car = new Car(Car.Cars.values()[nPlayers + i], goal.getSide(DirectionalRect.Side.FRONT, true).x,
-                    100*(i+nPlayers) + 850, Math.PI*3/2);
-            bots[i] = car;
-            cars[i+players.length] = bots[i];
-            drawables[i + players.length] = car;
+            if(goal.getDir() == DirectionalRect.Direction.LEFT){
+                spawnCarsLeft(i, true);
+            }else{
+                spawnCarsUp(i, true);
+            }
         }
 
         //Create car controllers for bots
@@ -203,10 +205,9 @@ public class World implements Racetrack{
 
                 //My ugly hack for using custom bot-classes for other programmers to implement
                 CarController bot = (CarController) botClass.getDeclaredConstructor
-                        (new Class[]{FragileCar.class, String.class}).newInstance(bots[i], "1");
+                        (new Class[]{FragileCar.class, String.class}).newInstance(bots[i], track);
 
                 controllers[i] = bot;
-                //drawableBots[i] = bot;
             }
         }catch(Exception e){
             System.out.println("A lot of things went wrong when loading your custom bot-class. Sorry... :/" +
@@ -217,6 +218,41 @@ public class World implements Racetrack{
 
         passedBack = new boolean[cars.length];
         passedFront = new boolean[cars.length];
+    }
+
+    private void spawnCarsLeft(int carIndex, boolean isBot){
+        if(!isBot){
+            Car car = new Car(Car.Cars.values()[carIndex], goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
+                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100*(carIndex) + 100, Math.PI*3/2);
+            players[carIndex] = car;
+            cars[carIndex] = players[carIndex];
+            drawables[carIndex] = car;
+        }else{
+            Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
+                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
+                    100*(carIndex+nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100, Math.PI*3/2);
+            bots[carIndex] = car;
+            cars[carIndex+players.length] = bots[carIndex];
+            drawables[carIndex + players.length] = car;
+        }
+    }
+
+    private void spawnCarsUp(int carIndex, boolean isBot){
+        if(!isBot){
+            Car car = new Car(Car.Cars.values()[carIndex],
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100*(carIndex),
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0);
+            players[carIndex] = car;
+            cars[carIndex] = players[carIndex];
+            drawables[carIndex] = car;
+        }else{
+            Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100*(carIndex + nPlayers),
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0);
+            bots[carIndex] = car;
+            cars[carIndex+players.length] = bots[carIndex];
+            drawables[carIndex + players.length] = car;
+        }
     }
 
     private void checkCollisions(){

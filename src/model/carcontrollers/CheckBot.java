@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class CheckBot implements CarController, DrawableBot{
+public class CheckBot implements CarController{
 
     private FragileCar car;
     private List<BotPoint> checkPoints = new ArrayList<>();
@@ -46,36 +46,49 @@ public class CheckBot implements CarController, DrawableBot{
     }
 
     @Override
-    public List<BotPoint> getBotPoints() {
+    public void paint(Graphics2D g, double scale, int scaleX) {
+        if(car.getName().equals("BLUE car")){
+            g.setColor(Color.BLUE);
+        }else if(car.getName().equals("GREEN car"))
+        {
+            g.setColor(Color.GREEN);
+        }else if(car.getName().equals("RED car")){
+            g.setColor(Color.RED);
+        }else if(car.getName().equals("YELLOW car")){
+            g.setColor(Color.YELLOW);
+        }
+
+        //Paint balls
+        for(BotPoint p : getBotPoints()){
+            int s = (int)(scale*10);
+            g.fillRoundRect((int)(p.x*scale)-(s/2) + scaleX, (int)(p.y*scale)-(s/2), s,s,s,s);
+            int dist = (int)(scale*p.getRadius()*2);
+            g.drawRoundRect((int)(p.x*scale)-(dist/2) + scaleX, (int)(p.y*scale)-(dist/2),
+                    dist, dist, dist, dist);
+        }
+
+
+        //Paint sticks
+        int stickX = (int)(getStickX()*scale) + scaleX;
+        int stickY = (int)(getStickY()*scale);
+
+        g.drawLine((int)(car.getX()*scale) + scaleX, (int)(car.getY()*scale),
+                stickX, stickY);
+    }
+
+    private List<BotPoint> getBotPoints() {
         List<BotPoint> all = new ArrayList<>(checkPoints.size() + crashes.size());
         all.addAll(checkPoints);
         all.addAll(crashes);
         return all;
     }
 
-    @Override
-    public int getWallThreshold() {
-        return 0;
-    }
-
-    @Override
-    public int getStickLength() {
-        return 0;
-    }
-
-    @Override
-    public int getStickX() {
+    private int getStickX() {
         return (int)stickX();
     }
 
-    @Override
-    public int getStickY() {
+    private int getStickY() {
         return (int)stickY();
-    }
-
-    @Override
-    public FragileCar getCar() {
-        return car;
     }
 
     //Follow the previous best path

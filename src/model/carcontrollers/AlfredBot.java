@@ -1,6 +1,9 @@
 package model.carcontrollers;
 
 import model.cars.FragileCar;
+
+import java.awt.*;
+
 /**
  * Created by pontu on 2016-06-22.
  */
@@ -22,5 +25,10 @@ public class AlfredBot implements CarController{
 
         car.accelerate();
         car.turnLeft(deltaTime);
+    }
+
+    @Override
+    public void paint(Graphics2D g, double scale, int scaleX) {
+
     }
 }
