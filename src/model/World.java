@@ -29,6 +29,8 @@ public class World implements Racetrack{
     private boolean[] passedBack;
     private boolean[] passedFront;
 
+    private Class botClass;
+
     private DirectionalRect goal;
 
     private int nCars;
@@ -38,6 +40,7 @@ public class World implements Racetrack{
     private long startTime;
     private long time;
     private long countdown;
+    private double deltaTime;
     private boolean finished = false;
 
     public World(){
@@ -46,6 +49,7 @@ public class World implements Racetrack{
     }
 
     public void update(double deltaTime) {
+        this.deltaTime = deltaTime;
         updateCars(deltaTime);
         releaseCars();
         checkCollisions();
@@ -103,6 +107,11 @@ public class World implements Racetrack{
         return time;
     }
 
+    @Override
+    public double getFPS(){
+        return 1/deltaTime;
+    }
+
     private void createWorld(){
         initImages();
         findGoalLine();
@@ -118,6 +127,12 @@ public class World implements Racetrack{
         nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
         countdown = cfg.readLong("countdown");
+        try{
+            botClass = cfg.readClass("botClass");
+        }catch(ClassNotFoundException e){
+            System.out.println("No such class found!");
+            e.printStackTrace();
+        }
     }
 
     private void findGoalLine(){
@@ -182,11 +197,23 @@ public class World implements Racetrack{
         }
 
         //Create car controllers for bots
-        for(int i = 0; i < controllers.length; i ++){
-            CheckBot bot = new CheckBot(bots[i], "1");
-            controllers[i] = bot;
-            drawableBots[i] = bot;
+        try{
+            for(int i = 0; i < controllers.length; i ++){
+                //CarController bot = new CheckBot(bots[i], "1");
+
+                //My ugly hack for using custom bot-classes for other programmers to implement
+                CarController bot = (CarController) botClass.getDeclaredConstructor
+                        (new Class[]{FragileCar.class, String.class}).newInstance(bots[i], "1");
+
+                controllers[i] = bot;
+                //drawableBots[i] = bot;
+            }
+        }catch(Exception e){
+            System.out.println("A lot of things went wrong when loading your custom bot-class. Sorry... :/" +
+                    "Your code probably has a lot of bugs.");
+            e.printStackTrace();
         }
+
 
         passedBack = new boolean[cars.length];
         passedFront = new boolean[cars.length];

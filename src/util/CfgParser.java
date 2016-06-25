@@ -34,6 +34,10 @@ public class CfgParser {
         return Boolean.valueOf(readValue(varName));
     }
 
+    public Class readClass(String varName) throws ClassNotFoundException{
+        return Class.forName(readValue(varName));
+    }
+
     private String readValue(String varName){
         for(int i = 0; i < cfg.length(); i++){ //Read the whole string
             if(cfg.charAt(i) == '#'){ //Search for #

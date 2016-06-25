@@ -12,7 +12,7 @@ import java.awt.event.KeyListener;
  * Created by Pontus on 2016-03-04.
  */
 public class MainWindow extends JFrame implements ComponentListener {
-    public static int WINDOW_WIDTH = 800;
+    public static int WINDOW_WIDTH = 1000;
     public static int WINDOW_HEIGHT = 600;
 
     private final String title;
@@ -45,15 +45,15 @@ public class MainWindow extends JFrame implements ComponentListener {
         setResizable(true);
 
         JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
 
         surface = new MainSurface(track);
         ui = new UISurface(track);
 
-        surface.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT*7/10));
+        surface.setPreferredSize(new Dimension(WINDOW_WIDTH*5/10, WINDOW_HEIGHT));
 
-        container.add(surface);
         container.add(ui);
+        container.add(surface);
 
         add(container);
         registerKeyListener(listener);

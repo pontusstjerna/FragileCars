@@ -21,6 +21,7 @@ public class UISurface extends JPanel {
         super.paintComponent(g);
 
         displayTime(g2d);
+        displayFPS(g2d);
         displayLaps(g2d);
     }
 
@@ -36,7 +37,12 @@ public class UISurface extends JPanel {
                                     track.getDrawables()[i].getPlace() + " with time " +
                                     track.getDrawables()[i].getFinished()/1000 + ":" +
                                     (track.getDrawables()[i].getFinished() % 1000) : ""),
-                    getWidth()*2/5, getHeight()/5 + i*15);
+                    getWidth()/5, getHeight()/5 + i*15);
         }
+    }
+
+    private void displayFPS(Graphics2D g){
+        g.drawString("FPS: " + ((int)track.getFPS()),
+                getWidth()/5, getHeight()/2 + 100);
     }
 }

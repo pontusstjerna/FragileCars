@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
  */
 public interface Racetrack {
     long getTime();
+    double getFPS();
     DrawableCar[] getDrawables();
     DrawableBot[] getBots();
     boolean getFinished();

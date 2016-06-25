@@ -101,7 +101,7 @@ public class CheckBot implements CarController, DrawableBot{
                 turn(turnToPoint(car, currentCP), dTime);
             }else{
                 cpIndex++;
-                //System.out.println("Check at point " + cpIndex);
+             //   System.out.println("Check at point " + cpIndex);
             }
         }
     }
@@ -150,12 +150,12 @@ public class CheckBot implements CarController, DrawableBot{
 
     //If searching, regularly add new checkpoints as long as not dying
     private void addCheckPoints(){
-        final int spawn_freq = 150;
+        final int spawn_freq = 40;
 
-        if(distance > spawn_freq){
+        if((int)distance % spawn_freq == 0){
             checkPoints.add(new BotPoint(getStickX(), getStickY()));
             cpIndex++;
-            distance = 0;
+            //distance = 0;
         }
     }
 
