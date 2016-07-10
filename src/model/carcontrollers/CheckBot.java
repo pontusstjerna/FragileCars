@@ -30,6 +30,8 @@ public class CheckBot implements CarController{
         this.car = car;
         rand = new Random();
         spawnPoint = new Point(car.getX(), car.getY());
+        lastX = spawnPoint.x;
+        lastY = spawnPoint.y;
 
         //addStdPoints(Integer.valueOf(trackName));
     }
@@ -38,9 +40,8 @@ public class CheckBot implements CarController{
     public void update(double deltaTime) {
         drive(deltaTime);
         checkReset();
-        if(deltaTime < 1){
-            distance += car.getAcceleration()*deltaTime;
-        }
+        //Distance is the distance between the last pos and current pos
+        distance += Point.distance(car.getX(), car.getY(), lastX, lastY);
         lastX = car.getX();
         lastY = car.getY();
     }
@@ -93,7 +94,7 @@ public class CheckBot implements CarController{
 
     //Follow the previous best path
     private void drive(double dTime){
-        if(cpIndex >= checkPoints.size()){ //If passed all checkpoints
+        if(cpIndex == checkPoints.size()){ //If passed all checkpoints
             car.accelerate();
             BotPoint closestCrashInFront = closestInFront(car, crashes);
             if(closestCrashInFront == null){
@@ -102,8 +103,11 @@ public class CheckBot implements CarController{
                 turn(turnFromPoint(car, closestCrashInFront), dTime);
             }
 
-            //Add checkpoints only if enough speed
-            if (car.getAcceleration() > Car.speedLimit / 2) {
+            final int MIN_SPAWN_DISTANCE = 50;
+
+            //Add checkpoints only if distance to spawn is enough and speed is enough
+            if (car.getAcceleration() > Car.speedLimit / 2 &&
+                    Point.distance(car.getX(), car.getY(), spawnPoint.x, spawnPoint.y) > MIN_SPAWN_DISTANCE) {
                 addCheckPoints();
             }
         }else{ //Follow the points
@@ -114,7 +118,7 @@ public class CheckBot implements CarController{
                 turn(turnToPoint(car, currentCP), dTime);
             }else{
                 cpIndex++;
-             //   System.out.println("Check at point " + cpIndex);
+                System.out.println("Check at point " + cpIndex);
             }
         }
     }
@@ -165,10 +169,10 @@ public class CheckBot implements CarController{
     private void addCheckPoints(){
         final int spawn_freq = 40;
 
-        if((int)distance % spawn_freq == 0){
+        if((int)distance > spawn_freq){
             checkPoints.add(new BotPoint(getStickX(), getStickY()));
             cpIndex++;
-            //distance = 0;
+            distance = 0;
         }
     }
 
@@ -179,7 +183,7 @@ public class CheckBot implements CarController{
     }
 
     private void checkReset(){
-        if(spawnPoint.distance(car.getX(), car.getY()) < 1 && distance > 50){
+        if(spawnPoint.distance(car.getX(), car.getY()) < 1 && distance > 10){
             reset();
         }
     }

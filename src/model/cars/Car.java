@@ -23,6 +23,8 @@ public class Car implements DrawableCar, FragileCar {
     private long finished = 0;
     private int place = 0;
 
+    private double friction;
+
     public static final int speedLimit = 500;
     private final int reverseLimit = -50;
 
@@ -31,11 +33,13 @@ public class Car implements DrawableCar, FragileCar {
 
     private double acceleration;
 
-    public Car(Cars kind, int x, int y, double heading){
+    public Car(Cars kind, int x, int y, double heading, double friction){
         this.kind = kind;
         originX = x;
         originY = y;
         originHeading = heading;
+        //TODO Fix friction in constructor
+        this.friction = friction;
 
         reset();
 
@@ -45,7 +49,6 @@ public class Car implements DrawableCar, FragileCar {
     @Override
     public void update(double deltaTime){
         if(!locked) {
-            final double friction = 4;
             physHeading = drift(friction, acceleration/speedLimit, heading, physHeading);
 
             x = (x + acceleration * Math.sin(physHeading) * deltaTime);

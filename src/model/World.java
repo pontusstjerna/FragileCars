@@ -43,6 +43,7 @@ public class World implements Racetrack{
     private long countdown;
     private double deltaTime;
     private boolean finished = false;
+    private double friction;
 
     public World(){
         loadData();
@@ -129,6 +130,7 @@ public class World implements Racetrack{
         nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
         countdown = cfg.readLong("countdown");
+        friction = cfg.readDouble("friction");
         try{
             botClass = cfg.readClass("botClass");
         }catch(ClassNotFoundException e){
@@ -223,14 +225,14 @@ public class World implements Racetrack{
     private void spawnCarsLeft(int carIndex, boolean isBot){
         if(!isBot){
             Car car = new Car(Car.Cars.values()[carIndex], goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100*(carIndex) + 100, Math.PI*3/2);
+                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100*(carIndex) + 100, Math.PI*3/2, friction);
             players[carIndex] = car;
             cars[carIndex] = players[carIndex];
             drawables[carIndex] = car;
         }else{
             Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
                     goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    100*(carIndex+nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100, Math.PI*3/2);
+                    100*(carIndex+nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100, Math.PI*3/2, friction);
             bots[carIndex] = car;
             cars[carIndex+players.length] = bots[carIndex];
             drawables[carIndex + players.length] = car;
@@ -241,14 +243,14 @@ public class World implements Racetrack{
         if(!isBot){
             Car car = new Car(Car.Cars.values()[carIndex],
                     goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100*(carIndex),
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0);
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0, friction);
             players[carIndex] = car;
             cars[carIndex] = players[carIndex];
             drawables[carIndex] = car;
         }else{
             Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
                     goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100*(carIndex + nPlayers),
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0);
+                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0, friction);
             bots[carIndex] = car;
             cars[carIndex+players.length] = bots[carIndex];
             drawables[carIndex + players.length] = car;
