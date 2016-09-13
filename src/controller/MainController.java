@@ -19,6 +19,7 @@ public class MainController implements ActionListener {
 
     private double tempTime;
     private double deltaTime;
+    private int fps;
 
     private final int DELAY = 5;
 

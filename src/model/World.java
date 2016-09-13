@@ -10,6 +10,7 @@ import util.ImageHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 /**
  * Created by Pontus on 2016-03-04.
@@ -24,7 +25,8 @@ public class World implements Racetrack{
     private FragileCar[] players;
     private FragileCar[] bots;
     private FragileCar[] cars;
-    private CarController[] controllers;
+    //private GameObject[] controllers;
+    private ArrayList<GameObject> objects;
     private DrawableBot[] drawableBots;
     private DrawableCar[] drawables;
     private boolean[] passedBack;
@@ -55,7 +57,7 @@ public class World implements Racetrack{
         updateCars(deltaTime);
         releaseCars();
         checkCollisions();
-        controlCars(deltaTime);
+        updateObjects(deltaTime);
         checkLaps();
     }
 
@@ -73,13 +75,17 @@ public class World implements Racetrack{
     }
 
     @Override
-    public DrawableCar[] getDrawables(){
+    public DrawableCar[] getDrawableCars(){
         return drawables;
     }
 
-    @Override
-    public CarController[] getBots(){
-        return controllers;
+    //@Override
+    //public GameObject[] getObjects(){
+   //     return controllers;
+  //  }
+
+    public ArrayList<GameObject> getObjects() {
+        return objects;
     }
 
     @Override
@@ -109,15 +115,25 @@ public class World implements Racetrack{
         return time;
     }
 
+    private double timePassed = 0;
+    private int fps = 0;
     @Override
-    public double getFPS(){
-        return 1/deltaTime;
+    public int getFPS(){
+        final double fpsUpdateInterval = 0.5;
+
+        timePassed += deltaTime;
+        if(timePassed > fpsUpdateInterval){
+            fps = (int)(1/deltaTime);
+            timePassed = 0;
+        }
+        return fps;
     }
 
     private void createWorld(){
         initImages();
         findGoalLine();
         createCars();
+        createMiscGameObjects();
         startTime = System.currentTimeMillis();
         System.out.println("World created with " + nPlayers + " players and " + bots.length + " bots.");
     }
@@ -179,7 +195,6 @@ public class World implements Racetrack{
         bots = new FragileCar[Math.max(nCars - nPlayers, 0)];
         cars = new FragileCar[players.length + bots.length];
         drawables = new DrawableCar[cars.length];
-        controllers = new CarController[bots.length];
         drawableBots = new DrawableBot[bots.length];
 
         //Create player cars and add to drawables and cars
@@ -200,26 +215,33 @@ public class World implements Racetrack{
             }
         }
 
+        passedBack = new boolean[cars.length];
+        passedFront = new boolean[cars.length];
+    }
+
+    private void createMiscGameObjects(){
+        objects = new ArrayList<GameObject>();
+
+        for(int i = 0; i < cars.length; i++){
+            objects.add(drawables[i].getSmoke());
+        }
+
         //Create car controllers for bots
         try{
-            for(int i = 0; i < controllers.length; i ++){
-                //CarController bot = new CheckBot(bots[i], "1");
+            for(int i = 0; i < bots.length; i ++){
+                //GameObject bot = new CheckBot(bots[i], "1");
 
                 //My ugly hack for using custom bot-classes for other programmers to implement
-                CarController bot = (CarController) botClass.getDeclaredConstructor
+                GameObject bot = (GameObject) botClass.getDeclaredConstructor
                         (new Class[]{FragileCar.class, String.class}).newInstance(bots[i], track);
 
-                controllers[i] = bot;
+                objects.add(bot);
             }
         }catch(Exception e){
             System.out.println("A lot of things went wrong when loading your custom bot-class. Sorry... :/" +
                     "Your code probably has a lot of bugs.");
             e.printStackTrace();
         }
-
-
-        passedBack = new boolean[cars.length];
-        passedFront = new boolean[cars.length];
     }
 
     private void spawnCarsLeft(int carIndex, boolean isBot){
@@ -319,10 +341,10 @@ public class World implements Racetrack{
         }
     }
 
-    private void controlCars(double dTime){
-        for(CarController ctrlr : controllers){
-            if(ctrlr != null){
-                ctrlr.update(dTime);
+    private void updateObjects(double dTime){
+        for(GameObject obj : objects){
+            if(obj != null){
+                obj.update(dTime);
             }
         }
     }

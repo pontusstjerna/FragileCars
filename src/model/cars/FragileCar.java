@@ -1,7 +1,5 @@
 package model.cars;
 
-import util.Vector2D;
-
 import java.awt.image.BufferedImage;
 
 /**

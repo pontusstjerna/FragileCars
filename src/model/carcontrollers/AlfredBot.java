@@ -1,5 +1,6 @@
 package model.carcontrollers;
 
+import model.GameObject;
 import model.cars.FragileCar;
 
 import java.awt.*;
@@ -7,7 +8,7 @@ import java.awt.*;
 /**
  * Created by pontu on 2016-06-22.
  */
-public class AlfredBot implements CarController{
+public class AlfredBot implements GameObject {
 
     private FragileCar car;
 

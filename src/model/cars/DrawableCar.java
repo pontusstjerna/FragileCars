@@ -1,5 +1,7 @@
 package model.cars;
 
+import model.GameObject;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -18,4 +20,5 @@ public interface DrawableCar {
     String getName();
 
     BufferedImage getImg();
+    GameObject getSmoke();
 }

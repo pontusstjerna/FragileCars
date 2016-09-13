@@ -1,5 +1,7 @@
 package model.cars;
 
+import model.GameObject;
+import model.misc.SmokeController;
 import util.ImageHandler;
 
 import java.awt.image.BufferedImage;
@@ -31,6 +33,8 @@ public class Car implements DrawableCar, FragileCar {
     private Cars kind;
     private BufferedImage image;
 
+    private SmokeController smoke;
+
     private double acceleration;
 
     public Car(Cars kind, int x, int y, double heading, double friction){
@@ -44,6 +48,8 @@ public class Car implements DrawableCar, FragileCar {
         reset();
 
         image = ImageHandler.loadImage("car" + kind.name());
+
+        smoke = new SmokeController(this);
     }
 
     @Override
@@ -182,6 +188,9 @@ public class Car implements DrawableCar, FragileCar {
     public BufferedImage getImg() {
         return image;
     }
+
+    @Override
+    public GameObject getSmoke(){ return smoke; }
 
     @Override
     public String toString(){

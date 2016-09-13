@@ -31,18 +31,18 @@ public class UISurface extends JPanel {
     }
 
     private void displayLaps(Graphics2D g){
-        for(int i = 0; i < track.getDrawables().length; i++){
-            g.drawString(track.getDrawables()[i].getName() + " - Laps: " + track.getDrawables()[i].getLaps() +
-                            (track.getDrawables()[i].getFinished() != 0 ? " - FINISHED at place " +
-                                    track.getDrawables()[i].getPlace() + " with time " +
-                                    track.getDrawables()[i].getFinished()/1000 + ":" +
-                                    (track.getDrawables()[i].getFinished() % 1000) : ""),
+        for(int i = 0; i < track.getDrawableCars().length; i++){
+            g.drawString(track.getDrawableCars()[i].getName() + " - Laps: " + track.getDrawableCars()[i].getLaps() +
+                            (track.getDrawableCars()[i].getFinished() != 0 ? " - FINISHED at place " +
+                                    track.getDrawableCars()[i].getPlace() + " with time " +
+                                    track.getDrawableCars()[i].getFinished()/1000 + ":" +
+                                    (track.getDrawableCars()[i].getFinished() % 1000) : ""),
                     getWidth()/5, getHeight()/5 + i*15);
         }
     }
 
     private void displayFPS(Graphics2D g){
-        g.drawString("FPS: " + ((int)track.getFPS()),
+        g.drawString("FPS: " + track.getFPS(),
                 getWidth()/5, getHeight()/2 + 100);
     }
 }

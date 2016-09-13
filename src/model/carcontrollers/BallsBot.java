@@ -1,5 +1,6 @@
 package model.carcontrollers;
 
+import model.GameObject;
 import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
 import util.Vector2D;
@@ -11,7 +12,7 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class BallsBot implements CarController, DrawableBot{
+public class BallsBot implements GameObject, DrawableBot{
     private FragileCar car;
     private List<BotPoint> walls;
 
