@@ -2,6 +2,7 @@ package model.misc;
 
 import model.GameObject;
 import model.cars.DrawableCar;
+import model.cars.FragileCar;
 
 import java.awt.*;
 import java.util.Random;
@@ -11,9 +12,9 @@ import java.util.Random;
  */
 public class SmokeController implements GameObject {
 
-    DrawableCar car;
+    FragileCar car;
 
-    private final int MAX_SMOKE = 500;
+    private final int MAX_SMOKE = 200;
     private int index = 0;
     private Random rand;
 
@@ -21,14 +22,18 @@ public class SmokeController implements GameObject {
     private SmokeParticle[] smoke = new SmokeParticle[MAX_SMOKE];
 
 
-    public SmokeController(DrawableCar car){
+    public SmokeController(FragileCar car){
         this.car = car;
         rand = new Random();
     }
 
     @Override
     public void update(double deltaTime) {
-        smoke[index] = new SmokeParticle(car.getX(), car.getY(), rand);
+        if(smoke[index] == null){
+            smoke[index] = new SmokeParticle(car.getX(), car.getY(), car.getAcceleration(), car.getHeading(), rand);
+        }else{
+            smoke[index].reSet(car.getX(), car.getY(), car.getAcceleration(), car.getHeading());
+        }
         index = (index + 1) % MAX_SMOKE;
 
         //Update all particles

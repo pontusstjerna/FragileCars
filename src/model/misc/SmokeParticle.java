@@ -9,14 +9,15 @@ import java.util.Random;
  * Created by pontu on 2016-09-12.
  */
 public class SmokeParticle implements GameObject {
-    private int x, y;
-    private int width = 10;
-    private int height = 10;
+    private double x, y;
+    private int thickness = 20;
 
     private double timeExisted;
     private final double lifeTime;
-    final int maxSpread = 300;
-    private int spread = maxSpread;
+    private final int spread = 100;
+    private double initVel;
+    private double velocity;
+    private double heading;
 
     private Color color;
     private int gray = 0;
@@ -24,16 +25,30 @@ public class SmokeParticle implements GameObject {
 
     private Random rand;
 
-    public SmokeParticle(int x, int y, Random rand){
+    public SmokeParticle(int x, int y, double velocity, double heading, Random rand){
         this.rand = rand;
         gray = rand.nextInt(30) + 30;
         color = new Color(gray,gray,gray,alpha);
 
         this.x = x;
         this.y = y;
-        lifeTime = 5;
+        lifeTime = 1;
+        initVel = velocity;
+        this.heading = heading;
     }
 
+    public void reSet(int x, int y, double velocity, double heading){
+        gray = rand.nextInt(30) + 30;
+        alpha = 255;
+        color = new Color(gray,gray,gray,alpha);
+        timeExisted = 0;
+
+
+        this.x = x;
+        this.y = y;
+        initVel = velocity;
+        this.heading = heading;
+    }
 
     @Override
     public void update(double deltaTime) {
@@ -41,23 +56,25 @@ public class SmokeParticle implements GameObject {
             timeExisted += deltaTime;
         }
 
-        x = (int)(x + (rand.nextInt(spread*2) - spread)*deltaTime);
-        y = (int)(y + (rand.nextInt(spread*2) - spread)*deltaTime);
+        x = x + (rand.nextInt(spread*2) - spread)*deltaTime;
+        y = y + (rand.nextInt(spread*2) - spread)*deltaTime;
 
-        spread = Math.max(maxSpread - (int)(maxSpread*timeExisted/lifeTime),1);
+        x = (x + velocity * Math.sin(heading) * deltaTime);
+        y = (y - velocity * Math.cos(heading) * deltaTime);
+
+        velocity = Math.max(initVel - (int)(initVel*timeExisted/lifeTime),1);
 
         //Fading with time
-        alpha = Math.max(255 - (int)(255*timeExisted/lifeTime),0);
+        alpha = Math.min((int)(8/timeExisted),255);
+        //System.out.println("Alpha: " + alpha + " Time existed: " + timeExisted);
         color = new Color(gray,gray,gray,alpha);
-
-        //TODO: Make x and y doubles so that speed of particle can slow down the longer it lives, so the smoke remains on track
 
     }
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
         g.setColor(color);
-        g.fillRoundRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(width*scale),
-                (int)(height*scale), (int)(width*scale), (int)(height*scale));
+        g.fillRoundRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(thickness*scale),
+                (int)(thickness*scale), (int)(thickness*scale), (int)(thickness*scale));
     }
 }

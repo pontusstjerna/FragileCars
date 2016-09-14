@@ -1,6 +1,6 @@
 #trackName="2"
 #nCars="1"
-#nPlayers="3"
+#nPlayers="1"
 #laps="3"
 #countdown="500"
 #friction="5"
