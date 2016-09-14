@@ -1,7 +1,6 @@
 package model.misc;
 
 import model.GameObject;
-import model.cars.DrawableCar;
 import model.cars.FragileCar;
 
 import java.awt.*;
@@ -25,29 +24,36 @@ public class SmokeController implements GameObject {
     public SmokeController(FragileCar car){
         this.car = car;
         rand = new Random();
+
+        for(int i = 0; i < MAX_SMOKE; i++){
+            smoke[i] = new SmokeParticle(car.getX(), car.getY(), car.getAcceleration(), car.getHeading(), rand);
+        }
     }
 
     @Override
     public void update(double deltaTime) {
-        if(smoke[index] == null){
-            smoke[index] = new SmokeParticle(car.getX(), car.getY(), car.getAcceleration(), car.getHeading(), rand);
-        }else{
-            smoke[index].reSet(car.getX(), car.getY(), car.getAcceleration(), car.getHeading());
-        }
+        smoke[index].reSet(car.getX(), car.getY(), car.getAcceleration(), car.getHeading());
+
         index = (index + 1) % MAX_SMOKE;
 
         //Update all particles
-        for(SmokeParticle s : smoke){
-            if(s != null)
-                s.update(deltaTime);
+        for(SmokeParticle s : smoke) {
+            s.update(deltaTime);
         }
     }
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
-        for(SmokeParticle s : smoke){
-            if(s != null)
-                s.paint(g, scale, scaleX);
+        //TODO: Getting some lag spikes and fps drops to 4 fps sometimes, need to fix that
+
+        //Paint all particles
+        for(SmokeParticle s : smoke) {
+            s.paint(g, scale, scaleX);
         }
+
+        /*//Paint all particles
+        for(int i = 0; i < MAX_SMOKE; i += 5) {
+            smoke[i].paint(g, scale, scaleX);
+        }*/
     }
 }

@@ -8,20 +8,21 @@ import java.util.Random;
 /**
  * Created by pontu on 2016-09-12.
  */
-public class SmokeParticle implements GameObject {
+public class SmokeParticle {
     private double x, y;
-    private int thickness = 20;
+    private int thickness = 30;
 
     private double timeExisted;
     private final double lifeTime;
-    private final int spread = 100;
+    private final int spread = 150;
     private double initVel;
     private double velocity;
     private double heading;
 
     private Color color;
+    private final int MAX_ALPHA = 100;
     private int gray = 0;
-    private int alpha = 255;
+    private int alpha = MAX_ALPHA;
 
     private Random rand;
 
@@ -39,7 +40,7 @@ public class SmokeParticle implements GameObject {
 
     public void reSet(int x, int y, double velocity, double heading){
         gray = rand.nextInt(30) + 30;
-        alpha = 255;
+        alpha = MAX_ALPHA;
         color = new Color(gray,gray,gray,alpha);
         timeExisted = 0;
 
@@ -50,7 +51,6 @@ public class SmokeParticle implements GameObject {
         this.heading = heading;
     }
 
-    @Override
     public void update(double deltaTime) {
         if(deltaTime < 1){
             timeExisted += deltaTime;
@@ -65,13 +65,12 @@ public class SmokeParticle implements GameObject {
         velocity = Math.max(initVel - (int)(initVel*timeExisted/lifeTime),1);
 
         //Fading with time
-        alpha = Math.min((int)(8/timeExisted),255);
+        alpha = Math.min((int)(10/timeExisted),MAX_ALPHA);
         //System.out.println("Alpha: " + alpha + " Time existed: " + timeExisted);
         color = new Color(gray,gray,gray,alpha);
 
     }
 
-    @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
         g.setColor(color);
         g.fillRoundRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(thickness*scale),

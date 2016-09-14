@@ -1,7 +1,7 @@
 #trackName="2"
 #nCars="1"
 #nPlayers="1"
-#laps="3"
+#laps="5"
 #countdown="500"
 #friction="5"
 #showBotPaint="true"
