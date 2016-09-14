@@ -14,7 +14,9 @@ public class SmokeParticle implements GameObject {
     private int height = 10;
 
     private double timeExisted;
-    private final int lifeTime;
+    private final double lifeTime;
+    final int maxSpread = 300;
+    private int spread = maxSpread;
 
     private Color color;
     private int gray = 0;
@@ -22,14 +24,14 @@ public class SmokeParticle implements GameObject {
 
     private Random rand;
 
-    public SmokeParticle(int x, int y, int lifeTime, Random rand){
+    public SmokeParticle(int x, int y, Random rand){
         this.rand = rand;
         gray = rand.nextInt(30) + 30;
         color = new Color(gray,gray,gray,alpha);
 
         this.x = x;
         this.y = y;
-        this.lifeTime = rand.nextInt(lifeTime);
+        lifeTime = 5;
     }
 
 
@@ -39,16 +41,23 @@ public class SmokeParticle implements GameObject {
             timeExisted += deltaTime;
         }
 
-        int factor = (int)(255*timeExisted/lifeTime);
+        x = (int)(x + (rand.nextInt(spread*2) - spread)*deltaTime);
+        y = (int)(y + (rand.nextInt(spread*2) - spread)*deltaTime);
+
+        spread = Math.max(maxSpread - (int)(maxSpread*timeExisted/lifeTime),1);
 
         //Fading with time
         alpha = Math.max(255 - (int)(255*timeExisted/lifeTime),0);
         color = new Color(gray,gray,gray,alpha);
+
+        //TODO: Make x and y doubles so that speed of particle can slow down the longer it lives, so the smoke remains on track
+
     }
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
         g.setColor(color);
-        g.fillRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(width*scale), (int)(height*scale));
+        g.fillRoundRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(width*scale),
+                (int)(height*scale), (int)(width*scale), (int)(height*scale));
     }
 }

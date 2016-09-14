@@ -28,7 +28,7 @@ public class SmokeController implements GameObject {
 
     @Override
     public void update(double deltaTime) {
-        smoke[index] = new SmokeParticle(car.getX(), car.getY(), 2, rand);
+        smoke[index] = new SmokeParticle(car.getX(), car.getY(), rand);
         index = (index + 1) % MAX_SMOKE;
 
         //Update all particles
