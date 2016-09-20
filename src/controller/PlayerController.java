@@ -32,7 +32,31 @@ public class PlayerController implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        movements.remove(e.getKeyCode());
+            movements.remove(e.getKeyCode());
+
+            //Tell the car to go straight when release left or right
+            switch(players.length){
+                case 1:
+                    if(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_LEFT){
+                        players[0].release();
+                    }
+                    break;
+                case 2:
+                    if(e.getKeyCode() == KeyEvent.VK_A || e.getKeyCode() == KeyEvent.VK_D){
+                        players[1].release();
+                    }
+                    break;
+                case 3:
+                    if(e.getKeyCode() == KeyEvent.VK_NUMPAD4 || e.getKeyCode() == KeyEvent.VK_NUMPAD6){
+                        players[2].release();
+                    }
+                    break;
+                case 4:
+                    if(e.getKeyCode() == KeyEvent.VK_H || e.getKeyCode() == KeyEvent.VK_K){
+                        players[3].release();
+                    }
+                    break;
+            }
         }
 
     public void update(double deltaTime){

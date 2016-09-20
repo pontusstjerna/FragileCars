@@ -4,5 +4,5 @@
 #laps="5"
 #countdown="500"
 #friction="5"
-#showBotPaint="true"
+#betterGraphics="true"
 #botClass="model.carcontrollers.CheckBot"

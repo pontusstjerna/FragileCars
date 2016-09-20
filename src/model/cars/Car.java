@@ -11,6 +11,9 @@ import java.awt.image.BufferedImage;
  */
 public class Car implements DrawableCar, FragileCar {
     public enum Cars {GREEN, YELLOW, RED, BLUE}
+    public enum States {STRAIGHT, LEFT, RIGHT}
+
+    private States state = States.STRAIGHT;
 
     private double x,y;
     private final int originX, originY;
@@ -31,7 +34,7 @@ public class Car implements DrawableCar, FragileCar {
     private final int reverseLimit = -50;
 
     private Cars kind;
-    private BufferedImage image;
+    private BufferedImage[] images;
 
     private SmokeController smoke;
 
@@ -46,8 +49,7 @@ public class Car implements DrawableCar, FragileCar {
         this.friction = friction;
 
         reset();
-
-        image = ImageHandler.loadImage("car" + kind.name());
+        setImages();
 
         smoke = new SmokeController(this);
     }
@@ -117,12 +119,22 @@ public class Car implements DrawableCar, FragileCar {
 
     @Override
     public int getX(){
-        return (int)(x - image.getWidth()/2);
+        return (int)(x - images[0].getWidth()/2);
     }
 
     @Override
     public int getY(){
-        return (int)(y - image.getHeight()/2);
+        return (int)(y - images[0].getHeight()/2);
+    }
+
+    @Override
+    public int getWidth(){
+        return images[0].getWidth();
+    }
+
+    @Override
+    public int getHeight(){
+        return images[0].getHeight();
     }
 
     @Override
@@ -175,6 +187,7 @@ public class Car implements DrawableCar, FragileCar {
         if((acceleration > 10 || acceleration < -10) && !locked){
             heading = (heading + deltaTime*4) % (Math.PI*2);
         }
+        state = States.RIGHT;
     }
 
     @Override
@@ -182,11 +195,22 @@ public class Car implements DrawableCar, FragileCar {
         if((acceleration > 10 || acceleration < -10) && !locked){
             heading = (heading - deltaTime*4) % (Math.PI*2);
         }
+        state = States.LEFT;
     }
 
     @Override
-    public BufferedImage getImg() {
-        return image;
+    public void release(){
+        state = States.STRAIGHT;
+    }
+
+    @Override
+    public BufferedImage[] getImgs() {
+        return images;
+    }
+
+    @Override
+    public int getFrame(){
+        return state.ordinal();
     }
 
     @Override
@@ -225,5 +249,14 @@ public class Car implements DrawableCar, FragileCar {
         }
 
         return newAngle;
+    }
+
+    private void setImages(){
+        BufferedImage image = ImageHandler.loadImage("car" + kind.name());
+        images = new BufferedImage[States.values().length];
+
+        for(int i = 0; i < States.values().length; i++){
+            images[i] = ImageHandler.cutImage(image, 0, i, image.getWidth()/States.values().length, image.getHeight());
+        }
     }
 }

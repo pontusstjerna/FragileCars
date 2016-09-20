@@ -39,7 +39,7 @@ public class BallsBot implements GameObject, DrawableBot{
         lastX = car.getX();
         lastY = car.getY();
 
-        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight());
+        WALL_THRESHOLD = Math.max(car.getWidth(), car.getHeight());
 
         //walls.add(new Point(200, 1108));
     }

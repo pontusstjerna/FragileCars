@@ -10,6 +10,8 @@ import java.awt.image.BufferedImage;
 public interface DrawableCar {
     int getX();
     int getY();
+    int getWidth();
+    int getHeight();
     double getHeading();
 
     long getFinished();
@@ -19,6 +21,7 @@ public interface DrawableCar {
     String toString();
     String getName();
 
-    BufferedImage getImg();
+    BufferedImage[] getImgs();
+    int getFrame();
     GameObject getSmoke();
 }

@@ -281,12 +281,12 @@ public class World implements Racetrack{
 
     private void checkCollisions(){
         for(FragileCar car : getCars()){
-            for(int x = 0; x < car.getImg().getWidth(); x++){
-                for(int y = 0; y < car.getImg().getHeight(); y++){
+            for(int x = 0; x < car.getWidth(); x++){
+                for(int y = 0; y < car.getHeight(); y++){
                     try{
-                        if(car.getImg().getRGB(x,y) != 0){
-                            if(images[1].getRGB(car.getX() - car.getImg().getWidth()/2 + x,
-                                                car.getY() - car.getImg().getHeight()/2 + y) != 0){
+                        if(car.getImgs()[car.getFrame()].getRGB(x,y) != 0){
+                            if(images[1].getRGB(car.getX() - car.getWidth()/2 + x,
+                                                car.getY() - car.getHeight()/2 + y) != 0){
                                 car.reset();
                             }
                         }

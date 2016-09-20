@@ -25,8 +25,17 @@ public class SmokeController implements GameObject {
         this.car = car;
         rand = new Random();
 
+        final int MAX_ALPHA = 100;
+        int gray = rand.nextInt(30) + 30;
+        Color[] colors = new Color[MAX_ALPHA];
+        for(int i = 0; i < MAX_ALPHA; i++){
+            int alpha = Math.min((int)(MAX_ALPHA*7.0/i),MAX_ALPHA);
+            colors[i] = new Color(gray, gray, gray, alpha);
+            //System.out.println(alpha);
+        }
+
         for(int i = 0; i < MAX_SMOKE; i++){
-            smoke[i] = new SmokeParticle(car.getX(), car.getY(), car.getAcceleration(), car.getHeading(), rand);
+            smoke[i] = new SmokeParticle(car.getX(), car.getY(), car.getAcceleration(), car.getHeading(), colors, rand);
         }
     }
 
@@ -46,14 +55,14 @@ public class SmokeController implements GameObject {
     public void paint(Graphics2D g, double scale, int scaleX) {
         //TODO: Getting some lag spikes and fps drops to 4 fps sometimes, need to fix that
 
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+        g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+
         //Paint all particles
         for(SmokeParticle s : smoke) {
             s.paint(g, scale, scaleX);
         }
 
-        /*//Paint all particles
-        for(int i = 0; i < MAX_SMOKE; i += 5) {
-            smoke[i].paint(g, scale, scaleX);
-        }*/
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
     }
 }

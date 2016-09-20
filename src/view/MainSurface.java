@@ -19,20 +19,26 @@ public class MainSurface extends JPanel {
     private Racetrack track;
     private CfgParser cfg;
 
-    private BufferedImage[] scaledCarImgs;
+    private BufferedImage[][] scaledCarImgs;
     private BufferedImage scaledBackground;
     private BufferedImage scaledForeground;
 
     private int currentWidth;
     private int currentHeight;
 
+    private boolean betterGraphics = true;
+
     public MainSurface(Racetrack track){
         setFocusable(true);
 
+
+
         this.track = track;
-        scaledCarImgs = new BufferedImage[track.getDrawableCars().length];
+        scaledCarImgs = new BufferedImage[track.getDrawableCars().length][track.getDrawableCars()[0].getImgs().length];
 
         cfg = new CfgParser("src\\model\\data\\config.txt");
+        betterGraphics = cfg.readBoolean("betterGraphics");
+
         System.out.println("Surface initialized with scale " + scale() + ". ");
     }
 
@@ -71,16 +77,18 @@ public class MainSurface extends JPanel {
     private void paintCars(Graphics2D g){
         for(int i = 0; i < track.getDrawableCars().length; i++){
 
+            int frame = track.getDrawableCars()[i].getFrame();
+
             //Algorithm for centering image and scaling to window.
-            int x = (int)((track.getDrawableCars()[i].getX() - track.getDrawableCars()[i].getImg().getWidth()/2)*scale()) + scaleX();
-            int y = (int)((track.getDrawableCars()[i].getY() - track.getDrawableCars()[i].getImg().getHeight()/2)*scale());
-            int middleX = (int)(x + (track.getDrawableCars()[i].getImg().getWidth()/2)*scale());
-            int middleY = (int)(y + (track.getDrawableCars()[i].getImg().getHeight()/2)*scale());
+            int x = (int)((track.getDrawableCars()[i].getX() - track.getDrawableCars()[i].getWidth()/2)*scale()) + scaleX();
+            int y = (int)((track.getDrawableCars()[i].getY() - track.getDrawableCars()[i].getHeight()/2)*scale());
+            int middleX = (int)(x + (track.getDrawableCars()[i].getWidth()/2)*scale());
+            int middleY = (int)(y + (track.getDrawableCars()[i].getHeight()/2)*scale());
 
             g.rotate(track.getDrawableCars()[i].getHeading(), middleX, middleY);
 
             //Draw scaled car image
-            g.drawImage(scaledCarImgs[i], x, y, this);
+            g.drawImage(scaledCarImgs[i][frame], x, y, this);
 
             g.rotate(-track.getDrawableCars()[i].getHeading(), middleX, middleY);
         }
@@ -89,7 +97,7 @@ public class MainSurface extends JPanel {
     //Paint other misc objects that paint themselves
     private void paintObjects(Graphics2D g){
 
-        if(cfg.readBoolean("showBotPaint")){
+        if(betterGraphics){
             for(GameObject bot : track.getObjects()){
                 bot.paint(g, scale(), scaleX());
             }
@@ -138,7 +146,9 @@ public class MainSurface extends JPanel {
 
     private void scaleCars(){
         for(int i = 0; i < track.getDrawableCars().length; i++){
-            scaledCarImgs[i] = scaleImage(track.getDrawableCars()[i].getImg());
+            for(int j = 0; j < track.getDrawableCars()[0].getImgs().length; j++){
+                scaledCarImgs[i][j] = scaleImage(track.getDrawableCars()[i].getImgs()[j]);
+            }
         }
     }
 }

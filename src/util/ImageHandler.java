@@ -20,4 +20,8 @@ public class ImageHandler {
             return null;
         }
     }
+
+    public static BufferedImage cutImage(BufferedImage image, int state, int frame, int width, int height){
+        return image.getSubimage(frame*width, state*height, width, height);
+    }
 }

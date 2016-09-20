@@ -2,6 +2,7 @@ package controller;
 
 import model.World;
 import view.MainWindow;
+import view.View;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -12,6 +13,7 @@ import java.awt.event.ActionListener;
  */
 public class MainController implements ActionListener {
     private MainWindow frame;
+    private View view;
     private Timer timer;
     private World world;
     private PlayerController playerController;
@@ -19,8 +21,6 @@ public class MainController implements ActionListener {
 
     private double tempTime;
     private double deltaTime;
-    private int fps;
-
     private final int DELAY = 5;
 
     public MainController(){
@@ -56,6 +56,10 @@ public class MainController implements ActionListener {
         frame = new MainWindow("Fragile Cars");
         frame.init();
     }
+
+    /*private void initView(){
+        view = new View("FragileCars", world, playerController);
+    }*/
 
     private void startGame(){
         world = initWorld();

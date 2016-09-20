@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 public interface FragileCar {
     int getX();
     int getY();
+    int getWidth();
+    int getHeight();
     double getHeading();
     double getAcceleration();
 
@@ -20,14 +22,16 @@ public interface FragileCar {
     void setLocked(boolean lock);
     void turnOff(boolean turnOff);
 
+    BufferedImage[] getImgs();
+    int getFrame();
+
     void accelerate();
     void engineBrake();
     void brake();
     void turnRight(double deltaTime);
     void turnLeft(double deltaTime);
+    void release();
 
     String toString();
     String getName();
-
-    BufferedImage getImg();
 }

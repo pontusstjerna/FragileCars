@@ -39,7 +39,7 @@ public class BruteBot implements GameObject, DrawableBot{
         lastX = car.getX();
         lastY = car.getY();
 
-        WALL_THRESHOLD = Math.max(car.getImg().getWidth(), car.getImg().getHeight())/3;
+        WALL_THRESHOLD = Math.max(car.getWidth(), car.getHeight())/3;
         STICK_LENGTH = WALL_THRESHOLD*2;
 
         rand = new Random();
