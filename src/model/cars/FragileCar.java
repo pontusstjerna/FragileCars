@@ -8,8 +8,8 @@ import java.awt.image.BufferedImage;
 public interface FragileCar {
     int getX();
     int getY();
-    int getRelX(double x);
-    int getRelY(double y);
+    int getRelX(double x, double y);
+    int getRelY(double x, double y);
     int getWidth();
     int getHeight();
     double getHeading();

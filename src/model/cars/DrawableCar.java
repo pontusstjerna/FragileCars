@@ -10,8 +10,8 @@ import java.awt.image.BufferedImage;
 public interface DrawableCar {
     int getX();
     int getY();
-    int getRelX(double x);
-    int getRelY(double y);
+    int getRelX(double x, double y);
+    int getRelY(double y, double x);
     int getWidth();
     int getHeight();
     double getHeading();

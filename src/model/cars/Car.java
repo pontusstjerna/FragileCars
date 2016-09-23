@@ -131,12 +131,29 @@ public class Car implements DrawableCar, FragileCar {
     }
 
     @Override
-    public int getRelX(double x){
-        return (int)(getMiddleX(this.x) + hypotenusa*Math.sin(heading - Math.PI/4));
+    public int getRelX(double x, double y){
+        //return (int)(getMiddleX() - ((getWidth()/2) + x)*Math.sqrt(Math.sin(heading - Math.PI/4)*Math.sin(heading - Math.PI/4) +
+          //      Math.cos(heading - Math.PI/4)*Math.cos(heading - Math.PI/4)));
+
+        //return (int)(getMiddleX() + ((getWidth()/2) + x)*Math.sin(heading-Math.PI/4));
+        return (int)(getRotX() + x*Math.cos(-heading) + y*Math.sin(-heading));
     }
 
     @Override
-    public int getRelY(double y){
+    public int getRelY(double x, double y){
+/*        return (int)(getMiddleY() - ((getHeight()/2) + y)*Math.sqrt(Math.cos(heading - Math.PI/4)*Math.cos(heading - Math.PI/4) +
+                Math.sin(heading - Math.PI/4)*Math.sin(heading - Math.PI/4)));
+*/
+        //return (int)(getMiddleY(this.y) - ((getHeight()/2) + y)*(Math.cos(heading - Math.PI/4)));
+
+        return (int)(getRotY() + y*Math.cos(-heading) + x*Math.sin(heading));
+    }
+
+    private int getRotX(){
+        return (int)(getMiddleX(this.x) + hypotenusa*Math.sin(heading - Math.PI/4));
+    }
+
+    private int getRotY(){
         return (int)(getMiddleY(this.y) - hypotenusa*Math.cos(heading - Math.PI/4));
     }
 
