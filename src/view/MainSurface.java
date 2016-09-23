@@ -100,10 +100,6 @@ public class MainSurface extends JPanel {
 
             //Draw scaled car image
             g.drawImage(scaledCarImgs[i][frame], x, y, this);
-            g.setColor(Color.red);
-            g.fillRoundRect((int)(track.getDrawableCars()[i].getRotX()*scale()),
-                    (int)(track.getDrawableCars()[i].getRotY()*scale()), 10, 10, 10, 10);
-
             g.rotate(-heading, middleX, middleY);
         }
     }

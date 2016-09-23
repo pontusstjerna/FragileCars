@@ -67,7 +67,7 @@ public class SmokeParticle {
 
     public void paint(Graphics2D g, double scale, int scaleX) {
         g.setColor(colors[colorIndex]);
-        g.fillRoundRect((int)(x*scale) + scaleX, (int)(y*scale), (int)(thickness*scale),
+        g.fillRoundRect((int)((x - thickness/2)*scale) + scaleX, (int)((y - thickness/2)*scale), (int)(thickness*scale),
                 (int)(thickness*scale), (int)(thickness*scale), (int)(thickness*scale));
     }
 }

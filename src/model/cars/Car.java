@@ -130,24 +130,14 @@ public class Car implements DrawableCar, FragileCar {
         return (int)y;
     }
 
-    public int getRotX(){
-
-        double middleX = x + ((getWidth())*
-                Math.cos(heading)*Math.cos(heading) +
-                (getHeight())*
-                        Math.sin(heading)*Math.sin(heading))/2;
-
-        return (int)(middleX + hypotenusa*Math.sin(heading - Math.PI/4)*Math.sin(heading - Math.PI/4));
-        //return (int)middleX;
+    @Override
+    public int getRelX(double x){
+        return (int)(getMiddleX(this.x) + hypotenusa*Math.sin(heading - Math.PI/4));
     }
 
-    public int getRotY(){
-        double middleY = y + ((getWidth())*
-                Math.sin(heading)*Math.sin(heading) +
-                (getHeight())* Math.cos(heading)*Math.cos(heading))/2;
-
-        //return (int)middleY;
-        return (int)(middleY - hypotenusa*Math.cos(heading - Math.PI/4)*Math.cos(heading - Math.PI/4));
+    @Override
+    public int getRelY(double y){
+        return (int)(getMiddleY(this.y) - hypotenusa*Math.cos(heading - Math.PI/4));
     }
 
     @Override
@@ -272,6 +262,16 @@ public class Car implements DrawableCar, FragileCar {
         }
 
         return newAngle;
+    }
+
+    private double getMiddleX(double x){
+        return x + ((getWidth())* Math.cos(heading)*Math.cos(heading) +
+                (getHeight())* Math.sin(heading)*Math.sin(heading))/2;
+    }
+
+    private double getMiddleY(double y){
+        return y + ((getWidth())* Math.sin(heading)*Math.sin(heading) +
+                (getHeight())* Math.cos(heading)*Math.cos(heading))/2;
     }
 
     private void setImages(){
