@@ -28,6 +28,8 @@ public class MainController implements ActionListener {
     }
 
     public void init(){
+        //Use accelerated graphics
+        System.setProperty("sun.java2d.opengl", "true");
         initView();
         startGame();
     }

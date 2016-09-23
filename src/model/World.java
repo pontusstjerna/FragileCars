@@ -285,8 +285,8 @@ public class World implements Racetrack{
                 for(int y = 0; y < car.getHeight(); y++){
                     try{
                         if(car.getImgs()[car.getFrame()].getRGB(x,y) != 0){
-                            if(images[1].getRGB(car.getX() - car.getWidth()/2 + x,
-                                                car.getY() - car.getHeight()/2 + y) != 0){
+                            if(images[1].getRGB(car.getX() + x,
+                                                car.getY() + y) != 0){
                                 car.reset();
                             }
                         }

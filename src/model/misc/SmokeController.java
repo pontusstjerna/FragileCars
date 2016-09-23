@@ -20,12 +20,11 @@ public class SmokeController implements GameObject {
     //Round buffer
     private SmokeParticle[] smoke = new SmokeParticle[MAX_SMOKE];
 
-
     public SmokeController(FragileCar car){
         this.car = car;
         rand = new Random();
 
-        final int MAX_ALPHA = 100;
+        final int MAX_ALPHA = 50;
         int gray = rand.nextInt(30) + 30;
         Color[] colors = new Color[MAX_ALPHA];
         for(int i = 0; i < MAX_ALPHA; i++){
@@ -35,13 +34,17 @@ public class SmokeController implements GameObject {
         }
 
         for(int i = 0; i < MAX_SMOKE; i++){
-            smoke[i] = new SmokeParticle(car.getRelX(20, 70), car.getRelY(20, 70), car.getAcceleration(), car.getHeading(), colors, rand);
+            double acc = Math.min(10, car.getAcceleration()/2);
+            smoke[i] = new SmokeParticle(car.getRelX(20, 80), car.getRelY(20, 80), acc,
+                    -car.getHeading(), colors, rand);
         }
     }
 
     @Override
     public void update(double deltaTime) {
-        smoke[index].reSet(car.getRelX(20,70), car.getRelY(20, 70), car.getAcceleration(), car.getHeading());
+        double acc = Math.min(10, car.getAcceleration()/2);
+
+        smoke[index].reSet(car.getRelX(20,80), car.getRelY(20, 80), acc, -car.getHeading());
 
         index = (index + 1) % MAX_SMOKE;
 

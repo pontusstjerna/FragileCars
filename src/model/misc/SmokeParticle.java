@@ -1,7 +1,5 @@
 package model.misc;
 
-import model.GameObject;
-
 import java.awt.*;
 import java.util.Random;
 
@@ -10,7 +8,7 @@ import java.util.Random;
  */
 public class SmokeParticle {
     private double x, y;
-    private int thickness = 30;
+    private int thickness = 20;
 
     private double timeExisted;
     private final double lifeTime;
@@ -57,7 +55,7 @@ public class SmokeParticle {
         y = y + (rand.nextInt(spread*2) - spread)*deltaTime;
 
         x = (x + velocity * Math.sin(heading) * deltaTime);
-        y = (y - velocity * Math.cos(heading) * deltaTime);
+        y = (y + velocity * Math.cos(heading) * deltaTime);
 
         velocity = Math.max(initVel - (int)(initVel*timeExisted/lifeTime),1);
 
