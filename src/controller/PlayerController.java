@@ -37,7 +37,7 @@ public class PlayerController implements KeyListener {
             //Tell the car to go straight when release left or right
             switch(players.length){
                 case 1:
-                    if(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_LEFT){
+                    if(e.getKeyCode() == KeyEvent.VK_LEFT || e.getKeyCode() == KeyEvent.VK_RIGHT){
                         players[0].release();
                     }
                     break;

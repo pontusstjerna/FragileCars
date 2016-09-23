@@ -327,11 +327,13 @@ public class World implements Racetrack{
         finished = allFinished;
     }
 
+    private boolean released = false;
     private void releaseCars(){
-        if(getTime()/10 == 0){
+        if(!released && time > 0){
             for(FragileCar car : cars){
                 car.setLocked(false);
             }
+            released = true;
         }
     }
 

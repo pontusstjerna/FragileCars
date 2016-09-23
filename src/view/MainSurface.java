@@ -76,21 +76,35 @@ public class MainSurface extends JPanel {
 
     private void paintCars(Graphics2D g){
         for(int i = 0; i < track.getDrawableCars().length; i++){
-
             int frame = track.getDrawableCars()[i].getFrame();
+            double heading = track.getDrawableCars()[i].getHeading();
 
             //Algorithm for centering image and scaling to window.
-            int x = (int)((track.getDrawableCars()[i].getX() - track.getDrawableCars()[i].getWidth()/2)*scale()) + scaleX();
-            int y = (int)((track.getDrawableCars()[i].getY() - track.getDrawableCars()[i].getHeight()/2)*scale());
-            int middleX = (int)(x + (track.getDrawableCars()[i].getWidth()/2)*scale());
-            int middleY = (int)(y + (track.getDrawableCars()[i].getHeight()/2)*scale());
+            //int x = (int)((track.getDrawableCars()[i].getX() - track.getDrawableCars()[i].getWidth()/2)*scale()) + scaleX();
+            //int y = (int)((track.getDrawableCars()[i].getY() - track.getDrawableCars()[i].getHeight()/2)*scale());
+            int x = (int)(track.getDrawableCars()[i].getX()*scale() + scaleX());
+            int y = (int)(track.getDrawableCars()[i].getY()*scale());
 
-            g.rotate(track.getDrawableCars()[i].getHeading(), middleX, middleY);
+
+            double middleX = (track.getDrawableCars()[i].getX() + ((track.getDrawableCars()[i].getWidth())*
+                    Math.cos(heading)*Math.cos(heading) +
+                    (track.getDrawableCars()[i].getHeight())*
+                            Math.sin(heading)*Math.sin(heading))/2)*scale();
+
+            double middleY = (track.getDrawableCars()[i].getY() + ((track.getDrawableCars()[i].getWidth())*
+                    Math.pow(Math.sin(heading), 2) +
+                    (track.getDrawableCars()[i].getHeight())*
+                            Math.pow(Math.cos(heading),2))/2)*scale();
+
+            g.rotate(heading, middleX, middleY);
 
             //Draw scaled car image
             g.drawImage(scaledCarImgs[i][frame], x, y, this);
+            g.setColor(Color.red);
+            g.fillRoundRect((int)(track.getDrawableCars()[i].getRotX()*scale()),
+                    (int)(track.getDrawableCars()[i].getRotY()*scale()), 10, 10, 10, 10);
 
-            g.rotate(-track.getDrawableCars()[i].getHeading(), middleX, middleY);
+            g.rotate(-heading, middleX, middleY);
         }
     }
 
