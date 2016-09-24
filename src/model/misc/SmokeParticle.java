@@ -12,7 +12,7 @@ public class SmokeParticle {
 
     private double timeExisted;
     private final double lifeTime;
-    private final int spread = 150;
+    private final int spread = 300;
     private double initVel;
     private double velocity;
     private double heading;
@@ -20,9 +20,6 @@ public class SmokeParticle {
     private int colorIndex = 0;
 
     private Color[] colors;
-    private final int MAX_ALPHA = 100;
-    private int gray = 0;
-    private int alpha = MAX_ALPHA;
 
     private Random rand;
 

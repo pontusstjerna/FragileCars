@@ -13,7 +13,7 @@ public class SmokeController implements GameObject {
 
     FragileCar car;
 
-    private final int MAX_SMOKE = 200;
+    private final int MAX_SMOKE = 500;
     private int index = 0;
     private Random rand;
 
@@ -34,7 +34,7 @@ public class SmokeController implements GameObject {
         }
 
         for(int i = 0; i < MAX_SMOKE; i++){
-            double acc = Math.min(10, car.getAcceleration()/2);
+            double acc = Math.min(100, car.getAcceleration()*2);
             smoke[i] = new SmokeParticle(car.getRelX(20, 80), car.getRelY(20, 80), acc,
                     -car.getHeading(), colors, rand);
         }
@@ -42,7 +42,7 @@ public class SmokeController implements GameObject {
 
     @Override
     public void update(double deltaTime) {
-        double acc = Math.min(10, car.getAcceleration()/2);
+        double acc = Math.min(100, car.getAcceleration()*2);
 
         smoke[index].reSet(car.getRelX(20,80), car.getRelY(20, 80), acc, -car.getHeading());
 
