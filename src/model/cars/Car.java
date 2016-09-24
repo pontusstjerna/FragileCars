@@ -1,6 +1,7 @@
 package model.cars;
 
 import model.GameObject;
+import model.misc.SkidmarkCreator;
 import model.misc.SmokeController;
 import util.Geom;
 import util.ImageHandler;
@@ -39,6 +40,7 @@ public class Car implements DrawableCar, FragileCar {
     private BufferedImage[] images;
 
     private SmokeController smoke;
+    private SkidmarkCreator skids;
 
     private double acceleration;
 

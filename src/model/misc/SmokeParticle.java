@@ -1,14 +1,16 @@
 package model.misc;
 
+import model.GameObject;
+
 import java.awt.*;
 import java.util.Random;
 
 /**
  * Created by pontu on 2016-09-12.
  */
-public class SmokeParticle {
+public class SmokeParticle implements GameObject{
     private double x, y;
-    private int thickness = 20;
+    private double thickness = 20;
 
     private double timeExisted;
     private final double lifeTime;
@@ -41,7 +43,7 @@ public class SmokeParticle {
         this.y = y;
         initVel = velocity;
         this.heading = heading;
-        //thickness = 20;
+        thickness = 20;
     }
 
     public void update(double deltaTime) {
@@ -56,13 +58,15 @@ public class SmokeParticle {
         y = (y + velocity * Math.cos(heading) * deltaTime);
 
         velocity = Math.max(initVel - (int)(initVel*timeExisted/lifeTime),1);
-        //thickness++;
+        thickness += deltaTime*20;
 
         //Fading with time
         colorIndex = Math.min((int)((timeExisted/lifeTime)*(colors.length-1)), colors.length-1);
     }
 
     public void paint(Graphics2D g, double scale, int scaleX) {
+        int thickness = (int)this.thickness;
+
         g.setColor(colors[colorIndex]);
         g.fillRoundRect((int)((x - thickness/2)*scale) + scaleX, (int)((y - thickness/2)*scale), (int)(thickness*scale),
                 (int)(thickness*scale), (int)(thickness*scale), (int)(thickness*scale));

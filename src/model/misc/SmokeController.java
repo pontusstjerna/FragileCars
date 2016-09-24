@@ -13,7 +13,7 @@ public class SmokeController implements GameObject {
 
     FragileCar car;
 
-    private final int MAX_SMOKE = 500;
+    private final int MAX_SMOKE = 300;
     private int index = 0;
     private Random rand;
 
@@ -28,7 +28,7 @@ public class SmokeController implements GameObject {
         int gray = rand.nextInt(30) + 30;
         Color[] colors = new Color[MAX_ALPHA];
         for(int i = 0; i < MAX_ALPHA; i++){
-            int alpha = Math.min((int)(MAX_ALPHA*7.0/i),MAX_ALPHA);
+            int alpha = Math.min((int)(MAX_ALPHA*3.0/i),MAX_ALPHA);
             colors[i] = new Color(gray, gray, gray, alpha);
             //System.out.println(alpha);
         }
