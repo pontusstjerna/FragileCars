@@ -34,7 +34,7 @@ public class SmokeController implements GameObject {
         }
 
         for(int i = 0; i < MAX_SMOKE; i++){
-            double acc = Math.min(100, car.getAcceleration()*2);
+            double acc = Math.max(200, car.getAcceleration()*2/3);
             smoke[i] = new SmokeParticle(car.getRelX(20, 80), car.getRelY(20, 80), acc,
                     -car.getHeading(), colors, rand);
         }
@@ -42,7 +42,7 @@ public class SmokeController implements GameObject {
 
     @Override
     public void update(double deltaTime) {
-        double acc = Math.min(100, car.getAcceleration()*2);
+        double acc = Math.max(200, car.getAcceleration()*2/3);
 
         smoke[index].reSet(car.getRelX(20,80), car.getRelY(20, 80), acc, -car.getHeading());
 

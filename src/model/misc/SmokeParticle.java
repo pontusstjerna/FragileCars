@@ -41,6 +41,7 @@ public class SmokeParticle {
         this.y = y;
         initVel = velocity;
         this.heading = heading;
+        //thickness = 20;
     }
 
     public void update(double deltaTime) {
@@ -55,6 +56,7 @@ public class SmokeParticle {
         y = (y + velocity * Math.cos(heading) * deltaTime);
 
         velocity = Math.max(initVel - (int)(initVel*timeExisted/lifeTime),1);
+        //thickness++;
 
         //Fading with time
         colorIndex = Math.min((int)((timeExisted/lifeTime)*(colors.length-1)), colors.length-1);
