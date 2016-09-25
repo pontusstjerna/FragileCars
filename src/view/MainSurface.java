@@ -50,8 +50,8 @@ public class MainSurface extends JPanel {
         reScaleImages();
 
         paintWorld(g2d);
-        paintCars(g2d);
         paintObjects(g2d);
+        paintCars(g2d);
     }
 
     private void paintWorld(Graphics2D g){

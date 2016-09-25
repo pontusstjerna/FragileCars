@@ -25,5 +25,5 @@ public interface DrawableCar {
 
     BufferedImage[] getImgs();
     int getFrame();
-    GameObject getSmoke();
+    GameObject[] getGameObjects();
 }

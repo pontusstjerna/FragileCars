@@ -12,6 +12,7 @@ public class SkidmarkCreator implements GameObject {
 
     private ArrayList<Skidmark> marks = new ArrayList<>();
     private int width;
+    private Color blk = new Color(10,10,10,50);
 
     public SkidmarkCreator(int width){
         this.width = width;
@@ -28,8 +29,13 @@ public class SkidmarkCreator implements GameObject {
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
+        g.setColor(blk);
         for(Skidmark mark : marks){
             mark.paint(g, scale, scaleX);
         }
+    }
+
+    public double getThreshold(){
+        return Math.PI/4;
     }
 }

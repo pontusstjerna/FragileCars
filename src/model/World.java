@@ -220,10 +220,12 @@ public class World implements Racetrack{
     }
 
     private void createMiscGameObjects(){
-        objects = new ArrayList<GameObject>();
+        objects = new ArrayList<>();
 
         for(int i = 0; i < cars.length; i++){
-            objects.add(drawables[i].getSmoke());
+            for(int j = 0; j < drawables[0].getGameObjects().length; j++){
+                objects.add(drawables[i].getGameObjects()[j]);
+            }
         }
 
         //Create car controllers for bots

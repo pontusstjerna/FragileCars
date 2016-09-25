@@ -6,6 +6,7 @@ import model.misc.SmokeController;
 import util.Geom;
 import util.ImageHandler;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -24,6 +25,7 @@ public class Car implements DrawableCar, FragileCar {
     private double physHeading;
     private final double originHeading;
     private boolean accelerating = false;
+    private double acceleration;
 
     private int laps = 0;
     private boolean locked = true;
@@ -36,13 +38,13 @@ public class Car implements DrawableCar, FragileCar {
     public static final int speedLimit = 500;
     private final int reverseLimit = -50;
 
+    private Point[] wheels;
+
     private Cars kind;
     private BufferedImage[] images;
 
     private SmokeController smoke;
     private SkidmarkCreator skids;
-
-    private double acceleration;
 
     public Car(Cars kind, int x, int y, double heading, double friction){
         this.kind = kind;
@@ -54,9 +56,17 @@ public class Car implements DrawableCar, FragileCar {
         reset();
         setImages();
 
+        wheels  = new Point[]{
+                new Point(10, 10),
+                new Point(getWidth()-10, 10),
+                new Point(10, getHeight()-10),
+                new Point(getWidth()-10,getHeight()-10)
+        };
+
         hypotenusa = Math.sqrt(getWidth()*getWidth()/4 + getHeight()*getHeight()/4);
 
         smoke = new SmokeController(this);
+        skids = new SkidmarkCreator(20);
     }
 
     @Override
@@ -71,6 +81,12 @@ public class Car implements DrawableCar, FragileCar {
                 engineBrake();
             } else {
                 accelerating = false;
+            }
+
+            if(Math.abs(Geom.getPI(physHeading) - Geom.getPI(heading)) > skids.getThreshold()){
+                for(int i = 0; i < wheels.length; i++){
+                    skids.drift(getRelX(wheels[i].x, wheels[i].y), getRelY(wheels[i].x, wheels[i].y), heading);
+                }
             }
         }
     }
@@ -237,7 +253,7 @@ public class Car implements DrawableCar, FragileCar {
     }
 
     @Override
-    public GameObject getSmoke(){ return smoke; }
+    public GameObject[] getGameObjects(){ return new GameObject[]{smoke, skids}; }
 
     @Override
     public String toString(){
