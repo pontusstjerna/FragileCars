@@ -54,6 +54,7 @@ public class World implements Racetrack{
 
     public void update(double deltaTime) {
         this.deltaTime = deltaTime;
+        getTime();
         updateCars(deltaTime);
         releaseCars();
         checkCollisions();

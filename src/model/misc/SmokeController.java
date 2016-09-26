@@ -56,8 +56,6 @@ public class SmokeController implements GameObject {
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
-        //TODO: Getting some lag spikes and fps drops to 4 fps sometimes, need to fix that
-
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
         g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
 

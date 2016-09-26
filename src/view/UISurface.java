@@ -1,18 +1,22 @@
 package view;
 
 import model.Racetrack;
+import util.ImageHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * Created by pontu on 2016-04-05.
  */
 public class UISurface extends JPanel {
     private Racetrack track;
+    private BufferedImage guiBg;
 
     public UISurface(Racetrack track){
         this.track = track;
+        guiBg = ImageHandler.loadImage("gui_bg");
     }
 
     @Override
@@ -20,9 +24,14 @@ public class UISurface extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         super.paintComponent(g);
 
-        displayTime(g2d);
-        displayFPS(g2d);
-        displayLaps(g2d);
+        //displayTime(g2d);
+        //displayFPS(g2d);
+        //displayLaps(g2d);
+    }
+
+    public double scale(){
+        return Math.min((double)MainWindow.WINDOW_WIDTH/ guiBg.getWidth(),
+                (double)MainWindow.WINDOW_HEIGHT/ guiBg.getHeight());
     }
 
     private void displayTime(Graphics2D g){
