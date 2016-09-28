@@ -5,6 +5,8 @@ import util.ImageHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 /**
@@ -12,11 +14,13 @@ import java.awt.image.BufferedImage;
  */
 public class UISurface extends JPanel {
     private Racetrack track;
-    private BufferedImage guiBg;
+    private BufferedImage guiBg, guiBgScaled;
+    private int currentWidth, currentHeight;
 
     public UISurface(Racetrack track){
         this.track = track;
         guiBg = ImageHandler.loadImage("gui_bg");
+        guiBgScaled = scaleImage(guiBg);
     }
 
     @Override
@@ -24,14 +28,21 @@ public class UISurface extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         super.paintComponent(g);
 
+        reScaleImages();
+
+        paintGuiBG(g2d);
         //displayTime(g2d);
         //displayFPS(g2d);
         //displayLaps(g2d);
     }
 
     public double scale(){
-        return Math.min((double)MainWindow.WINDOW_WIDTH/ guiBg.getWidth(),
-                (double)MainWindow.WINDOW_HEIGHT/ guiBg.getHeight());
+        return Math.min((double)(MainWindow.WORLD_WIDTH/4)/ guiBg.getWidth(),
+                (double)MainWindow.WORLD_HEIGHT/ guiBg.getHeight());
+    }
+
+    private void paintGuiBG(Graphics2D g){
+        g.drawImage(guiBgScaled, 0, 0, this);
     }
 
     private void displayTime(Graphics2D g){
@@ -54,4 +65,29 @@ public class UISurface extends JPanel {
         g.drawString("FPS: " + track.getFPS(),
                 getWidth()/5, getHeight()/2 + 100);
     }
+
+    private BufferedImage scaleImage(BufferedImage unscaled){
+        int w = unscaled.getWidth();
+        int h = unscaled.getHeight();
+        BufferedImage after = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        AffineTransform at = new AffineTransform();
+        at.scale(scale(), scale());
+        AffineTransformOp scaleOp =
+                new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+        after = scaleOp.filter(unscaled, after);
+
+        return after;
+    }
+
+    private void reScaleImages(){ //Only rescale if window size has changed!
+        if(currentWidth != MainWindow.WORLD_WIDTH || currentHeight != MainWindow.WORLD_HEIGHT){
+            setPreferredSize(new Dimension(MainWindow.WORLD_WIDTH/4, MainWindow.WORLD_HEIGHT));
+
+            guiBgScaled = scaleImage(guiBg);
+
+            currentWidth = MainWindow.WORLD_WIDTH;
+            currentHeight = MainWindow.WORLD_HEIGHT;
+        }
+    }
+
 }

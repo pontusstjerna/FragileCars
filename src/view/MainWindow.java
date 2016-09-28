@@ -3,6 +3,7 @@ package view;
 import model.Racetrack;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.DefaultMenuLayout;
 import java.awt.*;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -12,8 +13,8 @@ import java.awt.event.KeyListener;
  * Created by Pontus on 2016-03-04.
  */
 public class MainWindow extends JFrame implements ComponentListener {
-    public static int WINDOW_WIDTH = 1000;
-    public static int WINDOW_HEIGHT = 600;
+    public static int WORLD_WIDTH = 800;
+    public static int WORLD_HEIGHT = 600;
 
     private final String title;
     private MainSurface surface;
@@ -23,9 +24,11 @@ public class MainWindow extends JFrame implements ComponentListener {
         this.title = title;
     }
 
-    public void init(){
+    public void init(int width, int height){
+        WORLD_WIDTH = width/2;
+        WORLD_HEIGHT = height/2;
         initWindow();
-        System.out.println("View initialized with width " + WINDOW_WIDTH + " and height " + WINDOW_HEIGHT + ". ");
+        System.out.println("View initialized with dynamic size.");
     }
 
     @Override
@@ -43,35 +46,35 @@ public class MainWindow extends JFrame implements ComponentListener {
 
     public void startGame(Racetrack track, KeyListener listener){
         setResizable(true);
-
-        JPanel container = new JPanel();
-        container.setLayout(new BoxLayout(container, BoxLayout.X_AXIS));
+        setLayout(new BoxLayout(getContentPane(), BoxLayout.LINE_AXIS));
 
         surface = new MainSurface(track);
         ui = new UISurface(track);
 
-        surface.setPreferredSize(new Dimension(WINDOW_WIDTH*5/10, WINDOW_HEIGHT));
+        ui.setPreferredSize(new Dimension(WORLD_WIDTH/4,WORLD_HEIGHT));
+        surface.setPreferredSize(new Dimension(WORLD_WIDTH, WORLD_HEIGHT));
 
-        container.add(ui);
-        container.add(surface);
-
-        add(container);
         registerKeyListener(listener);
+        add(ui);
+        add(surface);
+        pack();
+        setVisible(true);
     }
 
     private void initWindow(){
         setTitle(title);
-        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        //setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
-        setVisible(true);
     }
 
     @Override
     public void componentResized(ComponentEvent e) {
-        WINDOW_WIDTH = e.getComponent().getWidth();
-        WINDOW_HEIGHT = e.getComponent().getHeight();
+       //WORLD_WIDTH = e.getComponent().getWidth() - getInsets().left - getInsets().right;
+       //WORLD_HEIGHT = e.getComponent().getHeight()-getInsets().top - getInsets().bottom;
+        WORLD_WIDTH = e.getComponent().getWidth();
+        WORLD_HEIGHT = e.getComponent().getHeight();
+
     }
 
     @Override

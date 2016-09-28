@@ -30,6 +30,7 @@ public class MainController implements ActionListener {
     public void init(){
         //Use accelerated graphics
         System.setProperty("sun.java2d.opengl", "true");
+        world = initWorld();
         initView();
         startGame();
     }
@@ -56,7 +57,7 @@ public class MainController implements ActionListener {
 
     private void initView(){
         frame = new MainWindow("Fragile Cars");
-        frame.init();
+        frame.init(world.getBackground().getWidth(), world.getBackground().getHeight());
     }
 
     /*private void initView(){
@@ -64,7 +65,6 @@ public class MainController implements ActionListener {
     }*/
 
     private void startGame(){
-        world = initWorld();
         playerController = initPlayerControls(world);
         frame.startGame(world, playerController);
 

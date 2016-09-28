@@ -57,8 +57,9 @@ public class MainSurface extends JPanel {
     private void paintWorld(Graphics2D g){
         g.setColor(new Color(100,100,100));
 
-        int x = MainWindow.WINDOW_WIDTH - (int)(World.WORLD_WIDTH*scale());
+        //int x = MainWindow.WINDOW_WIDTH - (int)(World.WORLD_WIDTH*scale());
 
+        int x = 0;
         if(x < 0){
             x = 0;
         }
@@ -128,12 +129,12 @@ public class MainSurface extends JPanel {
     }
 
     public double scale(){
-        return Math.min((double)MainWindow.WINDOW_WIDTH/ World.WORLD_WIDTH,
-                (double)MainWindow.WINDOW_HEIGHT/ World.WORLD_HEIGHT);
+        return Math.min((double)MainWindow.WORLD_WIDTH/ World.WORLD_WIDTH,
+                (double)MainWindow.WORLD_HEIGHT/ World.WORLD_HEIGHT);
     }
 
     private int scaleX(){
-        int scaleX = (MainWindow.WINDOW_WIDTH - (int)(World.WORLD_WIDTH*scale()))/2;
+        int scaleX = (MainWindow.WORLD_WIDTH - (int)(World.WORLD_WIDTH*scale()))/2;
 
         if(scaleX < 0){
             scaleX = 0;
@@ -143,14 +144,16 @@ public class MainSurface extends JPanel {
     }
 
     private void reScaleImages(){ //Only rescale if window size has changed!
-        if(currentWidth != MainWindow.WINDOW_WIDTH || currentHeight != MainWindow.WINDOW_HEIGHT){
+        if(currentWidth != MainWindow.WORLD_WIDTH || currentHeight != MainWindow.WORLD_HEIGHT){
+            setPreferredSize(new Dimension(MainWindow.WORLD_WIDTH, MainWindow.WORLD_HEIGHT));
+
             scaledBackground = scaleImage(track.getBackground());
             scaledForeground = scaleImage(track.getForeground());
 
             scaleCars();
 
-            currentWidth = MainWindow.WINDOW_WIDTH;
-            currentHeight = MainWindow.WINDOW_HEIGHT;
+            currentWidth = MainWindow.WORLD_WIDTH;
+            currentHeight = MainWindow.WORLD_HEIGHT;
         }
     }
 
