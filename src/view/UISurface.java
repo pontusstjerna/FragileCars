@@ -20,7 +20,7 @@ public class UISurface extends JPanel {
     public UISurface(Racetrack track){
         this.track = track;
         guiBg = ImageHandler.loadImage("gui_bg");
-        guiBgScaled = scaleImage(guiBg);
+        //guiBgScaled = scaleImage(guiBg);
     }
 
     @Override
@@ -37,12 +37,21 @@ public class UISurface extends JPanel {
     }
 
     public double scale(){
-        return Math.min((double)(MainWindow.WORLD_WIDTH/4)/ guiBg.getWidth(),
+        return Math.min((double)(MainWindow.WORLD_WIDTH/4)/guiBg.getWidth(),
                 (double)MainWindow.WORLD_HEIGHT/ guiBg.getHeight());
     }
 
     private void paintGuiBG(Graphics2D g){
-        g.drawImage(guiBgScaled, 0, 0, this);
+        int x = 0;
+        int y = 0;
+
+        System.out.println("Scale: " + scale() + " guiw: " + MainWindow.WORLD_WIDTH/4 + " swidth: " + guiBgScaled.getWidth()*scale());
+
+        if(MainWindow.WORLD_WIDTH/4 > guiBgScaled.getWidth()*scale()){
+            x = (int)(MainWindow.WORLD_WIDTH/4 - guiBgScaled.getWidth()*scale()) + scaleX();
+        }
+
+        g.drawImage(guiBgScaled, x, y, this);
     }
 
     private void displayTime(Graphics2D g){
@@ -66,6 +75,17 @@ public class UISurface extends JPanel {
                 getWidth()/5, getHeight()/2 + 100);
     }
 
+
+    private int scaleX(){
+        int scaleX = (MainWindow.WORLD_WIDTH/4 - (int)(guiBg.getWidth()*scale()))/2;
+
+        if(scaleX < 0){
+            scaleX = 0;
+        }
+
+        return scaleX;
+    }
+
     private BufferedImage scaleImage(BufferedImage unscaled){
         int w = unscaled.getWidth();
         int h = unscaled.getHeight();
@@ -80,13 +100,15 @@ public class UISurface extends JPanel {
     }
 
     private void reScaleImages(){ //Only rescale if window size has changed!
-        if(currentWidth != MainWindow.WORLD_WIDTH || currentHeight != MainWindow.WORLD_HEIGHT){
+        if(currentWidth != MainWindow.WORLD_WIDTH/4 || currentHeight != MainWindow.WORLD_HEIGHT){
             setPreferredSize(new Dimension(MainWindow.WORLD_WIDTH/4, MainWindow.WORLD_HEIGHT));
 
             guiBgScaled = scaleImage(guiBg);
 
-            currentWidth = MainWindow.WORLD_WIDTH;
+            currentWidth = MainWindow.WORLD_WIDTH/4;
             currentHeight = MainWindow.WORLD_HEIGHT;
+
+            System.out.println("Poowf " + currentWidth);
         }
     }
 

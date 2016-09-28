@@ -57,7 +57,7 @@ public class MainController implements ActionListener {
 
     private void initView(){
         frame = new MainWindow("Fragile Cars");
-        frame.init(world.getBackground().getWidth(), world.getBackground().getHeight());
+        frame.init(world.getBackground().getWidth(), world.getBackground().getHeight(), 0.8, true);
     }
 
     /*private void initView(){
