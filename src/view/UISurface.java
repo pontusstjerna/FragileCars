@@ -16,12 +16,15 @@ public class UISurface extends JPanel {
     private Racetrack track;
     private BufferedImage guiBg, guiBgScaled;
     private double scale;
+    private BufferedImage[] numbersBig;
+    private BufferedImage[] numbersSmall;
 
     public UISurface(Racetrack track, double scale){
         this.track = track;
         this.scale = scale;
         guiBg = ImageHandler.loadImage("gui_bg");
         guiBgScaled = scaleImage(guiBg);
+        initNumbers();
     }
 
     @Override
@@ -30,21 +33,27 @@ public class UISurface extends JPanel {
         super.paintComponent(g);
 
         paintGuiBG(g2d);
-        //displayTime(g2d);
+        displayTime(g2d);
         //displayFPS(g2d);
         //displayLaps(g2d);
     }
 
     private void paintGuiBG(Graphics2D g){
-        int x = (int)((MainWindow.WORLD_WIDTH/4) - guiBgScaled.getWidth()*scale);
-        int y = 0;
-
-        g.drawImage(guiBgScaled, x, y, this);
+        g.drawImage(guiBgScaled, offsetX(), 0, this);
     }
 
     private void displayTime(Graphics2D g){
-        g.drawString("Time: " + (track.getTime()/1000) + ":" + Math.abs(track.getTime() % 1000),
-                getWidth()/5, getHeight()/2);
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/1000000) % 10)],
+                (int)((60)*scale) + offsetX(), (int)(330*scale), this);
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/100000) % 10)],
+                (int)((120)*scale) + offsetX(), (int)(330*scale), this);
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/10000) % 10)],
+                (int)((205)*scale) + offsetX(), (int)(330*scale), this);
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/1000) % 10)],
+                (int)(268*scale) + offsetX(), (int)(330*scale), this);
+
+        //g.drawString("Time: " + (track.getTime()/1000) + ":" + Math.abs(track.getTime() % 1000),
+          //      0, 0);
     }
 
     private void displayLaps(Graphics2D g){
@@ -74,5 +83,18 @@ public class UISurface extends JPanel {
         after = scaleOp.filter(unscaled, after);
 
         return after;
+    }
+
+    private void initNumbers(){
+        numbersBig = new BufferedImage[10];
+        BufferedImage numbers = ImageHandler.loadImage("guiNumbers");
+        int width = numbers.getWidth()/10;
+        for(int i = 0; i < numbersBig.length; i++){
+            numbersBig[i] = scaleImage(ImageHandler.cutImage(numbers, 0, i, width, numbers.getHeight()));
+        }
+    }
+
+    private int offsetX(){
+        return (int)((MainWindow.WORLD_WIDTH/4) - guiBgScaled.getWidth()*scale);
     }
 }
