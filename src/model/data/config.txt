@@ -1,4 +1,4 @@
-#trackName="3"
+#trackName="2"
 #nCars="1"
 #nPlayers="1"
 #laps="5"
@@ -6,3 +6,6 @@
 #friction="3"
 #betterGraphics="true"
 #botClass="model.carcontrollers.CheckBot"
+#fullscreenEnabled="true"
+#resX="1920"
+#resY="1080"
