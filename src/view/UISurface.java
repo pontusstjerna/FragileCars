@@ -34,6 +34,7 @@ public class UISurface extends JPanel {
 
         paintGuiBG(g2d);
         displayTime(g2d);
+        paintCarConsoles(g2d);
         //displayFPS(g2d);
         //displayLaps(g2d);
     }
@@ -43,11 +44,11 @@ public class UISurface extends JPanel {
     }
 
     private void displayTime(Graphics2D g){
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/1000000) % 10)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(600*1000)) % 6)],
                 (int)((60)*scale) + offsetX(), (int)(330*scale), this);
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/100000) % 10)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(60*1000)) % 6)],
                 (int)((120)*scale) + offsetX(), (int)(330*scale), this);
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/10000) % 10)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(10*1000)) % 6)],
                 (int)((205)*scale) + offsetX(), (int)(330*scale), this);
         g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/1000) % 10)],
                 (int)(268*scale) + offsetX(), (int)(330*scale), this);
@@ -70,6 +71,21 @@ public class UISurface extends JPanel {
     private void displayFPS(Graphics2D g){
         g.drawString("FPS: " + track.getFPS(),
                 getWidth()/5, getHeight()/2 + 100);
+    }
+
+    Color consoleColor = Color.black;
+    private void paintCarConsoles(Graphics2D g){
+        int startX = 30;
+        double startY = guiBg.getHeight()*0.4;
+        int width = 330;
+        int height = 150;
+        int padding = 23;
+
+        g.setColor(consoleColor);
+
+        for(int i = 0; i < track.getDrawableCars().length; i++){
+            g.fillRect((int)(startX*scale) + offsetX(),(int)((startY + i*(height + padding))*scale),(int)(width*scale),(int)(height*scale));
+        }
     }
 
     private BufferedImage scaleImage(BufferedImage unscaled){
