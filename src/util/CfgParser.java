@@ -7,6 +7,8 @@ import java.io.IOException;
  * Created by pontu on 2016-04-06.
  */
 public class CfgParser {
+    public static String STD_PATH = "src\\model\\data\\config.txt";
+
     private BufferedReader reader;
     private String cfg = "";
 

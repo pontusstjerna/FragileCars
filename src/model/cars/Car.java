@@ -38,7 +38,7 @@ public class Car implements DrawableCar, FragileCar {
     public static final int speedLimit = 500;
     private final int reverseLimit = -50;
 
-    private Point[] wheels;
+    private final Point[] wheels;
 
     private Cars kind;
     private BufferedImage[] images;
@@ -164,6 +164,11 @@ public class Car implements DrawableCar, FragileCar {
 
     private int getRotY(){
         return (int)(getMiddleY(this.y) - hypotenusa*Math.cos(heading - Math.PI/4));
+    }
+
+    @Override
+    public Point[] getWheels(){
+        return wheels;
     }
 
     @Override

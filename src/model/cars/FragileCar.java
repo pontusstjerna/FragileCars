@@ -1,5 +1,6 @@
 package model.cars;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
@@ -10,6 +11,7 @@ public interface FragileCar {
     int getY();
     int getRelX(double x, double y);
     int getRelY(double x, double y);
+    Point[] getWheels();
     int getWidth();
     int getHeight();
     double getHeading();
