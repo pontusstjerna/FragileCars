@@ -36,7 +36,7 @@ public class UISurface extends JPanel {
         displayTime(g2d);
         paintCarConsoles(g2d);
         //displayFPS(g2d);
-        //displayLaps(g2d);
+        displayLaps(g2d);
     }
 
     private void paintGuiBG(Graphics2D g){
@@ -57,14 +57,24 @@ public class UISurface extends JPanel {
           //      0, 0);
     }
 
+    Color txtColor = Color.white;
+    Font font = new Font(null, 0, 20);
     private void displayLaps(Graphics2D g){
+        int startX = 35;
+        double startY = guiBg.getHeight()*0.435;
+        int distY = 170;
+        int height = 50;
+
+        g.setColor(txtColor);
+        g.setFont(font);
         for(int i = 0; i < track.getDrawableCars().length; i++){
-            g.drawString(track.getDrawableCars()[i].getName() + " - Laps: " + track.getDrawableCars()[i].getLaps() +
-                            (track.getDrawableCars()[i].getFinished() != 0 ? " - FINISHED at place " +
-                                    track.getDrawableCars()[i].getPlace() + " with time " +
-                                    track.getDrawableCars()[i].getFinished()/1000 + ":" +
-                                    (track.getDrawableCars()[i].getFinished() % 1000) : ""),
-                    getWidth()/5, getHeight()/5 + i*15);
+            g.drawString(track.getDrawableCars()[i].getName(),
+                    (int)(startX*scale) + offsetX(), (int)((startY + i*distY)*scale));
+
+            g.drawString("Laps: " + track.getDrawableCars()[i].getLaps() + "/" + track.getMaxLaps(),
+                    (int)(startX*scale) + offsetX(), (int)((startY + i*distY + height)*scale));
+            if(track.getDrawableCars()[i].getFinished() != 0)
+            g.drawString("Finished!", (int)(startX*scale) + offsetX(), (int)((startY + i*distY + height*2)*scale));
         }
     }
 

@@ -6,7 +6,7 @@
 #friction="3"
 #betterGraphics="true"
 #botClass="model.carcontrollers.TapeBot"
-#debugEnabled="false"
+#debugEnabled="true"
 #fullscreenEnabled="false"
 #resX="1920"
 #resY="1080"

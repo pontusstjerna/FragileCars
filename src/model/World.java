@@ -118,6 +118,7 @@ public class World implements Racetrack{
 
     private double timePassed = 0;
     private int fps = 0;
+
     @Override
     public int getFPS(){
         final double fpsUpdateInterval = 0.5;
@@ -130,13 +131,18 @@ public class World implements Racetrack{
         return fps;
     }
 
+    @Override
+    public int getMaxLaps(){
+        return laps;
+    }
+
     private void createWorld(){
         initImages();
         findGoalLine();
         createCars();
         createMiscGameObjects();
         startTime = System.currentTimeMillis();
-        System.out.println("World created with " + nPlayers + " players and " + bots.length + " bots.");
+        System.out.println("World created with " + nPlayers + " players and " + bots.length + " bot(s).");
     }
 
     private void loadData(){

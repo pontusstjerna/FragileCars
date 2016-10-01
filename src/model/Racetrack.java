@@ -14,6 +14,7 @@ public interface Racetrack {
     DrawableCar[] getDrawableCars();
     ArrayList<GameObject> getObjects();
     boolean getFinished();
+    int getMaxLaps();
     BufferedImage getBackground();
     BufferedImage getForeground();
 }
