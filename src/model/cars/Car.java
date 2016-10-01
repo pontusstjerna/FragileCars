@@ -167,6 +167,18 @@ public class Car implements DrawableCar, FragileCar {
     }
 
     @Override
+    public double getMiddleX(double x){
+        return x + ((getWidth())* Math.cos(heading)*Math.cos(heading) +
+                (getHeight())* Math.sin(heading)*Math.sin(heading))/2;
+    }
+
+    @Override
+    public double getMiddleY(double y){
+        return y + ((getWidth())* Math.sin(heading)*Math.sin(heading) +
+                (getHeight())* Math.cos(heading)*Math.cos(heading))/2;
+    }
+
+    @Override
     public Point[] getWheels(){
         return wheels;
     }
@@ -293,16 +305,6 @@ public class Car implements DrawableCar, FragileCar {
         }
 
         return newAngle;
-    }
-
-    private double getMiddleX(double x){
-        return x + ((getWidth())* Math.cos(heading)*Math.cos(heading) +
-                (getHeight())* Math.sin(heading)*Math.sin(heading))/2;
-    }
-
-    private double getMiddleY(double y){
-        return y + ((getWidth())* Math.sin(heading)*Math.sin(heading) +
-                (getHeight())* Math.cos(heading)*Math.cos(heading))/2;
     }
 
     private void setImages(){

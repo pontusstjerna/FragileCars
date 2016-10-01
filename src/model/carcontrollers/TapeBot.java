@@ -1,5 +1,6 @@
 package model.carcontrollers;
 
+import com.sun.istack.internal.Nullable;
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
@@ -19,10 +20,11 @@ public class TapeBot implements GameObject {
     private FragileCar car;
     private boolean onTape = true;
     private Dir dir = Dir.STRAIGHT;
-    private final int UPDATE_INTERVAL = 400;
+    private final int UPDATE_INTERVAL = 100;
     private int time = 0;
     private Random rand;
-    boolean debugMode = false;
+    private boolean debugMode = false;
+    private int lastX, lastY;
 
     private ArrayList<BotPoint> tape;
 
@@ -33,18 +35,21 @@ public class TapeBot implements GameObject {
 
         debugMode = new CfgParser(CfgParser.STD_PATH).readBoolean("debugEnabled");
 
-        makeTape(trackName);
+        //makeTape(trackName)
     }
 
     @Override
     public void update(double deltaTime) {
         turn(deltaTime);
         time += deltaTime*1000;
-        if(!onTape){
-            discover();
-        }else{
+        checkReset();
+        if(onTape){
             followTape();
+        }else{
+            discover();
         }
+        lastX = (int)car.getMiddleX(car.getX());
+        lastY = (int)car.getMiddleY(car.getY());
     }
 
     @Override
@@ -86,14 +91,16 @@ public class TapeBot implements GameObject {
                     break;
             }
             time = 0;
-            //addTape();
+            addTape();
         }
+        car.accelerate();
     }
 
     private void addTape(){
         int x = car.getWidth()/2;
         int y = car.getHeight();
-        tape.add(new BotPoint(car.getRelX(x, y), car.getRelY(x, y), car.getHeight()));
+        int radius = 50;
+        tape.add(new BotPoint(car.getRelX(x, y), car.getRelY(x, y), radius));
     }
 
     private void followTape() {
@@ -102,7 +109,7 @@ public class TapeBot implements GameObject {
         int rightX = car.getRelX(car.getWidth(), 0);
         int rightY = car.getRelY(car.getWidth(), 0);
 
-        if(car.getAcceleration() < 400) car.accelerate();
+        if(car.getAcceleration() < 300) car.accelerate();
         if(onTape(leftX, leftY) && onTape(rightX, rightY)){
             dir = Dir.STRAIGHT;
         }else if(onTape(leftX, leftY)){
@@ -110,6 +117,8 @@ public class TapeBot implements GameObject {
         }else if(onTape(rightX, rightY)){
             dir = Dir.RIGHT;
         }else{
+            onTape = false;
+            System.out.println("Off tape");
             //car.brake();
         }
     }
@@ -132,6 +141,37 @@ public class TapeBot implements GameObject {
                 car.turnRight(dTime);
                 break;
         }
+    }
+
+    private void checkReset(){
+        if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 100){
+            onTape = true;
+            removeTape();
+        }
+    }
+
+    private void removeTape(){
+        //Remove the tape that we died in
+        for(BotPoint p : getCurrentTape(lastX, lastY)){
+            tape.remove(p);
+        }
+
+        //Remove one more to not get stuck
+        if(tape.size() > 0){
+            tape.remove(tape.size()-1);
+        }
+    }
+
+    private ArrayList<BotPoint> getCurrentTape(int x, int y){
+        ArrayList<BotPoint> pts = new ArrayList<>();
+        for(BotPoint p : tape){
+            if(p.distance(x,y) < p.getRadius()){
+                pts.add(p);
+            }
+        }
+
+        System.out.println(pts.size());
+        return pts;
     }
 
     private void makeTape(String trackName){

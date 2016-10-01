@@ -35,7 +35,7 @@ public class UISurface extends JPanel {
         paintGuiBG(g2d);
         displayTime(g2d);
         paintCarConsoles(g2d);
-        //displayFPS(g2d);
+        displayFPS(g2d);
         displayLaps(g2d);
     }
 
@@ -80,7 +80,7 @@ public class UISurface extends JPanel {
 
     private void displayFPS(Graphics2D g){
         g.drawString("FPS: " + track.getFPS(),
-                getWidth()/5, getHeight()/2 + 100);
+                (int)(scale*30) + offsetX(), (int)(guiBg.getHeight()*0.99*scale));
     }
 
     Color consoleColor = Color.black;

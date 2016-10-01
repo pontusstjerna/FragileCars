@@ -11,6 +11,8 @@ public interface FragileCar {
     int getY();
     int getRelX(double x, double y);
     int getRelY(double x, double y);
+    double getMiddleX(double x);
+    double getMiddleY(double y);
     Point[] getWheels();
     int getWidth();
     int getHeight();
