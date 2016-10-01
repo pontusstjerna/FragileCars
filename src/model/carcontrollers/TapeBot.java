@@ -25,6 +25,8 @@ public class TapeBot implements GameObject {
     private Random rand;
     private boolean debugMode = false;
     private int lastX, lastY;
+    private int lastTapeLength;
+    private int state = 0;
 
     private ArrayList<BotPoint> tape;
 
@@ -32,6 +34,9 @@ public class TapeBot implements GameObject {
         this.car = car;
         rand = new Random();
         tape = new ArrayList<>();
+
+        lastX = (int)car.getMiddleX(car.getX());
+        lastY = (int)car.getMiddleY(car.getY());
 
         debugMode = new CfgParser(CfgParser.STD_PATH).readBoolean("debugEnabled");
 
@@ -79,21 +84,42 @@ public class TapeBot implements GameObject {
 
     private void discover(){
         if(time > UPDATE_INTERVAL){
-            switch(rand.nextInt(3)){
-                case 0:
-                    dir = Dir.STRAIGHT;
-                    break;
-                case 1:
-                    dir = Dir.LEFT;
-                    break;
-                case 2:
-                    dir = Dir.RIGHT;
-                    break;
-            }
-            time = 0;
+            actOnState(state);
             addTape();
+            time = 0;
         }
         car.accelerate();
+    }
+
+    private void actOnState(int state){
+        switch(state) {
+            case 0:
+                dir = Dir.STRAIGHT;
+                break;
+            case 1:
+                dir = Dir.LEFT;
+                break;
+            case 2:
+                dir = Dir.RIGHT;
+                break;
+            default:
+                turnRandom();
+                break;
+        }
+    }
+
+private void turnRandom(){
+        switch(rand.nextInt(3)){
+            case 0:
+                dir = Dir.STRAIGHT;
+                break;
+            case 1:
+                dir = Dir.LEFT;
+                break;
+            case 2:
+                dir = Dir.RIGHT;
+                break;
+        }
     }
 
     private void addTape(){
@@ -110,6 +136,7 @@ public class TapeBot implements GameObject {
         int rightY = car.getRelY(car.getWidth(), 0);
 
         if(car.getAcceleration() < 300) car.accelerate();
+
         if(onTape(leftX, leftY) && onTape(rightX, rightY)){
             dir = Dir.STRAIGHT;
         }else if(onTape(leftX, leftY)){
@@ -118,7 +145,6 @@ public class TapeBot implements GameObject {
             dir = Dir.RIGHT;
         }else{
             onTape = false;
-            System.out.println("Off tape");
             //car.brake();
         }
     }
@@ -147,6 +173,9 @@ public class TapeBot implements GameObject {
         if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 100){
             onTape = true;
             removeTape();
+            state = (state + 1) % 4;
+            lastTapeLength = tape.size();
+            System.out.println(state);
         }
     }
 
@@ -157,7 +186,7 @@ public class TapeBot implements GameObject {
         }
 
         //Remove one more to not get stuck
-        if(tape.size() > 0){
+        while(lastTapeLength - tape.size() == 0 && tape.size() > 1){
             tape.remove(tape.size()-1);
         }
     }
@@ -169,8 +198,6 @@ public class TapeBot implements GameObject {
                 pts.add(p);
             }
         }
-
-        System.out.println(pts.size());
         return pts;
     }
 

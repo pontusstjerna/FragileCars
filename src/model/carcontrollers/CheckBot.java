@@ -113,15 +113,26 @@ public class CheckBot implements GameObject {
             }
         }else{ //Follow the points
             BotPoint currentCP = checkPoints.get(cpIndex);
-            if(isInFront(car, currentCP)){
+
+            if(onPoint(currentCP)){
+                cpIndex++;
+            }else{
                 car.accelerate();
 
                 turn(turnToPoint(car, currentCP), dTime);
+            }
+            /*
+            if(isInFront(car, currentCP)){
+
             }else{
                 cpIndex++;
                 System.out.println("Check at point " + cpIndex);
-            }
+            }*/
         }
+    }
+
+    private boolean onPoint(BotPoint point){
+        return point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY())) < point.getRadius();
     }
 
     private Dir turnToPoint(FragileCar car, BotPoint p){
@@ -168,7 +179,7 @@ public class CheckBot implements GameObject {
 
     //If searching, regularly add new checkpoints as long as not dying
     private void addCheckPoints(){
-        final int spawn_freq = 40;
+        final int spawn_freq = 10;
 
         if((int)distance > spawn_freq){
             checkPoints.add(new BotPoint(getStickX(), getStickY()));
