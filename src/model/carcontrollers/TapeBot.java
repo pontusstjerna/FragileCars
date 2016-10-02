@@ -26,6 +26,7 @@ public class TapeBot implements GameObject {
     private boolean debugMode = false;
     private int lastX, lastY;
     private int lastTapeLength;
+    private int oldTapeLength;
     private int state = 0;
 
     private ArrayList<BotPoint> tape;
@@ -48,10 +49,11 @@ public class TapeBot implements GameObject {
         turn(deltaTime);
         time += deltaTime*1000;
         checkReset();
-        if(onTape){
+        if(!onTape){
+            discover();
             followTape();
         }else{
-            discover();
+            followTape();
         }
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
@@ -134,6 +136,7 @@ private void turnRandom(){
         int leftY = car.getRelY(0, 0);
         int rightX = car.getRelX(car.getWidth(), 0);
         int rightY = car.getRelY(car.getWidth(), 0);
+        boolean onTape = true;
 
         if(car.getAcceleration() < 300) car.accelerate();
 
@@ -147,6 +150,8 @@ private void turnRandom(){
             onTape = false;
             //car.brake();
         }
+
+        this.onTape = onTape;
     }
 
     private boolean onTape(int x, int y){
@@ -170,24 +175,40 @@ private void turnRandom(){
     }
 
     private void checkReset(){
-        if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 100){
+        if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
             onTape = true;
             removeTape();
             state = (state + 1) % 4;
             lastTapeLength = tape.size();
+           // cleanTape();
+            checkProgress();
             System.out.println(state);
         }
     }
 
+    private void checkProgress(){
+        if(state == 0){
+            if(Math.abs(tape.size() - oldTapeLength) < 3){
+                int length = tape.size();
+                for(int i = tape.size()-1; i > length - 20 && length > 0; i--){
+                    System.out.println("No progress");
+                    tape.remove(i);
+                }
+            }
+            System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
+            oldTapeLength = tape.size();
+        }
+    }
+
     private void removeTape(){
+        //Require at least 3 new tape points, otherwise remove it
+        while(tape.size() - lastTapeLength < 4 && tape.size() - lastTapeLength > -3 && tape.size() > 1){
+            tape.remove(tape.size()-1);
+        }
+
         //Remove the tape that we died in
         for(BotPoint p : getCurrentTape(lastX, lastY)){
             tape.remove(p);
-        }
-
-        //Remove one more to not get stuck
-        while(lastTapeLength - tape.size() == 0 && tape.size() > 1){
-            tape.remove(tape.size()-1);
         }
     }
 
@@ -199,6 +220,16 @@ private void turnRandom(){
             }
         }
         return pts;
+    }
+
+    private void cleanTape(){
+        for(int i = 0; i < tape.size(); i++){
+            for(int j = 0; j < tape.size(); j++){
+                if(tape.get(i).distance(tape.get(j)) < tape.get(i).getRadius()/10){
+                    tape.remove(tape.get(j));
+                }
+            }
+        }
     }
 
     private void makeTape(String trackName){

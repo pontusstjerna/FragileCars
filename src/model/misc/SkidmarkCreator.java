@@ -19,7 +19,7 @@ public class SkidmarkCreator implements GameObject {
     }
 
     public void drift(int x, int y, double heading){
-        marks.add(new Skidmark(x,y,width,heading));
+       // marks.add(new Skidmark(x,y,width,heading));
     }
 
     @Override

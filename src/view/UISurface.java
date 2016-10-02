@@ -44,17 +44,14 @@ public class UISurface extends JPanel {
     }
 
     private void displayTime(Graphics2D g){
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(600*1000)) % 6)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(3600*1000)) % 10)],
                 (int)((60)*scale) + offsetX(), (int)(330*scale), this);
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(60*1000)) % 6)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(60*1000)) % 10)],
                 (int)((120)*scale) + offsetX(), (int)(330*scale), this);
         g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(10*1000)) % 6)],
                 (int)((205)*scale) + offsetX(), (int)(330*scale), this);
         g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/1000) % 10)],
                 (int)(268*scale) + offsetX(), (int)(330*scale), this);
-
-        //g.drawString("Time: " + (track.getTime()/1000) + ":" + Math.abs(track.getTime() % 1000),
-          //      0, 0);
     }
 
     Color txtColor = Color.white;

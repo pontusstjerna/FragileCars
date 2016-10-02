@@ -35,8 +35,7 @@ public class SmokeController implements GameObject {
 
         for(int i = 0; i < MAX_SMOKE; i++){
             double acc = Math.max(200, car.getAcceleration()*2/3);
-            smoke[i] = new SmokeParticle(car.getRelX(20, 80), car.getRelY(20, 80), acc,
-                    -car.getHeading(), colors, rand);
+            smoke[i] = new SmokeParticle(car.getRelX(20, 80), car.getRelY(20, 80), acc, -car.getHeading(), colors, rand);
         }
     }
 
@@ -61,7 +60,7 @@ public class SmokeController implements GameObject {
 
         //Paint all particles
         for(SmokeParticle s : smoke) {
-            s.paint(g, scale, scaleX);
+      //      s.paint(g, scale, scaleX);
         }
 
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
