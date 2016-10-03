@@ -28,7 +28,6 @@ public class TapeBot implements GameObject {
     private int oldTapeLength;
     private int state = 0;
     private int tapeIndex, lastTapeIndex = 0;
-    private boolean rollBack = false;
 
     private ArrayList<BotPoint> tape;
 
@@ -169,8 +168,9 @@ private void turnRandom(){
 
     private void checkForCycles(){
       //  System.out.println(tapeIndex);
-        if(Math.abs(lastTapeIndex - tapeIndex) > 5){
-            rollBack = true;
+        if(Math.abs(lastTapeIndex - tapeIndex) > 10){
+            rollBack(30);
+            incState();
         }
         lastTapeIndex = tapeIndex;
     }
@@ -190,8 +190,10 @@ private void turnRandom(){
         if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
             onTape = true;
             removeTape();
-            state = (state + 1) % 4;
+            incState();
             lastTapeLength = tape.size();
+            tapeIndex = 0;
+            lastTapeIndex = 0;
            // cleanTape();
             checkProgress();
         }
@@ -200,22 +202,25 @@ private void turnRandom(){
     private void checkProgress(){
         if(state == 0){
             //Check if stuck or in a loop/cycle
-            if(Math.abs(tape.size() - oldTapeLength) < 3 || rollBack){
-                int length = tape.size();
-                for(int i = tape.size()-1; i > length - 20 && length > 0; i--){
-                    tape.remove(i);
-                }
-                System.out.println("No progress for " + car.getName());
-                rollBack = false;
+            if(Math.abs(tape.size() - oldTapeLength) < 3){
+                rollBack(20);
             }
             //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
             oldTapeLength = tape.size();
         }
     }
 
+    private void rollBack(int nPoints){
+        int length = tape.size();
+        for(int i = tape.size()-1; i > length - nPoints && tape.size() > 0; i--){
+            tape.remove(i);
+        }
+        System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
+    }
+
     private void removeTape(){
         //Require at least 3 new tape points, otherwise remove it
-        while(tape.size() - lastTapeLength < 4 && tape.size() - lastTapeLength > -3 && tape.size() > 1){
+        while(Math.abs(tape.size() - lastTapeLength) < 4 && tape.size() > 1){
             tape.remove(tape.size()-1);
         }
 
@@ -233,6 +238,10 @@ private void turnRandom(){
             }
         }
         return pts;
+    }
+
+    private void incState(){
+        state = (state + 1) % 4;
     }
 
     private void cleanTape(){
