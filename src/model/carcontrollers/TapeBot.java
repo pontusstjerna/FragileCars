@@ -1,6 +1,5 @@
 package model.carcontrollers;
 
-import com.sun.istack.internal.Nullable;
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
 import model.cars.FragileCar;
@@ -28,6 +27,8 @@ public class TapeBot implements GameObject {
     private int lastTapeLength;
     private int oldTapeLength;
     private int state = 0;
+    private int tapeIndex, lastTapeIndex = 0;
+    private boolean rollBack = false;
 
     private ArrayList<BotPoint> tape;
 
@@ -140,6 +141,8 @@ private void turnRandom(){
 
         if(car.getAcceleration() < 300) car.accelerate();
 
+        checkForCycles();
+
         if(onTape(leftX, leftY) && onTape(rightX, rightY)){
             dir = Dir.STRAIGHT;
         }else if(onTape(leftX, leftY)){
@@ -157,10 +160,19 @@ private void turnRandom(){
     private boolean onTape(int x, int y){
         for(BotPoint p : tape){
             if(p.distance(x,y) < p.getRadius()){
+                tapeIndex = tape.indexOf(p);
                 return true;
             }
         }
         return false;
+    }
+
+    private void checkForCycles(){
+      //  System.out.println(tapeIndex);
+        if(Math.abs(lastTapeIndex - tapeIndex) > 5){
+            rollBack = true;
+        }
+        lastTapeIndex = tapeIndex;
     }
 
     private void turn(double dTime){
@@ -182,20 +194,21 @@ private void turnRandom(){
             lastTapeLength = tape.size();
            // cleanTape();
             checkProgress();
-            System.out.println(state);
         }
     }
 
     private void checkProgress(){
         if(state == 0){
-            if(Math.abs(tape.size() - oldTapeLength) < 3){
+            //Check if stuck or in a loop/cycle
+            if(Math.abs(tape.size() - oldTapeLength) < 3 || rollBack){
                 int length = tape.size();
                 for(int i = tape.size()-1; i > length - 20 && length > 0; i--){
-                    System.out.println("No progress");
                     tape.remove(i);
                 }
+                System.out.println("No progress for " + car.getName());
+                rollBack = false;
             }
-            System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
+            //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
             oldTapeLength = tape.size();
         }
     }
