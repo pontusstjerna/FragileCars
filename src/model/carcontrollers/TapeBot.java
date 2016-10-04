@@ -9,7 +9,6 @@ import util.CfgParser;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.WeakHashMap;
 
 /**
  * Created by pontu on 2016-09-29.
@@ -31,6 +30,8 @@ public class TapeBot implements GameObject {
     private int state = 0;
     private int tapeIndex, lastTapeIndex = 0;
     private boolean followMode = false;
+
+    private final int WEIGHT_LIMIT = 100;
 
     private ArrayList<TapePiece> tape;
     private ArrayList<ArrayList<TapePiece>> tapes;
@@ -223,10 +224,9 @@ private void turnRandom(){
     }
 
     private void rollBack(int nPoints){
-        final int weightLimit = 50;
         int length = tape.size();
         for(int i = tape.size()-1; i > length - nPoints && tape.size() > 1 && i > 0; i--){
-            if(tape.get(i).getWeight() < weightLimit){ //Remove if not safe enough
+            if(tape.get(i).getWeight() < WEIGHT_LIMIT){ //Remove if not safe enough
                 tape.remove(i);
             }else{
                 tape.get(i).decWeight();
@@ -244,14 +244,15 @@ private void turnRandom(){
         }
 
         //Remove the tape that we died in
-        for(BotPoint p : getCurrentTape(lastX, lastY)){
+        for(TapePiece p : getCurrentTape(lastX, lastY)){
+            if(p.getWeight() < WEIGHT_LIMIT)
             tape.remove(p);
         }
     }
 
-    private ArrayList<BotPoint> getCurrentTape(int x, int y){
-        ArrayList<BotPoint> pts = new ArrayList<>();
-        for(BotPoint p : tape){
+    private ArrayList<TapePiece> getCurrentTape(int x, int y){
+        ArrayList<TapePiece> pts = new ArrayList<>();
+        for(TapePiece p : tape){
             if(p.distance(x,y) < p.getRadius()){
                 pts.add(p);
             }
@@ -275,6 +276,7 @@ private void turnRandom(){
 
     private void saveLap(){
         if(tapes == null && car.getLaps() > 0){
+            tapes = new ArrayList<>();
             tapes.add(tape);
             followMode = true;
         }else if(tapes != null && car.getLaps() > tapes.size()){ //New lap
