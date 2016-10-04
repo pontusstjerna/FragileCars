@@ -2,12 +2,14 @@ package model.carcontrollers;
 
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
+import model.carcontrollers.util.TapePiece;
 import model.cars.FragileCar;
 import util.CfgParser;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.WeakHashMap;
 
 /**
  * Created by pontu on 2016-09-29.
@@ -30,8 +32,8 @@ public class TapeBot implements GameObject {
     private int tapeIndex, lastTapeIndex = 0;
     private boolean followMode = false;
 
-    private ArrayList<BotPoint> tape;
-    private ArrayList<ArrayList<BotPoint>> tapes;
+    private ArrayList<TapePiece> tape;
+    private ArrayList<ArrayList<TapePiece>> tapes;
 
     public TapeBot(FragileCar car, String trackName){
         this.car = car;
@@ -137,10 +139,10 @@ private void turnRandom(){
         int x = car.getWidth()/2;
         int y = car.getHeight();
         int radius = 50;
-        tape.add(new BotPoint(car.getRelX(x, y), car.getRelY(x, y), radius));
+        tape.add(new TapePiece(car.getRelX(x, y), car.getRelY(x, y), radius));
     }
 
-    private void followTape(ArrayList<BotPoint> tape) {
+    private void followTape(ArrayList<TapePiece> tape) {
         int leftX = car.getRelX(0, 0);
         int leftY = car.getRelY(0, 0);
         int rightX = car.getRelX(car.getWidth(), 0);
@@ -164,9 +166,10 @@ private void turnRandom(){
     }
 
     private boolean onTape(int x, int y){
-        for(BotPoint p : tape){
+        for(TapePiece p : tape){
             if(p.distance(x,y) < p.getRadius()){
                 tapeIndex = tape.indexOf(p);
+                p.incWeight();
                 return true;
             }
         }
@@ -175,8 +178,9 @@ private void turnRandom(){
 
     private void checkForCycles(){
       //  System.out.println(tapeIndex);
-        if(Math.abs(lastTapeIndex - tapeIndex) > 10){
-            rollBack(20);
+        int indexDiff = Math.abs(lastTapeIndex - tapeIndex);
+        if(indexDiff > 10){
+            rollBack(indexDiff);
             incState();
         }
         lastTapeIndex = tapeIndex;
@@ -211,7 +215,7 @@ private void turnRandom(){
         if(state == 0){
             //Check if stuck or in a loop/cycle
             if(Math.abs(tape.size() - oldTapeLength) < 3){
-                rollBack(10);
+                rollBack(20);
             }
             //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
             oldTapeLength = tape.size();
@@ -219,9 +223,15 @@ private void turnRandom(){
     }
 
     private void rollBack(int nPoints){
+        final int weightLimit = 50;
         int length = tape.size();
-        for(int i = tape.size()-1; i > length - nPoints && tape.size() > 0; i--){
-            tape.remove(i);
+        for(int i = tape.size()-1; i > length - nPoints && tape.size() > 1 && i > 0; i--){
+            if(tape.get(i).getWeight() < weightLimit){ //Remove if not safe enough
+                tape.remove(i);
+            }else{
+                tape.get(i).decWeight();
+                tape.get(i).decWeight();
+            }
         }
         System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
     }
@@ -269,66 +279,6 @@ private void turnRandom(){
             followMode = true;
         }else if(tapes != null && car.getLaps() > tapes.size()){ //New lap
             tapes.add(tape);
-        }
-    }
-
-    private void makeTape(String trackName){
-        switch(trackName){
-            case "2":
-                int h = 60;
-                tape.add(new BotPoint(1150, 500, h));
-                tape.add(new BotPoint(1150, 400, h));
-                tape.add(new BotPoint(1150, 300, h));
-                tape.add(new BotPoint(1100, 200, h));
-                tape.add(new BotPoint(1050, 150, h));
-                tape.add(new BotPoint(980, 150, h));
-                tape.add(new BotPoint(900, 150, h));
-                tape.add(new BotPoint(800, 155, h));
-                tape.add(new BotPoint(700, 150, h));
-                tape.add(new BotPoint(600, 150, h));
-                tape.add(new BotPoint(500, 150, h));
-                tape.add(new BotPoint(400, 160, h));
-                tape.add(new BotPoint(300, 160, h));
-                tape.add(new BotPoint(200, 160, h));
-                tape.add(new BotPoint(150, 260, h));
-                tape.add(new BotPoint(160, 360, h));
-                tape.add(new BotPoint(170, 430, h));
-                tape.add(new BotPoint(270, 460, h));
-                tape.add(new BotPoint(370, 460, h));
-                tape.add(new BotPoint(470, 460, h));
-                tape.add(new BotPoint(570, 460, h));
-                tape.add(new BotPoint(670, 460, h));
-                tape.add(new BotPoint(750, 500, h));
-                tape.add(new BotPoint(800, 600, h));
-                tape.add(new BotPoint(700, 700, h));
-                tape.add(new BotPoint(600, 750, h));
-                tape.add(new BotPoint(500, 750, h));
-                tape.add(new BotPoint(400, 750, h));
-                tape.add(new BotPoint(300, 750, h));
-                tape.add(new BotPoint(200, 750, h));
-                tape.add(new BotPoint(180, 800, h));
-                tape.add(new BotPoint(150, 900, h));
-                tape.add(new BotPoint(160, 1000, h));
-                tape.add(new BotPoint(180, 1050, h));
-                tape.add(new BotPoint(280, 1105, h));
-                tape.add(new BotPoint(380, 1105, h));
-                tape.add(new BotPoint(480, 1105, h));
-                tape.add(new BotPoint(580, 1105, h));
-                tape.add(new BotPoint(680, 1105, h));
-                tape.add(new BotPoint(780, 1105, h));
-                tape.add(new BotPoint(880, 1105, h));
-                tape.add(new BotPoint(980, 1105, h));
-                tape.add(new BotPoint(1080, 1105, h));
-                tape.add(new BotPoint(1080, 1105, h));
-                tape.add(new BotPoint(1080, 1105, h));
-                tape.add(new BotPoint(1100, 1050, h));
-                tape.add(new BotPoint(1110, 1100, h));
-                tape.add(new BotPoint(1110, 1000, h));
-                tape.add(new BotPoint(1120, 900, h));
-                tape.add(new BotPoint(1130, 800, h));
-                tape.add(new BotPoint(1140, 700, h));
-                tape.add(new BotPoint(1150, 600, h));
-                break;
         }
     }
 }
