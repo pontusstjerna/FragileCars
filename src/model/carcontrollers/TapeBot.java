@@ -28,8 +28,10 @@ public class TapeBot implements GameObject {
     private int oldTapeLength;
     private int state = 0;
     private int tapeIndex, lastTapeIndex = 0;
+    private boolean followMode = false;
 
     private ArrayList<BotPoint> tape;
+    private ArrayList<ArrayList<BotPoint>> tapes;
 
     public TapeBot(FragileCar car, String trackName){
         this.car = car;
@@ -49,14 +51,21 @@ public class TapeBot implements GameObject {
         turn(deltaTime);
         time += deltaTime*1000;
         checkReset();
-        if(!onTape){
-            discover();
-            followTape();
+        checkForCycles();
+        if(!followMode){
+            if(!onTape){
+                discover();
+                followTape(tape);
+            }else{
+                followTape(tape);
+            }
+            lastX = (int)car.getMiddleX(car.getX());
+            lastY = (int)car.getMiddleY(car.getY());
+            saveLap();
         }else{
-            followTape();
+            followTape(tapes.get(0));
         }
-        lastX = (int)car.getMiddleX(car.getX());
-        lastY = (int)car.getMiddleY(car.getY());
+
     }
 
     @Override
@@ -131,7 +140,7 @@ private void turnRandom(){
         tape.add(new BotPoint(car.getRelX(x, y), car.getRelY(x, y), radius));
     }
 
-    private void followTape() {
+    private void followTape(ArrayList<BotPoint> tape) {
         int leftX = car.getRelX(0, 0);
         int leftY = car.getRelY(0, 0);
         int rightX = car.getRelX(car.getWidth(), 0);
@@ -139,8 +148,6 @@ private void turnRandom(){
         boolean onTape = true;
 
         if(car.getAcceleration() < 300) car.accelerate();
-
-        checkForCycles();
 
         if(onTape(leftX, leftY) && onTape(rightX, rightY)){
             dir = Dir.STRAIGHT;
@@ -169,7 +176,7 @@ private void turnRandom(){
     private void checkForCycles(){
       //  System.out.println(tapeIndex);
         if(Math.abs(lastTapeIndex - tapeIndex) > 10){
-            rollBack(30);
+            rollBack(20);
             incState();
         }
         lastTapeIndex = tapeIndex;
@@ -194,6 +201,7 @@ private void turnRandom(){
             lastTapeLength = tape.size();
             tapeIndex = 0;
             lastTapeIndex = 0;
+            followMode = false;
            // cleanTape();
             checkProgress();
         }
@@ -203,7 +211,7 @@ private void turnRandom(){
         if(state == 0){
             //Check if stuck or in a loop/cycle
             if(Math.abs(tape.size() - oldTapeLength) < 3){
-                rollBack(20);
+                rollBack(10);
             }
             //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
             oldTapeLength = tape.size();
@@ -219,6 +227,7 @@ private void turnRandom(){
     }
 
     private void removeTape(){
+
         //Require at least 3 new tape points, otherwise remove it
         while(Math.abs(tape.size() - lastTapeLength) < 4 && tape.size() > 1){
             tape.remove(tape.size()-1);
@@ -251,6 +260,15 @@ private void turnRandom(){
                     tape.remove(tape.get(j));
                 }
             }
+        }
+    }
+
+    private void saveLap(){
+        if(tapes == null && car.getLaps() > 0){
+            tapes.add(tape);
+            followMode = true;
+        }else if(tapes != null && car.getLaps() > tapes.size()){ //New lap
+            tapes.add(tape);
         }
     }
 

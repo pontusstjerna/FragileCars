@@ -44,7 +44,7 @@ public class UISurface extends JPanel {
     }
 
     private void displayTime(Graphics2D g){
-        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(3600*1000)) % 10)],
+        g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(600*1000)) % 10)],
                 (int)((60)*scale) + offsetX(), (int)(330*scale), this);
         g.drawImage(numbersBig[(int)(Math.abs(track.getTime()/(60*1000)) % 10)],
                 (int)((120)*scale) + offsetX(), (int)(330*scale), this);
