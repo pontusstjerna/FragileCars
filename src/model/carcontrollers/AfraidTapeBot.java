@@ -1,5 +1,6 @@
 package model.carcontrollers;
 
+import com.sun.istack.internal.Nullable;
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
 import model.carcontrollers.util.TapePiece;
@@ -7,13 +8,14 @@ import model.cars.FragileCar;
 import util.CfgParser;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Random;
+import java.util.*;
+
+import static util.Geom.getPI;
 
 /**
  * Created by pontu on 2016-09-29.
  */
-public class TapeBot implements GameObject {
+public class AfraidTapeBot implements GameObject {
 
     private enum Dir {STRAIGHT, LEFT, RIGHT}
 
@@ -31,12 +33,15 @@ public class TapeBot implements GameObject {
     private int tapeIndex, lastTapeIndex = 0;
     private boolean followMode = false;
 
+    private Queue<BotPoint> crashes = new ArrayDeque<>();
+
+    private final int STICK_LENGTH = 100;
     private final int WEIGHT_LIMIT = 100;
 
     private ArrayList<TapePiece> tape;
     private ArrayList<ArrayList<TapePiece>> tapes;
 
-    public TapeBot(FragileCar car, String trackName){
+    public AfraidTapeBot(FragileCar car, String trackName){
         this.car = car;
         rand = new Random();
         tape = new ArrayList<>();
@@ -86,7 +91,20 @@ public class TapeBot implements GameObject {
             }
 
             //Paint balls
-            for(BotPoint p : tape){
+            for(TapePiece p : tape){
+                if(p.getWeight() > WEIGHT_LIMIT){
+                    g.setColor(Color.BLACK);
+                }
+
+                int s = (int)(scale*10);
+                g.fillRoundRect((int)(p.x*scale)-(s/2) + scaleX, (int)(p.y*scale)-(s/2), s,s,s,s);
+                int dist = (int)(scale*p.getRadius()*2);
+                g.drawRoundRect((int)(p.x*scale)-(dist/2) + scaleX, (int)(p.y*scale)-(dist/2),
+                        dist, dist, dist, dist);
+            }
+
+            //Paint crashes
+            for(BotPoint p : crashes){
                 int s = (int)(scale*10);
                 g.fillRoundRect((int)(p.x*scale)-(s/2) + scaleX, (int)(p.y*scale)-(s/2), s,s,s,s);
                 int dist = (int)(scale*p.getRadius()*2);
@@ -97,8 +115,15 @@ public class TapeBot implements GameObject {
     }
 
     private void discover(){
-        if(time > UPDATE_INTERVAL){
+        BotPoint closestCrashInFront = closestInFront(car, crashes);
+
+        if(closestCrashInFront != null){
+            dir = turnFromPoint(car, closestCrashInFront);
+        }else if(time > UPDATE_INTERVAL){
             actOnState(state);
+        }
+
+        if(time > UPDATE_INTERVAL){
             addTape();
             time = 0;
         }
@@ -200,6 +225,7 @@ public class TapeBot implements GameObject {
 
     private void checkReset(){
         if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
+            addCrash();
             onTape = true;
             removeTape();
             incState();
@@ -272,6 +298,49 @@ public class TapeBot implements GameObject {
                 }
             }
         }
+    }
+
+    private Dir turnFromPoint(FragileCar car, BotPoint p){
+        if(getBearing(car, p) >= 0){
+            return Dir.LEFT;
+        }else if(getBearing(car, p) < 0){
+            return Dir.RIGHT;
+        }
+
+        return Dir.STRAIGHT;
+    }
+
+    @Nullable
+    private BotPoint closestInFront(FragileCar car, Iterable<BotPoint> points){
+
+        if(points.iterator().hasNext()){
+            BotPoint closestInFront = points.iterator().next();
+
+            for(BotPoint p : points){
+                if(isInFront(car, p) &&
+                        p.distance(car.getX(), car.getY()) < closestInFront.distance(car.getX(), car.getY())){
+                    closestInFront = p;
+                }
+            }
+
+            return closestInFront;
+        }else{
+            return null;
+        }
+    }
+
+    //Is the point in front of the stick?
+    private boolean isInFront(FragileCar car, Point point){
+        double bearing = getBearing(car, point);
+        return bearing < Math.PI/2 && bearing > -Math.PI/2;
+    }
+
+    private double getBearing(FragileCar car, Point point){
+        return getPI(getHeadingToPoint(point, car.getX(), car.getY()) - Math.PI/2 - getPI(car.getHeading()));
+    }
+
+    private double getHeadingToPoint(Point p, double x, double y){
+        return Math.atan2(y - p.y, x - p.x);
     }
 
     private void saveLap(){

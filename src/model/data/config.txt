@@ -5,7 +5,7 @@
 #countdown="1000"
 #friction="3"
 #betterGraphics="true"
-#botClass="model.carcontrollers.TapeBot"
+#botClass="model.carcontrollers.AfraidTapeBot"
 #debugEnabled="true"
 #fullscreenEnabled="false"
 #resX="1920"
