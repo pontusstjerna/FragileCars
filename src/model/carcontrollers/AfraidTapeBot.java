@@ -32,11 +32,12 @@ public class AfraidTapeBot implements GameObject {
     private int state = 0;
     private int tapeIndex, lastTapeIndex = 0;
     private boolean followMode = false;
+    private boolean locked = false;
 
     private Queue<BotPoint> crashes = new ArrayDeque<>();
 
     private final int STICK_LENGTH = 100;
-    private final int WEIGHT_LIMIT = 100;
+    private final int WEIGHT_LIMIT = 10000;
     private final int CRASH_RADIUS = 40;
 
     private ArrayList<TapePiece> tape;
@@ -71,7 +72,7 @@ public class AfraidTapeBot implements GameObject {
             lastX = (int)car.getMiddleX(car.getX());
             lastY = (int)car.getMiddleY(car.getY());
             saveLap();
-        }else{
+        }else if(!locked){
             followTape(tapes.get(0));
         }
 
@@ -204,6 +205,7 @@ public class AfraidTapeBot implements GameObject {
       //  System.out.println(tapeIndex);
         int indexDiff = Math.abs(lastTapeIndex - tapeIndex);
         if(indexDiff > 10){
+            locked = true;
             rollBack(indexDiff);
             incState();
         }
@@ -236,6 +238,7 @@ public class AfraidTapeBot implements GameObject {
         tapeIndex = 0;
         lastTapeIndex = 0;
         followMode = false;
+        locked = false;
         // cleanTape();
         checkProgress();
     }
@@ -281,11 +284,21 @@ public class AfraidTapeBot implements GameObject {
             tape.remove(tape.size()-1);
         }
 
+        int lowest = tape.size() - 1;
         //Remove the tape that we died in
         for(TapePiece p : getCurrentTape(lastX, lastY)){
             if(p.getWeight() < WEIGHT_LIMIT){
+                int i = tape.indexOf(p);
+                if(i < lowest){
+                    lowest = i;
+                }
                 tape.remove(p);
             }
+        }
+
+        //Remove all points from index and onwards
+        if(tape.size() -1 > lowest){
+            rollBack(tape.size() - lowest + 1);
         }
 
         //Remove the tape in THE LAST crash point
