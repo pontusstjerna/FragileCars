@@ -37,6 +37,7 @@ public class AfraidTapeBot implements GameObject {
 
     private final int STICK_LENGTH = 100;
     private final int WEIGHT_LIMIT = 100;
+    private final int CRASH_RADIUS = 40;
 
     private ArrayList<TapePiece> tape;
     private ArrayList<ArrayList<TapePiece>> tapes;
@@ -92,9 +93,6 @@ public class AfraidTapeBot implements GameObject {
 
             //Paint balls
             for(TapePiece p : tape){
-                if(p.getWeight() > WEIGHT_LIMIT){
-                    g.setColor(Color.BLACK);
-                }
 
                 int s = (int)(scale*10);
                 g.fillRoundRect((int)(p.x*scale)-(s/2) + scaleX, (int)(p.y*scale)-(s/2), s,s,s,s);
@@ -225,17 +223,21 @@ public class AfraidTapeBot implements GameObject {
 
     private void checkReset(){
         if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
-            addCrash();
-            onTape = true;
-            removeTape();
-            incState();
-            lastTapeLength = tape.size();
-            tapeIndex = 0;
-            lastTapeIndex = 0;
-            followMode = false;
-           // cleanTape();
-            checkProgress();
+            reset();
         }
+    }
+
+    private void reset(){
+        addCrash();
+        onTape = true;
+        removeTape();
+        incState();
+        lastTapeLength = tape.size();
+        tapeIndex = 0;
+        lastTapeIndex = 0;
+        followMode = false;
+        // cleanTape();
+        checkProgress();
     }
 
     private void checkProgress(){
@@ -262,6 +264,16 @@ public class AfraidTapeBot implements GameObject {
         System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
     }
 
+    private void addCrash(){
+        final int maxCrashes = 3;
+
+        //Add new crash to queue
+        crashes.add(new BotPoint(lastX, lastY, CRASH_RADIUS));
+        if(crashes.size() > maxCrashes){
+            crashes.remove();
+        }
+    }
+
     private void removeTape(){
 
         //Require at least 3 new tape points, otherwise remove it
@@ -271,8 +283,16 @@ public class AfraidTapeBot implements GameObject {
 
         //Remove the tape that we died in
         for(TapePiece p : getCurrentTape(lastX, lastY)){
-            if(p.getWeight() < WEIGHT_LIMIT)
-            tape.remove(p);
+            if(p.getWeight() < WEIGHT_LIMIT){
+                tape.remove(p);
+            }
+        }
+
+        //Remove the tape in THE LAST crash point
+        for(TapePiece p : getOverlapTape(lastX, lastY, CRASH_RADIUS)){
+            if(p.getWeight() < WEIGHT_LIMIT){
+                tape.remove(p);
+            }
         }
     }
 
@@ -280,6 +300,16 @@ public class AfraidTapeBot implements GameObject {
         ArrayList<TapePiece> pts = new ArrayList<>();
         for(TapePiece p : tape){
             if(p.distance(x,y) < p.getRadius()){
+                pts.add(p);
+            }
+        }
+        return pts;
+    }
+
+    private ArrayList<TapePiece> getOverlapTape(int x, int y, int radius){
+        ArrayList<TapePiece> pts = new ArrayList<>();
+        for(TapePiece p : tape){
+            if(p.distance(x,y) - radius < p.getRadius()){
                 pts.add(p);
             }
         }
@@ -318,7 +348,9 @@ public class AfraidTapeBot implements GameObject {
 
             for(BotPoint p : points){
                 if(isInFront(car, p) &&
-                        p.distance(car.getX(), car.getY()) < closestInFront.distance(car.getX(), car.getY())){
+                        p.distance(car.getMiddleX(car.getX()),
+                                car.getMiddleY(car.getY())) < closestInFront.distance(car.getMiddleX(car.getX()),
+                                car.getMiddleY(car.getY()))){
                     closestInFront = p;
                 }
             }
@@ -336,7 +368,8 @@ public class AfraidTapeBot implements GameObject {
     }
 
     private double getBearing(FragileCar car, Point point){
-        return getPI(getHeadingToPoint(point, car.getX(), car.getY()) - Math.PI/2 - getPI(car.getHeading()));
+        return getPI(getHeadingToPoint(point, car.getMiddleX(car.getX()),
+                car.getMiddleY(car.getY())) - Math.PI/2 - getPI(car.getHeading()));
     }
 
     private double getHeadingToPoint(Point p, double x, double y){

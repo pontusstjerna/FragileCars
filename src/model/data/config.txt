@@ -1,5 +1,5 @@
 #trackName="2"
-#nCars="4"
+#nCars="1"
 #nPlayers="0"
 #laps="5"
 #countdown="1000"
