@@ -73,6 +73,7 @@ public class AfraidTapeBot implements GameObject {
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
         saveLap();
+        checkTimeOut(deltaTime);
     }
 
     @Override
@@ -176,10 +177,10 @@ public class AfraidTapeBot implements GameObject {
             setSpeed(300);
         }else if(onTape(leftX, leftY)){
             dir = Dir.LEFT;
-            setSpeed(50);
+            setSpeed(100);
         }else if(onTape(rightX, rightY)){
             dir = Dir.RIGHT;
-            setSpeed(50);
+            setSpeed(100);
         }else{
             onTape = false;
             //car.brake();
@@ -201,7 +202,7 @@ public class AfraidTapeBot implements GameObject {
 
     private void checkForCycles(){
       //  System.out.println(tapeIndex);
-        int indexDiff = Math.abs(lastTapeIndex - tapeIndex);
+        int indexDiff = getIndexDiff();
         if(indexDiff > 10){
             locked = true;
             rollBack(indexDiff);
@@ -250,11 +251,28 @@ public class AfraidTapeBot implements GameObject {
         if(state == 0){
             //Check if stuck or in a loop/cycle
             if(Math.abs(tape.size() - oldTapeLength) < 3){
-                rollBack(20);
+        //        rollBack(20);
             }
             //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
             oldTapeLength = tape.size();
         }
+    }
+
+    private double timeout = 0;
+    private void checkTimeOut(double dTime){
+        final int CHECK_INTERVAL = 10;
+        timeout += dTime;
+        if(getIndexDiff() > 3){
+            time = 0;
+        }else if(timeout > CHECK_INTERVAL){
+            onTape = false;
+            timeout = 0;
+            rollBack(tape.size());
+        }
+    }
+
+    private int getIndexDiff(){
+        return Math.abs(lastTapeIndex - tapeIndex);
     }
 
     private void rollBack(int nPoints){
