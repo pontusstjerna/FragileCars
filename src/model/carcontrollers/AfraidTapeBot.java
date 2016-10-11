@@ -4,6 +4,7 @@ import com.sun.istack.internal.Nullable;
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
 import model.carcontrollers.util.TapePiece;
+import model.cars.Car;
 import model.cars.FragileCar;
 import util.CfgParser;
 
@@ -31,17 +32,16 @@ public class AfraidTapeBot implements GameObject {
     private int oldTapeLength;
     private int state = 0;
     private int tapeIndex, lastTapeIndex = 0;
-    private boolean followMode = false;
     private boolean locked = false;
+    private boolean savedMode = false;
 
     private Queue<BotPoint> crashes = new ArrayDeque<>();
 
     private final int STICK_LENGTH = 100;
     private final int WEIGHT_LIMIT = 10000;
-    private final int CRASH_RADIUS = 40;
+    private final int CRASH_RADIUS = 80; //Only for how much tape to delete when inside a crash point
 
     private ArrayList<TapePiece> tape;
-    private ArrayList<ArrayList<TapePiece>> tapes;
 
     public AfraidTapeBot(FragileCar car, String trackName){
         this.car = car;
@@ -61,21 +61,18 @@ public class AfraidTapeBot implements GameObject {
         turn(deltaTime);
         time += deltaTime*1000;
         checkReset();
-        checkForCycles();
-        if(!followMode){
-            if(!onTape){
-                discover();
-                followTape(tape);
-            }else{
-                followTape(tape);
-            }
-            lastX = (int)car.getMiddleX(car.getX());
-            lastY = (int)car.getMiddleY(car.getY());
-            saveLap();
-        }else if(!locked){
-            followTape(tapes.get(0));
+        if(!savedMode){
+            checkForCycles();
         }
-
+        if(!onTape){
+            discover();
+            followTape(tape);
+        }else{
+            followTape(tape);
+        }
+        lastX = (int)car.getMiddleX(car.getX());
+        lastY = (int)car.getMiddleY(car.getY());
+        saveLap();
     }
 
     @Override
@@ -126,7 +123,7 @@ public class AfraidTapeBot implements GameObject {
             addTape();
             time = 0;
         }
-        car.accelerate();
+        setSpeed(Car.speedLimit);
     }
 
     private void actOnState(int state){
@@ -174,14 +171,15 @@ public class AfraidTapeBot implements GameObject {
         int rightY = car.getRelY(car.getWidth(), 0);
         boolean onTape = true;
 
-        if(car.getAcceleration() < 300) car.accelerate();
-
         if(onTape(leftX, leftY) && onTape(rightX, rightY)){
             dir = Dir.STRAIGHT;
+            setSpeed(300);
         }else if(onTape(leftX, leftY)){
             dir = Dir.LEFT;
+            setSpeed(50);
         }else if(onTape(rightX, rightY)){
             dir = Dir.RIGHT;
+            setSpeed(50);
         }else{
             onTape = false;
             //car.brake();
@@ -223,8 +221,14 @@ public class AfraidTapeBot implements GameObject {
         }
     }
 
+    private void setSpeed(int speed){
+        if(car.getAcceleration() < speed){
+            car.accelerate();
+        }
+    }
+
     private void checkReset(){
-        if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
+        if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50 && !savedMode){
             reset();
         }
     }
@@ -237,7 +241,6 @@ public class AfraidTapeBot implements GameObject {
         lastTapeLength = tape.size();
         tapeIndex = 0;
         lastTapeIndex = 0;
-        followMode = false;
         locked = false;
         // cleanTape();
         checkProgress();
@@ -390,12 +393,16 @@ public class AfraidTapeBot implements GameObject {
     }
 
     private void saveLap(){
-        if(tapes == null && car.getLaps() > 0){
-            tapes = new ArrayList<>();
-            tapes.add(tape);
-            followMode = true;
-        }else if(tapes != null && car.getLaps() > tapes.size()){ //New lap
-            tapes.add(tape);
+        if(!savedMode && car.getLaps() > 0){
+            savedMode = true;
         }
+
+        if(savedMode && car.getFinished() != 0){
+            saveLapToFile();
+        }
+    }
+
+    private void saveLapToFile(){
+        System.out.println("Saving " + car.getName() + "'s tape to file for this track.");
     }
 }
