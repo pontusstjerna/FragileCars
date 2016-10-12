@@ -35,7 +35,7 @@ public class MainSurface extends JPanel {
         this.track = track;
         scaledCarImgs = new BufferedImage[track.getDrawableCars().length][track.getDrawableCars()[0].getImgs().length];
 
-        cfg = new CfgParser("src\\model\\data\\config.txt");
+        cfg = new CfgParser(CfgParser.STD_PATH);
         betterGraphics = cfg.readBoolean("betterGraphics");
         scaleCars();
         scaledBackground = scaleImage(track.getBackground());

@@ -26,6 +26,7 @@ public class WallTapeBot implements GameObject {
     private double time = 0;
     private final int UPDATE_INTERVAL = 300;
     private int state = 0;
+    private int dynStickLength;
 
     private ArrayList<BotPoint> walls;
 
@@ -43,6 +44,8 @@ public class WallTapeBot implements GameObject {
         leftStick = new Point(0,0);
         rightStick = new Point(0,0);
 
+        dynStickLength = STICK_LENGTH;
+
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
 
@@ -57,9 +60,9 @@ public class WallTapeBot implements GameObject {
         time += deltaTime*1000;
         if(!onTape){
             discover();
-            avoidTape(walls);
+            avoidTape();
         }else{
-            avoidTape(walls);
+            avoidTape();
         }
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
@@ -107,10 +110,10 @@ public class WallTapeBot implements GameObject {
 
     private void discover(){
         if(time > UPDATE_INTERVAL){
-            actOnState(state);
+            actOnState(5);
             time = 0;
         }
-        setSpeed(Car.speedLimit);
+        setSpeed(300);
     }
 
     private void actOnState(int state){
@@ -144,24 +147,31 @@ public class WallTapeBot implements GameObject {
         }
     }
 
-    private void avoidTape(ArrayList<BotPoint> tape) {
-        int leftX = car.getRelX(0, 0);
-        int leftY = car.getRelY(0, 0);
-        int rightX = car.getRelX(car.getWidth(), 0);
-        int rightY = car.getRelY(car.getWidth(), 0);
+    private void avoidTape() {
         boolean onTape = true;
 
-        if(onTape(leftX, leftY) && onTape(rightX, rightY)){ //If on tape, just keep driving in the direction we were to avoid
-            setSpeed(100);
-        }else if(onTape(leftX, leftY)){
+        if(onTape(leftStick.x, leftStick.y) && onTape(rightStick.x, rightStick.y)){ //If on tape, just keep driving in the direction we were to avoid
+            setSpeed(50);
+
+            //If both sticks are inside tape, decrease their length and see if still inside and continue until one is outside
+            if(dynStickLength > 10){
+                dynStickLength -= 2;
+                updateSticks();
+                avoidTape();
+            }
+        }else if(onTape(leftStick.x, leftStick.y)){
             dir = Dir.RIGHT;
-            setSpeed(100);
-        }else if(onTape(rightX, rightY)){
+            setSpeed(50);
+        }else if(onTape(rightStick.x, rightStick.y)){
             dir = Dir.LEFT;
-            setSpeed(100);
+            setSpeed(50);
         }else{
             onTape = false;
             //car.brake();
+        }
+
+        if(dynStickLength < STICK_LENGTH){
+            dynStickLength++;
         }
         this.onTape = onTape;
     }
@@ -176,10 +186,10 @@ public class WallTapeBot implements GameObject {
     }
 
     private void updateSticks(){
-        leftStick.x = car.getRelX(0, -STICK_LENGTH);
-        leftStick.y = car.getRelY(0, -STICK_LENGTH);
-        rightStick.x = car.getRelX(car.getWidth(), -STICK_LENGTH);
-        rightStick.y = car.getRelY(car.getWidth(), -STICK_LENGTH);
+        leftStick.x = car.getRelX(0, -dynStickLength);
+        leftStick.y = car.getRelY(0, -dynStickLength);
+        rightStick.x = car.getRelX(car.getWidth(), -dynStickLength);
+        rightStick.y = car.getRelY(car.getWidth(), -dynStickLength);
     }
 
     private void turn(double dTime){
@@ -208,6 +218,7 @@ public class WallTapeBot implements GameObject {
     private void reset(){
         addCrash();
         incState();
+        dynStickLength = STICK_LENGTH;
         onTape = false;
     }
 

@@ -146,7 +146,7 @@ public class World implements Racetrack{
     }
 
     private void loadData(){
-        CfgParser cfg = new CfgParser("src\\model\\data\\config.txt");
+        CfgParser cfg = new CfgParser(CfgParser.STD_PATH);
 
         track = cfg.readString("trackName");
         nCars = cfg.readInt("nCars");

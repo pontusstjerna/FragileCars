@@ -29,7 +29,7 @@ public class MainWindow extends JFrame {
     }
 
     public void init(int width, int height){
-        cfg = new CfgParser("src\\model\\data\\config.txt");
+        cfg = new CfgParser(CfgParser.STD_PATH);
 
         fullScreen = cfg.readBoolean("fullscreenEnabled");
 

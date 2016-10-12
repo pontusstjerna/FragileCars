@@ -1,13 +1,11 @@
 package util;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by pontu on 2016-04-06.
  */
 public class CfgParser {
-    public static String STD_PATH = "src\\model\\data\\config.txt";
+    public static String STD_PATH = "model/data/config.txt";
 
     private BufferedReader reader;
     private String cfg = "";
@@ -63,7 +61,11 @@ public class CfgParser {
 
     private void loadFile(String filePath){
         try{
-            reader = new BufferedReader(new FileReader(filePath));
+
+            //This is seriously hacking. Java... sigh.
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            InputStream is = classLoader.getResourceAsStream(filePath);
+            reader = new BufferedReader(new InputStreamReader(is));
 
             String line;
             while((line = reader.readLine()) != null){
