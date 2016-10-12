@@ -7,6 +7,6 @@
 #betterGraphics="true"
 #botClass="model.carcontrollers.WallTapeBot"
 #debugEnabled="true"
-#fullscreenEnabled="true"
+#fullscreenEnabled="false"
 #resX="1920"
 #resY="1080"

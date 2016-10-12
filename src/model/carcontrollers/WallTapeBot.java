@@ -34,7 +34,7 @@ public class WallTapeBot implements GameObject {
     private Point leftStick, rightStick;
 
     private final int STICK_LENGTH = 150;
-    private final int CRASH_RADIUS = 80;
+    private final int CRASH_RADIUS = 50;
 
     public WallTapeBot(FragileCar car, String trackName){
         this.car = car;
