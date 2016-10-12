@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Created by pontu on 2016-09-29.
  */
-public class WallTapeBot implements GameObject {
+public class CuteBot implements GameObject {
 
     private enum Dir {STRAIGHT, LEFT, RIGHT}
 
@@ -36,7 +36,7 @@ public class WallTapeBot implements GameObject {
     private final int STICK_LENGTH = 150;
     private final int CRASH_RADIUS = 50;
 
-    public WallTapeBot(FragileCar car, String trackName){
+    public CuteBot(FragileCar car, String trackName){
         this.car = car;
         rand = new Random();
         walls = new ArrayList<>();
@@ -150,6 +150,11 @@ public class WallTapeBot implements GameObject {
     private void avoidTape() {
         boolean onTape = true;
 
+        int leftX = car.getRelX(0, 0);
+        int leftY = car.getRelY(0, 0);
+        int rightX = car.getRelX(car.getWidth(), 0);
+        int rightY = car.getRelY(car.getWidth(), 0);
+
         if(onTape(leftStick.x, leftStick.y) && onTape(rightStick.x, rightStick.y)){ //If on tape, just keep driving in the direction we were to avoid
             setSpeed(50);
 
@@ -159,12 +164,12 @@ public class WallTapeBot implements GameObject {
                 updateSticks();
                 avoidTape();
             }
-        }else if(onTape(leftStick.x, leftStick.y)){
+        }else if(onTape(leftStick.x, leftStick.y) || onTape(leftX, leftY)){
             dir = Dir.RIGHT;
-            setSpeed(50);
-        }else if(onTape(rightStick.x, rightStick.y)){
+            setSpeed(100);
+        }else if(onTape(rightStick.x, rightStick.y) || onTape(rightX, rightY)){
             dir = Dir.LEFT;
-            setSpeed(50);
+            setSpeed(100);
         }else{
             onTape = false;
             //car.brake();
