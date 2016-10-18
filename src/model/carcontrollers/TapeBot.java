@@ -2,13 +2,14 @@ package model.carcontrollers;
 
 import model.GameObject;
 import model.carcontrollers.util.BotPoint;
-import model.carcontrollers.util.TapePiece;
 import model.cars.FragileCar;
 import util.CfgParser;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
+import java.util.Stack;
 
 /**
  * Created by pontu on 2016-09-29.
@@ -18,28 +19,30 @@ public class TapeBot implements GameObject {
     private enum Dir {STRAIGHT, LEFT, RIGHT}
 
     private FragileCar car;
-    private boolean onTape = true;
+    private boolean onTape = false;
     private Dir dir = Dir.STRAIGHT;
     private final int UPDATE_INTERVAL = 100;
     private int time = 0;
     private Random rand;
     private boolean debugMode = false;
     private int lastX, lastY;
-    private int lastTapeLength;
-    private int oldTapeLength;
+    private int lastMainTapeLength;
     private int state = 0;
-    private int tapeIndex, lastTapeIndex = 0;
+    private boolean lastOnTape = false;
     private boolean followMode = false;
+    private boolean suicide = false;
 
     private final int WEIGHT_LIMIT = 100;
 
-    private ArrayList<TapePiece> tape;
-    private ArrayList<ArrayList<TapePiece>> tapes;
+    private ArrayList<BotPoint> mainTape;
+    private Stack<BotPoint> tapeStack;
+    
 
     public TapeBot(FragileCar car, String trackName){
         this.car = car;
         rand = new Random();
-        tape = new ArrayList<>();
+        mainTape = new ArrayList<>();
+        tapeStack = new Stack<>();
 
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
@@ -51,6 +54,11 @@ public class TapeBot implements GameObject {
 
     @Override
     public void update(double deltaTime) {
+        if(suicide){
+            car.accelerate();
+            checkReset();
+            return;
+        }
         turn(deltaTime);
         time += deltaTime*1000;
         checkReset();
@@ -58,15 +66,15 @@ public class TapeBot implements GameObject {
         if(!followMode){
             if(!onTape){
                 discover();
-                followTape(tape);
+                followTape(mainTape);
             }else{
-                followTape(tape);
+                followTape(mainTape);
             }
             lastX = (int)car.getMiddleX(car.getX());
             lastY = (int)car.getMiddleY(car.getY());
             saveLap();
         }else{
-            followTape(tapes.get(0));
+            followTape(mainTape);
         }
 
     }
@@ -85,10 +93,17 @@ public class TapeBot implements GameObject {
                 g.setColor(Color.YELLOW);
             }
 
-            //Paint balls
-            for(BotPoint p : tape){
+            //Paint mainTape
+            for(BotPoint p : mainTape){
                 int s = (int)(scale*10);
                 g.fillRoundRect((int)(p.x*scale)-(s/2) + scaleX, (int)(p.y*scale)-(s/2), s,s,s,s);
+                int dist = (int)(scale*p.getRadius()*2);
+                g.drawRoundRect((int)(p.x*scale)-(dist/2) + scaleX, (int)(p.y*scale)-(dist/2),
+                        dist, dist, dist, dist);
+            }
+            //Paint tapeStack with only the peripheral
+            for(BotPoint p : tapeStack){
+                int s = (int)(scale*10);
                 int dist = (int)(scale*p.getRadius()*2);
                 g.drawRoundRect((int)(p.x*scale)-(dist/2) + scaleX, (int)(p.y*scale)-(dist/2),
                         dist, dist, dist, dist);
@@ -137,13 +152,11 @@ public class TapeBot implements GameObject {
     }
 
     private void addTape(){
-        int x = car.getWidth()/2;
-        int y = car.getHeight();
-        int radius = 50;
-        tape.add(new TapePiece(car.getRelX(x, y), car.getRelY(x, y), radius));
+        final int radius = 50;
+        tapeStack.push(new BotPoint((int)car.getMiddleX(car.getX()), (int)car.getMiddleY(car.getY()), radius));
     }
 
-    private void followTape(ArrayList<TapePiece> tape) {
+    private void followTape(ArrayList<BotPoint> tape) {
         int leftX = car.getRelX(0, 0);
         int leftY = car.getRelY(0, 0);
         int rightX = car.getRelX(car.getWidth(), 0);
@@ -152,11 +165,11 @@ public class TapeBot implements GameObject {
 
         if(car.getAcceleration() < 300) car.accelerate();
 
-        if(onTape(leftX, leftY) && onTape(rightX, rightY)){
+        if(onTape(mainTape, leftX, leftY) && onTape(mainTape, rightX, rightY)){
             dir = Dir.STRAIGHT;
-        }else if(onTape(leftX, leftY)){
+        }else if(onTape(mainTape, leftX, leftY)){
             dir = Dir.LEFT;
-        }else if(onTape(rightX, rightY)){
+        }else if(onTape(mainTape, rightX, rightY)){
             dir = Dir.RIGHT;
         }else{
             onTape = false;
@@ -166,11 +179,9 @@ public class TapeBot implements GameObject {
         this.onTape = onTape;
     }
 
-    private boolean onTape(int x, int y){
-        for(TapePiece p : tape){
+    private boolean onTape(Collection<BotPoint> tape, int x, int y){
+        for(BotPoint p : tape){
             if(p.distance(x,y) < p.getRadius()){
-                tapeIndex = tape.indexOf(p);
-                p.incWeight();
                 return true;
             }
         }
@@ -178,13 +189,14 @@ public class TapeBot implements GameObject {
     }
 
     private void checkForCycles(){
-      //  System.out.println(tapeIndex);
-        int indexDiff = Math.abs(lastTapeIndex - tapeIndex);
-        if(indexDiff > 10){
-            rollBack(indexDiff);
-            incState();
+
+        //If the car, while building its stack of new tape, runs over the main tape,
+        //THERE IS DEFINITELY A CYCLE.
+        if(onTape && !lastOnTape){
+            clearStack();
+            suicide = true;
         }
-        lastTapeIndex = tapeIndex;
+        lastOnTape = onTape;
     }
 
     private void turn(double dTime){
@@ -200,59 +212,71 @@ public class TapeBot implements GameObject {
 
     private void checkReset(){
         if(Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50){
-            onTape = true;
-            removeTape();
-            incState();
-            lastTapeLength = tape.size();
-            tapeIndex = 0;
-            lastTapeIndex = 0;
-            followMode = false;
-           // cleanTape();
-            checkProgress();
+            reset();
         }
+    }
+
+    private void reset(){
+        incState();
+        removeTape();
+        followMode = false;
+        onTape = true;
+        lastOnTape = onTape;
+        // cleanTape();
+        checkProgress();
+        glueTape();
+        lastMainTapeLength = mainTape.size();
+        suicide = false;
+        System.out.println("State for " + car.getName() + ": " + state);
     }
 
     private void checkProgress(){
         if(state == 0){
-            //Check if stuck or in a loop/cycle
-            if(Math.abs(tape.size() - oldTapeLength) < 3){
+            //Check if not enough progress has been made
+            if(mainTape.size() - lastMainTapeLength < 3){
                 rollBack(20);
             }
-            //System.out.println("tapeSize: " + tape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(tape.size() - oldTapeLength));
-            oldTapeLength = tape.size();
+            //System.out.println("tapeSize: " + mainTape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(mainTape.size() - oldTapeLength));
         }
     }
 
     private void rollBack(int nPoints){
-        int length = tape.size();
-        for(int i = tape.size()-1; i > length - nPoints && tape.size() > 1 && i > 0; i--){
-            if(tape.get(i).getWeight() < WEIGHT_LIMIT){ //Remove if not safe enough
-                tape.remove(i);
-            }else{
-                tape.get(i).decWeight();
-                tape.get(i).decWeight();
-            }
+        int length = mainTape.size();
+        for(int i = mainTape.size()-1; i > length - nPoints && i >= 0; i--){
+            mainTape.remove(i);
         }
         System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
     }
 
-    private void removeTape(){
 
-        //Require at least 3 new tape points, otherwise remove it
-        while(Math.abs(tape.size() - lastTapeLength) < 4 && tape.size() > 1){
-            tape.remove(tape.size()-1);
-        }
-
-        //Remove the tape that we died in
-        for(TapePiece p : getCurrentTape(lastX, lastY)){
-            if(p.getWeight() < WEIGHT_LIMIT)
-            tape.remove(p);
+    private void glueTape(){
+        if(tapeStack.size() > 0){
+            while(tapeStack.size() > 0){ //Add the stack to main tape
+                mainTape.add(tapeStack.pop());
+            }
+            //Start a new state cycle
+            state = 0;
         }
     }
 
-    private ArrayList<TapePiece> getCurrentTape(int x, int y){
-        ArrayList<TapePiece> pts = new ArrayList<>();
-        for(TapePiece p : tape){
+    private void removeTape(){
+
+        //Require at least 3 new mainTape points, otherwise remove it
+        if(tapeStack.size() < 3 ){
+            clearStack();
+        }
+
+
+
+        //Remove the new tape from stack that we died in
+        while(onTape(tapeStack, lastX, lastY)){
+            tapeStack.pop();
+        }
+    }
+
+    private ArrayList<BotPoint> getCurrentTape(int x, int y){
+        ArrayList<BotPoint> pts = new ArrayList<>();
+        for(BotPoint p : mainTape){
             if(p.distance(x,y) < p.getRadius()){
                 pts.add(p);
             }
@@ -265,22 +289,29 @@ public class TapeBot implements GameObject {
     }
 
     private void cleanTape(){
-        for(int i = 0; i < tape.size(); i++){
-            for(int j = 0; j < tape.size(); j++){
-                if(tape.get(i).distance(tape.get(j)) < tape.get(i).getRadius()/10){
-                    tape.remove(tape.get(j));
+        for(int i = 0; i < mainTape.size(); i++){
+            for(int j = 0; j < mainTape.size(); j++){
+                if(mainTape.get(i).distance(mainTape.get(j)) < mainTape.get(i).getRadius()/10){
+                    mainTape.remove(mainTape.get(j));
                 }
             }
         }
     }
 
-    private void saveLap(){
-        if(tapes == null && car.getLaps() > 0){
-            tapes = new ArrayList<>();
-            tapes.add(tape);
-            followMode = true;
-        }else if(tapes != null && car.getLaps() > tapes.size()){ //New lap
-            tapes.add(tape);
+    private void clearStack(){
+        while(tapeStack.size() > 0){
+            tapeStack.pop();
         }
+    }
+
+    private double getDiff(double a, double b){
+        return Math.abs(a - b);
+    }
+
+    private void saveLap(){
+        if(car.getLaps() > 0){
+            followMode = true;
+        }
+        //TODO: Save lap
     }
 }
