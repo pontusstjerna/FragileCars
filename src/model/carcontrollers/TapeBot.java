@@ -223,8 +223,8 @@ public class TapeBot implements GameObject {
         onTape = true;
         lastOnTape = onTape;
         // cleanTape();
-        checkProgress();
         glueTape();
+        checkProgress();
         lastMainTapeLength = mainTape.size();
         suicide = false;
         System.out.println("State for " + car.getName() + ": " + state);
@@ -234,7 +234,7 @@ public class TapeBot implements GameObject {
         if(state == 0){
             //Check if not enough progress has been made
             if(mainTape.size() - lastMainTapeLength < 3){
-                rollBack(20);
+                rollBack(10);
             }
             //System.out.println("tapeSize: " + mainTape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(mainTape.size() - oldTapeLength));
         }
@@ -242,8 +242,11 @@ public class TapeBot implements GameObject {
 
     private void rollBack(int nPoints){
         int length = mainTape.size();
-        for(int i = mainTape.size()-1; i > length - nPoints && i >= 0; i--){
+        /*for(int i = mainTape.size()-1; i > length - nPoints && i >= 0; i--){
             mainTape.remove(i);
+        }*/
+        while(mainTape.size() > length - nPoints && mainTape.size() > 0){
+            mainTape.remove(0);
         }
         System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
     }
@@ -251,11 +254,15 @@ public class TapeBot implements GameObject {
 
     private void glueTape(){
         if(tapeStack.size() > 0){
-            while(tapeStack.size() > 0){ //Add the stack to main tape
-                mainTape.add(tapeStack.pop());
-            }
+            mainTape.addAll(tapeStack);
+           /* while(tapeStack.size() > 0){ //Add the stack to main tape
+                //TODO: Need to reverse this in some way
+               // mainTape.set(tapeStack.size()-1, tapeStack.pop());
+            }*/
+            tapeStack.clear();
             //Start a new state cycle
             state = 0;
+            System.out.println("State set to 0");
         }
     }
 

@@ -1,15 +1,11 @@
 #trackName="2"
-#nCars="4"
+#nCars="1"
 #nPlayers="0"
 #laps="5"
 #countdown="1000"
 #friction="3"
 #betterGraphics="true"
-<<<<<<< HEAD
 #botClass="model.carcontrollers.TapeBot"
-=======
-#botClass="model.carcontrollers.CuteBot"
->>>>>>> 6c33a948bea2035a9aba90bed14dc2019f3ab82a
 #debugEnabled="true"
 #fullscreenEnabled="false"
 #resX="1920"
