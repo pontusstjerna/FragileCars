@@ -28,11 +28,10 @@ public class TapeBot implements GameObject {
     private int lastX, lastY;
     private int lastMainTapeLength;
     private int state = 0;
+    private int failedState = state;
     private boolean lastOnTape = false;
     private boolean followMode = false;
     private boolean suicide = false;
-
-    private final int WEIGHT_LIMIT = 100;
 
     private ArrayList<BotPoint> mainTape;
     private Stack<BotPoint> tapeStack;
@@ -57,12 +56,13 @@ public class TapeBot implements GameObject {
         if(suicide){
             car.accelerate();
             checkReset();
+            System.out.println("SUICIDE");
             return;
         }
         turn(deltaTime);
         time += deltaTime*1000;
-        checkReset();
         checkForCycles();
+        checkReset();
         if(!followMode){
             if(!onTape){
                 discover();
@@ -153,7 +153,9 @@ public class TapeBot implements GameObject {
 
     private void addTape(){
         final int radius = 50;
-        tapeStack.push(new BotPoint((int)car.getMiddleX(car.getX()), (int)car.getMiddleY(car.getY()), radius));
+        final int x = car.getWidth()/2;
+        final int y = 0;
+        tapeStack.push(new BotPoint((int)car.getRelX(x,y), (int)car.getRelY(x, y), radius));
     }
 
     private void followTape(ArrayList<BotPoint> tape) {
@@ -193,7 +195,7 @@ public class TapeBot implements GameObject {
         //If the car, while building its stack of new tape, runs over the main tape,
         //THERE IS DEFINITELY A CYCLE.
         if(onTape && !lastOnTape){
-            clearStack();
+            tapeStack.clear();
             suicide = true;
         }
         lastOnTape = onTape;
@@ -217,7 +219,12 @@ public class TapeBot implements GameObject {
     }
 
     private void reset(){
-        incState();
+        if(suicide){
+            state = incState(state);
+            suicide = false;
+            return;
+        }
+        state = incState(state);
         removeTape();
         followMode = false;
         onTape = true;
@@ -226,27 +233,30 @@ public class TapeBot implements GameObject {
         glueTape();
         checkProgress();
         lastMainTapeLength = mainTape.size();
-        suicide = false;
         System.out.println("State for " + car.getName() + ": " + state);
     }
 
+
     private void checkProgress(){
-        if(state == 0){
+        if(state == failedState){
             //Check if not enough progress has been made
             if(mainTape.size() - lastMainTapeLength < 3){
                 rollBack(10);
+                failedState = incState(failedState);
             }
             //System.out.println("tapeSize: " + mainTape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(mainTape.size() - oldTapeLength));
+        }else if(failedState == 0){ //No success for like 16 deaths
+            if(mainTape.size() - lastMainTapeLength < 5){
+                rollBack(30);
+                state = incState(state);
+            }
         }
     }
 
     private void rollBack(int nPoints){
         int length = mainTape.size();
-        /*for(int i = mainTape.size()-1; i > length - nPoints && i >= 0; i--){
+        for(int i = mainTape.size()-1; i > length - nPoints && i >= 0; i--){
             mainTape.remove(i);
-        }*/
-        while(mainTape.size() > length - nPoints && mainTape.size() > 0){
-            mainTape.remove(0);
         }
         System.out.println("Rollback -" + nPoints + " pts for " + car.getName());
     }
@@ -255,14 +265,9 @@ public class TapeBot implements GameObject {
     private void glueTape(){
         if(tapeStack.size() > 0){
             mainTape.addAll(tapeStack);
-           /* while(tapeStack.size() > 0){ //Add the stack to main tape
-                //TODO: Need to reverse this in some way
-               // mainTape.set(tapeStack.size()-1, tapeStack.pop());
-            }*/
             tapeStack.clear();
             //Start a new state cycle
             state = 0;
-            System.out.println("State set to 0");
         }
     }
 
@@ -270,10 +275,8 @@ public class TapeBot implements GameObject {
 
         //Require at least 3 new mainTape points, otherwise remove it
         if(tapeStack.size() < 3 ){
-            clearStack();
+            tapeStack.clear();
         }
-
-
 
         //Remove the new tape from stack that we died in
         while(onTape(tapeStack, lastX, lastY)){
@@ -291,24 +294,8 @@ public class TapeBot implements GameObject {
         return pts;
     }
 
-    private void incState(){
-        state = (state + 1) % 4;
-    }
-
-    private void cleanTape(){
-        for(int i = 0; i < mainTape.size(); i++){
-            for(int j = 0; j < mainTape.size(); j++){
-                if(mainTape.get(i).distance(mainTape.get(j)) < mainTape.get(i).getRadius()/10){
-                    mainTape.remove(mainTape.get(j));
-                }
-            }
-        }
-    }
-
-    private void clearStack(){
-        while(tapeStack.size() > 0){
-            tapeStack.pop();
-        }
+    private int incState(int state){
+        return (state + 1) % 4;
     }
 
     private double getDiff(double a, double b){
