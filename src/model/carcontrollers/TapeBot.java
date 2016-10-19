@@ -17,18 +17,19 @@ import java.util.Stack;
 public class TapeBot implements GameObject {
 
     private enum Dir {STRAIGHT, LEFT, RIGHT}
+    private enum States {STRAIGHT, LEFT, RIGHT, RANDOM1, WEAK_LEFT, WEAK_RIGHT}
 
     private FragileCar car;
     private boolean onTape = false;
     private Dir dir = Dir.STRAIGHT;
-    private final int UPDATE_INTERVAL = 100;
-    private int time = 0;
+    private final int SPAWN_INTERVAL = 100;
+    private int tapeTime = 0;
+    private int turnTime = 0;
     private Random rand;
     private boolean debugMode = false;
     private int lastX, lastY;
     private int lastMainTapeLength;
-    private int state = 0;
-    private int failedState = state;
+    private States state = States.STRAIGHT;
     private boolean lastOnTape = false;
     private boolean followMode = false;
     private boolean suicide = false;
@@ -60,7 +61,8 @@ public class TapeBot implements GameObject {
             return;
         }
         turn(deltaTime);
-        time += deltaTime*1000;
+        tapeTime += deltaTime*1000;
+        turnTime += deltaTime*1000;
         checkForCycles();
         checkReset();
         if(!followMode){
@@ -112,42 +114,60 @@ public class TapeBot implements GameObject {
     }
 
     private void discover(){
-        if(time > UPDATE_INTERVAL){
-            actOnState(state);
+        if(tapeTime > SPAWN_INTERVAL){
             addTape();
-            time = 0;
+            tapeTime = 0;
         }
+        actOnState(state);
         car.accelerate();
     }
 
-    private void actOnState(int state){
+    private void actOnState(States state){
         switch(state) {
-            case 0:
+            case STRAIGHT:
                 dir = Dir.STRAIGHT;
                 break;
-            case 1:
+            case LEFT:
                 dir = Dir.LEFT;
                 break;
-            case 2:
+            case RIGHT:
                 dir = Dir.RIGHT;
                 break;
-            default:
-                turnRandom();
+            case RANDOM1:
+                turnRandom(400);
+                break;
+            case WEAK_LEFT:
+                turnDynamic(Dir.LEFT, 50);
+                break;
+            case WEAK_RIGHT:
+                turnDynamic(Dir.RIGHT, 50);
                 break;
         }
     }
 
-    private void turnRandom(){
-        switch(rand.nextInt(3)){
-            case 0:
-                dir = Dir.STRAIGHT;
-                break;
-            case 1:
-                dir = Dir.LEFT;
-                break;
-            case 2:
-                dir = Dir.RIGHT;
-                break;
+    private void turnRandom(int interval){
+        if(turnTime > interval){
+            switch(rand.nextInt(3)){
+                case 0:
+                    dir = Dir.STRAIGHT;
+                    break;
+                case 1:
+                    dir = Dir.LEFT;
+                    break;
+                case 2:
+                    dir = Dir.RIGHT;
+                    break;
+            }
+            turnTime = 0;
+        }
+    }
+
+    private void turnDynamic(Dir dir, int interval){
+        if(turnTime > interval){
+            this.dir = dir;
+            turnTime = 0;
+        }else{
+            this.dir = Dir.STRAIGHT;
         }
     }
 
@@ -230,26 +250,21 @@ public class TapeBot implements GameObject {
         onTape = true;
         lastOnTape = onTape;
         // cleanTape();
-        glueTape();
-        checkProgress();
+        if(!glueTape()){
+            checkProgress();
+        }
         lastMainTapeLength = mainTape.size();
         System.out.println("State for " + car.getName() + ": " + state);
     }
 
 
     private void checkProgress(){
-        if(state == failedState){
+        if(state == States.STRAIGHT){
             //Check if not enough progress has been made
             if(mainTape.size() - lastMainTapeLength < 3){
                 rollBack(10);
-                failedState = incState(failedState);
             }
             //System.out.println("tapeSize: " + mainTape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(mainTape.size() - oldTapeLength));
-        }else if(failedState == 0){ //No success for like 16 deaths
-            if(mainTape.size() - lastMainTapeLength < 5){
-                rollBack(30);
-                state = incState(state);
-            }
         }
     }
 
@@ -262,13 +277,15 @@ public class TapeBot implements GameObject {
     }
 
 
-    private void glueTape(){
+    private boolean glueTape(){
         if(tapeStack.size() > 0){
             mainTape.addAll(tapeStack);
             tapeStack.clear();
             //Start a new state cycle
-            state = 0;
+            state = States.STRAIGHT;
+            return true;
         }
+        return false;
     }
 
     private void removeTape(){
@@ -276,11 +293,16 @@ public class TapeBot implements GameObject {
         //Require at least 3 new mainTape points, otherwise remove it
         if(tapeStack.size() < 3 ){
             tapeStack.clear();
-        }
-
-        //Remove the new tape from stack that we died in
-        while(onTape(tapeStack, lastX, lastY)){
-            tapeStack.pop();
+        }else{
+            //Remove the new tape from stack that we died in
+            while(onTape(tapeStack, lastX, lastY)){
+                tapeStack.pop();
+            }
+            //Always step back a little
+            final int stackRollback = 3;
+            for(int i = 0; i < stackRollback && !tapeStack.empty(); i++){
+                tapeStack.pop();
+            }
         }
     }
 
@@ -294,8 +316,8 @@ public class TapeBot implements GameObject {
         return pts;
     }
 
-    private int incState(int state){
-        return (state + 1) % 4;
+    private States incState(States state){
+        return States.values()[(state.ordinal() + 1) % States.values().length];
     }
 
     private double getDiff(double a, double b){
