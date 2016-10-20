@@ -3,6 +3,7 @@ package model.cars;
 import model.GameObject;
 import model.misc.SkidmarkCreator;
 import model.misc.SmokeController;
+import util.CfgParser;
 import util.Geom;
 import util.ImageHandler;
 
@@ -270,7 +271,23 @@ public class Car implements DrawableCar, FragileCar {
     }
 
     @Override
-    public GameObject[] getGameObjects(){ return new GameObject[]{smoke, skids}; }
+    public GameObject[] getGameObjects(){
+
+        //Hopefully a temporary fix, because this is pretty ugly
+        CfgParser parser = new CfgParser(CfgParser.STD_PATH);
+        boolean smokeEnabled = parser.readBoolean("smokeEnabled");
+        boolean skidsEnabled = parser.readBoolean("skidmarksEnabled");
+        parser = null;
+        if(smokeEnabled && skidsEnabled){
+            return new GameObject[]{smoke, skids};
+        }else if(smokeEnabled){
+            return new GameObject[]{smoke};
+        }else if(skidsEnabled){
+            return new GameObject[]{skids};
+        }
+
+     return new GameObject[0];
+    }
 
     @Override
     public String toString(){
