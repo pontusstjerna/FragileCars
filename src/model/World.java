@@ -256,14 +256,14 @@ public class World implements Racetrack{
     private void spawnCarsLeft(int carIndex, boolean isBot){
         if(!isBot){
             Car car = new Car(Car.Cars.values()[carIndex], goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100*(carIndex) + 100, Math.PI*3/2, friction);
+                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100*(carIndex) + 25, Math.PI*3/2, friction);
             players[carIndex] = car;
             cars[carIndex] = players[carIndex];
             drawables[carIndex] = car;
         }else{
             Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
                     goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    100*(carIndex+nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100, Math.PI*3/2, friction);
+                    100*(carIndex+nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 25, Math.PI*3/2, friction);
             bots[carIndex] = car;
             cars[carIndex+players.length] = bots[carIndex];
             drawables[carIndex + players.length] = car;
@@ -310,24 +310,24 @@ public class World implements Racetrack{
 
     private int places = 0;
     private void checkLaps(){
-        boolean allFinished = false;
+        boolean allFinished = true;
         for(int i = 0; i < cars.length; i++){
             if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.FRONT && passedBack[i]) {
                 cars[i].newLap();
-
                 //Finished?
                 if (cars[i].getLaps() == laps) {
                     places++;
                     cars[i].finish(getTime(), places);
                     cars[i].turnOff(true);
-
-                    allFinished = true;
                 } else {
-                    allFinished = false;
                     System.out.println(cars[i]);
                 }
             }else if(goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK && passedFront[i]){
                 cars[i].reset();
+            }
+
+            if(cars[i].getLaps() != laps){
+                allFinished = false;
             }
 
             passedBack[i] = (goal.backOrFront(cars[i].getX(), cars[i].getY()) == DirectionalRect.Side.BACK);

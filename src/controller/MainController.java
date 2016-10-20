@@ -18,6 +18,7 @@ public class MainController implements ActionListener {
     private Timer timer;
     private World world;
     private PlayerController playerController;
+    private boolean finished = false;
 
     private double tempTime;
     private double deltaTime;
@@ -33,9 +34,15 @@ public class MainController implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e){
-        //Really cool one-liner with 2 lambdas, to wait 5 sec before game quits
-        if(world.getFinished()) new Thread(() -> {Timer t = new Timer(5000, (ae) -> closeGame());t.setRepeats(false);t.start();}).start();
+        //If finished, wait 5 sec and exit game
+        if(!finished && world.getFinished()) {
+            Timer t = new Timer(5000, (ae) -> closeGame());
+            t.setRepeats(false);
+            t.start();
+            finished = true;
+        }
         setDeltaTime();
+
 
         playerController.update(getDeltaTime());
         world.update(getDeltaTime());
