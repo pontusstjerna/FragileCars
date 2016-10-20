@@ -6,6 +6,8 @@ import model.cars.FragileCar;
 import util.CfgParser;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -33,9 +35,12 @@ public class TapeBot implements GameObject {
     private boolean lastOnTape = false;
     private boolean followMode = false;
     private boolean suicide = false;
+    private boolean altState = false;
 
     private ArrayList<BotPoint> mainTape;
     private Stack<BotPoint> tapeStack;
+
+    private final String trackName;
     
 
     public TapeBot(FragileCar car, String trackName){
@@ -43,6 +48,7 @@ public class TapeBot implements GameObject {
         rand = new Random();
         mainTape = new ArrayList<>();
         tapeStack = new Stack<>();
+        this.trackName = trackName;
 
         lastX = (int)car.getMiddleX(car.getX());
         lastY = (int)car.getMiddleY(car.getY());
@@ -63,9 +69,9 @@ public class TapeBot implements GameObject {
         turn(deltaTime);
         tapeTime += deltaTime*1000;
         turnTime += deltaTime*1000;
-        checkForCycles();
-        checkReset();
         if(!followMode){
+            checkForCycles();
+            checkReset();
             if(!onTape){
                 discover();
                 followTape(mainTape);
@@ -74,9 +80,12 @@ public class TapeBot implements GameObject {
             }
             lastX = (int)car.getMiddleX(car.getX());
             lastY = (int)car.getMiddleY(car.getY());
-            saveLap();
+            lockLap();
         }else{
             followTape(mainTape);
+            if(car.getFinished() != 0){
+                saveLap();
+            }
         }
 
     }
@@ -123,6 +132,13 @@ public class TapeBot implements GameObject {
     }
 
     private void actOnState(States state){
+        if(altState){//Alternate the order of left/right when stuck too long
+            if(state == States.LEFT){
+                state = States.RIGHT;
+            }else if(state == States.RIGHT){
+                state = States.LEFT;
+            }
+        }
         switch(state) {
             case STRAIGHT:
                 dir = Dir.STRAIGHT;
@@ -137,10 +153,10 @@ public class TapeBot implements GameObject {
                 turnRandom(400);
                 break;
             case WEAK_LEFT:
-                turnDynamic(Dir.LEFT, 50);
+                turnDynamic(Dir.LEFT, 30);
                 break;
             case WEAK_RIGHT:
-                turnDynamic(Dir.RIGHT, 50);
+                turnDynamic(Dir.RIGHT, 30);
                 break;
         }
     }
@@ -187,15 +203,15 @@ public class TapeBot implements GameObject {
 
         if(car.getAcceleration() < 300) car.accelerate();
 
-        if(onTape(mainTape, leftX, leftY) && onTape(mainTape, rightX, rightY)){
+        if(onTape(tape, leftX, leftY) && onTape(tape, rightX, rightY)){
             dir = Dir.STRAIGHT;
-        }else if(onTape(mainTape, leftX, leftY)){
+        }else if(onTape(tape, leftX, leftY)){
             dir = Dir.LEFT;
-        }else if(onTape(mainTape, rightX, rightY)){
+        }else if(onTape(tape, rightX, rightY)){
             dir = Dir.RIGHT;
         }else{
             onTape = false;
-            //car.brake();
+            if(followMode) dir = Dir.STRAIGHT;
         }
 
         this.onTape = onTape;
@@ -262,7 +278,8 @@ public class TapeBot implements GameObject {
         if(state == States.STRAIGHT){
             //Check if not enough progress has been made
             if(mainTape.size() - lastMainTapeLength < 3){
-                rollBack(10);
+                rollBack(20);
+                altState = !altState;
             }
             //System.out.println("tapeSize: " + mainTape.size() + " oldTapeLength: " + oldTapeLength + " abs: " + Math.abs(mainTape.size() - oldTapeLength));
         }
@@ -324,10 +341,27 @@ public class TapeBot implements GameObject {
         return Math.abs(a - b);
     }
 
-    private void saveLap(){
-        if(car.getLaps() > 0){
+    private void lockLap(){
+        if(car.getLaps() > 0) {
             followMode = true;
+            glueTape();
         }
-        //TODO: Save lap
+    }
+
+    private void saveLap(){
+
+        File yourFile = new File("score.txt");
+        yourFile.createNewFile(); // if file already exists will do nothing
+        FileOutputStream fos = new FileOutputStream(car.getName() + "_" + trackName + ".lap", false);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(clubs);
+        oos.close();
+
+        //READ
+        FileInputStream fis = new FileInputStream("t.tmp");
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        List<Club> clubs = (List<Club>) ois.readObject();
+        ois.close();
+
     }
 }
