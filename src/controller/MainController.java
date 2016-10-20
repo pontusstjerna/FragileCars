@@ -8,24 +8,20 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+//Note to self: PostNord 9108
+
 /**
  * Created by Pontus on 2016-03-04.
  */
 public class MainController implements ActionListener {
     private MainWindow frame;
-    private View view;
     private Timer timer;
     private World world;
     private PlayerController playerController;
-    private MenuController menu;
 
     private double tempTime;
     private double deltaTime;
     private final int DELAY = 5;
-
-    public MainController(){
-
-    }
 
     public void init(){
         //Use accelerated graphics
@@ -37,6 +33,8 @@ public class MainController implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e){
+        //Really cool one-liner with 2 lambdas, to wait 5 sec before game quits
+        if(world.getFinished()) new Thread(() -> {Timer t = new Timer(5000, (ae) -> closeGame());t.setRepeats(false);t.start();}).start();
         setDeltaTime();
 
         playerController.update(getDeltaTime());
@@ -68,6 +66,15 @@ public class MainController implements ActionListener {
         timer.start();
         System.out.println("Game started!");
         System.out.println("------------------------------");
+    }
+
+    private void closeGame(){
+        timer.stop();
+        frame.setVisible(false);
+        frame.dispose();
+        frame = null;
+        world = null;
+        playerController = null;
     }
 
     private void initTimer(){

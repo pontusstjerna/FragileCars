@@ -17,7 +17,7 @@ public class UISurface extends JPanel {
     private BufferedImage guiBg, guiBgScaled;
     private double scale;
     private BufferedImage[] numbersBig;
-    private BufferedImage[] numbersSmall;
+
 
     public UISurface(Racetrack track, double scale){
         this.track = track;
