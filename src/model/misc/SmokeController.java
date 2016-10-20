@@ -60,7 +60,7 @@ public class SmokeController implements GameObject {
 
         //Paint all particles
         for(SmokeParticle s : smoke) {
-      //      s.paint(g, scale, scaleX);
+            s.paint(g, scale, scaleX);
         }
 
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_DEFAULT);
