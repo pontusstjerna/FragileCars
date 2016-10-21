@@ -39,8 +39,8 @@ public class TapeBot implements GameObject {
     private boolean suicide = false;
     private boolean altState = false;
     private boolean finished = false;
-    private boolean runOnLoaded = false;
     private boolean passedGoalLine = false;
+    final private boolean runOnLoaded;
 
     private ArrayList<BotPoint> mainTape;
     private Stack<BotPoint> tapeStack;
@@ -66,8 +66,6 @@ public class TapeBot implements GameObject {
         lastY = (int)car.getMiddleY(car.getY());
 
         debugMode = new CfgParser(CfgParser.STD_PATH).readBoolean("debugEnabled");
-
-        //makeTape(trackName)
     }
 
     @Override
@@ -80,28 +78,36 @@ public class TapeBot implements GameObject {
         if(!followMode){
             checkForCycles();
             if(checkReset()) reset();
+            if(suicide) return;
             if(!onTape){
                 discover();
                 followTape(mainTape);
             }else{
                 followTape(mainTape);
             }
-            lastX = (int)car.getMiddleX(car.getX());
-            lastY = (int)car.getMiddleY(car.getY());
+            setLastPos();
             lockLap();
         }else{
             followTape(mainTape);
 
-            //Check if passed goalline
+            //Check if passed goal line
             if(car.getLaps() > lastLap){
                 passedGoalLine = true;
                 lastLap = car.getLaps();
             }
             //If we have not loaded a saved track, try to find the right speed for it
-            if(!runOnLoaded && checkReset() && !passedGoalLine) slowDown();
+            if(!runOnLoaded && checkReset()){
+                if(passedGoalLine){
+                    passedGoalLine = false;
+                }else{
+                    slowDown();
+                }
+            }
             if(car.getFinished() != 0){
                 saveLap();
             }
+
+            setLastPos();
         }
 
     }
@@ -176,10 +182,10 @@ public class TapeBot implements GameObject {
                 turnDynamic(Dir.RIGHT, 30);
                 break;
             case SHARPER_LEFT:
-                turnDynamic(Dir.RIGHT, 5);
+                turnDynamic(Dir.RIGHT, 10);
                 break;
             case SHARPER_RIGHT:
-                turnDynamic(Dir.LEFT, 5);
+                turnDynamic(Dir.LEFT, 10);
                 break;
         }
     }
@@ -257,6 +263,7 @@ public class TapeBot implements GameObject {
         //THERE IS DEFINITELY A CYCLE.
         if(onTape && !lastOnTape){
             suicide = true;
+            dir = Dir.STRAIGHT;
         }
         lastOnTape = onTape;
     }
@@ -357,12 +364,18 @@ public class TapeBot implements GameObject {
         //Slow down until speed is nice
         if(speedLimit > 50){
             speedLimit -= 50;
+            System.out.println("Speed for " + car.getName() + ": " + speedLimit);
         }else{ //Should never get here but if it does there is something seriously wrong with our lap
             followMode = false;
             //Reset everything
             mainTape.clear();
             tapeStack.clear();
         }
+    }
+
+    private void setLastPos(){
+        lastX = (int)car.getMiddleX(car.getX());
+        lastY = (int)car.getMiddleY(car.getY());
     }
 
     private boolean tryLoadLap(){

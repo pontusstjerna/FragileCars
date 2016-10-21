@@ -54,7 +54,7 @@ public class World implements Racetrack{
 
     public void update(double deltaTime) {
         this.deltaTime = deltaTime;
-        getTime();
+        time = getTime();
         updateCars(deltaTime);
         releaseCars();
         checkCollisions();
@@ -111,7 +111,7 @@ public class World implements Racetrack{
     @Override
     public long getTime(){
         if(!finished){
-            time = System.currentTimeMillis() - startTime - countdown;
+            return System.currentTimeMillis() - startTime - countdown;
         }
         return time;
     }
@@ -290,21 +290,23 @@ public class World implements Racetrack{
 
     private void checkCollisions(){
         for(FragileCar car : getCars()){
-            for(int x = 0; x < car.getWidth(); x++){
-                for(int y = 0; y < car.getHeight(); y++){
-                    try{
-                        if(car.getImgs()[car.getFrame()].getRGB(x,y) != 0){
-                            if(images[1].getRGB(car.getX() + x,
-                                                car.getY() + y) != 0){
-                                car.reset();
+            new Thread(() ->{ //CONCURRENCY FOR EFFICIENCY YES
+                for(int x = 0; x < car.getWidth(); x++){
+                    for(int y = 0; y < car.getHeight(); y++){
+                        try{
+                            if(car.getImgs()[car.getFrame()].getRGB(x,y) != 0){
+                                if(images[1].getRGB(car.getX() + x,
+                                        car.getY() + y) != 0){
+                                    car.reset();
+                                }
                             }
+                        }catch(ArrayIndexOutOfBoundsException e){
+                            car.reset();
                         }
-                    }catch(ArrayIndexOutOfBoundsException e){
-                        car.reset();
-                    }
 
+                    }
                 }
-            }
+            }).start();
         }
     }
 
