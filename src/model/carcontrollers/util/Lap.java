@@ -7,20 +7,15 @@ import java.util.ArrayList;
  * Created by Pontus on 2016-10-20.
  */
 public class Lap implements Serializable {
-    private final String trackName;
-    private final String carName;
     private final ArrayList<BotPoint> lap;
+    private final int speedLimit;
 
-
-    public Lap(String trackName, String carName, ArrayList<BotPoint> lap){
-        this.trackName = trackName;
-        this.carName = carName;
+    public Lap(ArrayList<BotPoint> lap, int speedLimit){
         this.lap = lap;
+        this.speedLimit = speedLimit;
     }
 
-    public String getTrackName(){return trackName;}
-
-    public String getCarName() {return carName;}
-
     public ArrayList<BotPoint> getLap() {return lap;}
+
+    public int getSpeedLimit(){return speedLimit;}
 }
