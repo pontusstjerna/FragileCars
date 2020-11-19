@@ -6,7 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.stage.Stage;
-import model.Racetrack;
+import se.nocroft.model.Racetrack;
 
 import java.awt.event.KeyListener;
 

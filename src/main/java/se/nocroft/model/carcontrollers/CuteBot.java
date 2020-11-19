@@ -1,10 +1,10 @@
 package se.nocroft.model.carcontrollers;
 
-import model.GameObject;
-import model.carcontrollers.util.BotPoint;
-import model.cars.Car;
-import model.cars.FragileCar;
-import util.CfgParser;
+import se.nocroft.model.GameObject;
+import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.FragileCar;
+import se.nocroft.util.CfgParser;
 
 import java.awt.*;
 import java.util.*;

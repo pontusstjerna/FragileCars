@@ -1,12 +1,12 @@
 package se.nocroft.model;
 
-import model.carcontrollers.*;
-import model.cars.Car;
-import model.cars.DrawableCar;
-import model.cars.FragileCar;
-import util.CfgParser;
-import util.DirectionalRect;
-import util.ImageHandler;
+import se.nocroft.model.carcontrollers.*;
+import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.DrawableCar;
+import se.nocroft.model.cars.FragileCar;
+import se.nocroft.util.CfgParser;
+import se.nocroft.util.DirectionalRect;
+import se.nocroft.util.ImageHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

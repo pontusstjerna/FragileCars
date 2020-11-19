@@ -1,6 +1,6 @@
 package se.nocroft.model;
 
-import model.cars.DrawableCar;
+import se.nocroft.model.cars.DrawableCar;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;

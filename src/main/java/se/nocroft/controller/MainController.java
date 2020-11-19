@@ -1,8 +1,8 @@
 package se.nocroft.controller;
 
-import model.World;
-import view.MainWindow;
-import view.View;
+import se.nocroft.model.World;
+import se.nocroft.view.MainWindow;
+import se.nocroft.view.View;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

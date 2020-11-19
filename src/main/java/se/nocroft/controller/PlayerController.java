@@ -1,6 +1,6 @@
 package se.nocroft.controller;
 
-import model.cars.FragileCar;
+import se.nocroft.model.cars.FragileCar;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;

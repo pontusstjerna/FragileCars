@@ -1,7 +1,7 @@
 package se.nocroft.view;
 
-import model.Racetrack;
-import util.CfgParser;
+import se.nocroft.model.Racetrack;
+import se.nocroft.util.CfgParser;
 
 import javax.swing.*;
 import javax.swing.plaf.basic.DefaultMenuLayout;

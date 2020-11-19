@@ -1,6 +1,6 @@
 package se.nocroft.model.misc;
 
-import model.GameObject;
+import se.nocroft.model.GameObject;
 
 import java.awt.*;
 import java.util.ArrayList;

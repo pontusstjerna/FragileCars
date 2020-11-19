@@ -1,12 +1,12 @@
 package se.nocroft.model.carcontrollers;
 
 import com.sun.istack.internal.Nullable;
-import model.GameObject;
-import model.carcontrollers.util.BotPoint;
-import model.carcontrollers.util.TapePiece;
-import model.cars.Car;
-import model.cars.FragileCar;
-import util.CfgParser;
+import se.nocroft.model.GameObject;
+import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.carcontrollers.util.TapePiece;
+import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.FragileCar;
+import se.nocroft.util.CfgParser;
 
 import java.awt.*;
 import java.util.*;

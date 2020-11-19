@@ -1,11 +1,11 @@
 package se.nocroft.model.cars;
 
-import model.GameObject;
-import model.misc.SkidmarkCreator;
-import model.misc.SmokeController;
-import util.CfgParser;
-import util.Geom;
-import util.ImageHandler;
+import se.nocroft.model.GameObject;
+import se.nocroft.model.misc.SkidmarkCreator;
+import se.nocroft.model.misc.SmokeController;
+import se.nocroft.util.CfgParser;
+import se.nocroft.util.Geom;
+import se.nocroft.util.ImageHandler;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

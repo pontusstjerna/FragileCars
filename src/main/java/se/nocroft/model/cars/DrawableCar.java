@@ -1,6 +1,6 @@
 package se.nocroft.model.cars;
 
-import model.GameObject;
+import se.nocroft.model.GameObject;
 
 import java.awt.image.BufferedImage;
 

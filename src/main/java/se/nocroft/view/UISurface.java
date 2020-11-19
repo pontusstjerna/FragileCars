@@ -1,7 +1,7 @@
 package se.nocroft.view;
 
-import model.Racetrack;
-import util.ImageHandler;
+import se.nocroft.model.Racetrack;
+import se.nocroft.util.ImageHandler;
 
 import javax.swing.*;
 import java.awt.*;

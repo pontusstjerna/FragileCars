@@ -1,7 +1,7 @@
 package se.nocroft.model.misc;
 
-import model.GameObject;
-import model.cars.FragileCar;
+import se.nocroft.model.GameObject;
+import se.nocroft.model.cars.FragileCar;
 
 import java.awt.*;
 import java.util.Random;

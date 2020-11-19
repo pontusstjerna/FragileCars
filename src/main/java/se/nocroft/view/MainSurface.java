@@ -1,9 +1,9 @@
 package se.nocroft.view;
 
-import model.GameObject;
-import model.Racetrack;
-import model.World;
-import util.CfgParser;
+import se.nocroft.model.GameObject;
+import se.nocroft.model.Racetrack;
+import se.nocroft.model.World;
+import se.nocroft.util.CfgParser;
 
 import javax.swing.*;
 import java.awt.*;
