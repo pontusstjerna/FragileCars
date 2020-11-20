@@ -1,6 +1,5 @@
 package se.nocroft.model.carcontrollers;
 
-import com.sun.istack.internal.Nullable;
 import se.nocroft.model.GameObject;
 import se.nocroft.model.carcontrollers.util.BotPoint;
 import se.nocroft.model.carcontrollers.util.TapePiece;
@@ -11,7 +10,7 @@ import se.nocroft.util.CfgParser;
 import java.awt.*;
 import java.util.*;
 
-import static util.Geom.getPI;
+import static se.nocroft.util.Geom.getPI;
 
 /**
  * Created by pontu on 2016-09-29.
@@ -156,6 +155,8 @@ public class AfraidTapeBot implements GameObject {
             case 2:
                 dir = Dir.RIGHT;
                 break;
+            default:
+                break;
         }
     }
 
@@ -220,6 +221,8 @@ public class AfraidTapeBot implements GameObject {
             case RIGHT:
                 car.turnRight(dTime);
                 break;
+            default:
+                break;
         }
     }
 
@@ -230,7 +233,8 @@ public class AfraidTapeBot implements GameObject {
     }
 
     private void checkReset() {
-        if (Point.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50 && !savedMode) {
+        if (java.awt.geom.Point2D.distance(car.getMiddleX(car.getX()), car.getMiddleY(car.getY()), lastX, lastY) > 50
+                && !savedMode) {
             reset();
         }
     }
@@ -377,7 +381,6 @@ public class AfraidTapeBot implements GameObject {
         return Dir.STRAIGHT;
     }
 
-    @Nullable
     private BotPoint closestInFront(FragileCar car, Iterable<BotPoint> points) {
 
         if (points.iterator().hasNext()) {

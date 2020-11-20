@@ -1,4 +1,4 @@
-package se.nocroft.se.nocroft;
+package se.nocroft;
 
 import static org.junit.Assert.assertTrue;
 
