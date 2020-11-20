@@ -10,7 +10,7 @@ import java.io.InputStream;
  * Created by Pontus on 2016-03-06.
  */
 public class ImageHandler {
-    public static final String filePath = "model/data/images/";
+    public static final String filePath = "se/nocroft/model/data/images/";
 
     public static BufferedImage loadImage(String name) {
         try {

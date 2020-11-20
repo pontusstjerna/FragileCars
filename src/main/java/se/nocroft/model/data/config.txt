@@ -7,7 +7,7 @@
 #betterGraphics="true"
 #smokeEnabled="false"
 #skidmarksEnabled="false"
-#botClass="model.carcontrollers.TapeBot"
+#botClass="se.nocroft.model.carcontrollers.TapeBot"
 #debugEnabled="true"
 #fullscreenEnabled="false"
 #resX="1680"
