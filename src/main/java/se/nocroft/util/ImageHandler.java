@@ -2,7 +2,6 @@ package se.nocroft.util;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -10,7 +9,7 @@ import java.io.InputStream;
  * Created by Pontus on 2016-03-06.
  */
 public class ImageHandler {
-    public static final String filePath = "se/nocroft/model/data/images/";
+    public static final String filePath = "images/";
 
     public static BufferedImage loadImage(String name) {
         try {

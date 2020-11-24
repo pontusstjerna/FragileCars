@@ -6,7 +6,7 @@ import java.io.*;
  * Created by pontu on 2016-04-06.
  */
 public class CfgParser {
-    public static String STD_PATH = "se/nocroft/model/data/config.txt";
+    public static String STD_PATH = "config.txt";
 
     private BufferedReader reader;
     private String cfg = "";
