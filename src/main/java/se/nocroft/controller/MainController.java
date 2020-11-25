@@ -1,6 +1,9 @@
 package se.nocroft.controller;
 
 import se.nocroft.model.World;
+import se.nocroft.model.carcontrollers.TapeBot;
+import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.CarSetup;
 import se.nocroft.view.MainWindow;
 import se.nocroft.view.View;
 
@@ -27,7 +30,9 @@ public class MainController implements ActionListener {
     public void init() {
         // Use accelerated graphics
         System.setProperty("sun.java2d.opengl", "true");
-        world = initWorld();
+        world = new World(new CarSetup[]{
+                        new CarSetup(Car.Cars.BLUE, TapeBot.class
+                        )});
         initView();
         startGame();
     }
@@ -85,10 +90,6 @@ public class MainController implements ActionListener {
 
     private void initTimer() {
         timer = new Timer(DELAY, this);
-    }
-
-    private World initWorld() {
-        return new World();
     }
 
     private void setDeltaTime() {

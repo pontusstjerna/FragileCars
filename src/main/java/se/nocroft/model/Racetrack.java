@@ -4,6 +4,7 @@ import se.nocroft.model.cars.DrawableCar;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by pontu on 2016-04-05.
@@ -15,7 +16,7 @@ public interface Racetrack {
 
     DrawableCar[] getDrawableCars();
 
-    ArrayList<GameObject> getObjects();
+    List<GameObject> getObjects();
 
     boolean getFinished();
 

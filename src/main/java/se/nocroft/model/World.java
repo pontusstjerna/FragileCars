@@ -1,7 +1,7 @@
 package se.nocroft.model;
 
-import se.nocroft.model.carcontrollers.*;
 import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.CarSetup;
 import se.nocroft.model.cars.DrawableCar;
 import se.nocroft.model.cars.FragileCar;
 import se.nocroft.util.CfgParser;
@@ -11,6 +11,7 @@ import se.nocroft.util.ImageHandler;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Pontus on 2016-03-04.
@@ -19,25 +20,22 @@ public class World implements Racetrack {
     public static final int WORLD_WIDTH = 1600;
     public static final int WORLD_HEIGHT = 1200;
 
+    private final int INIT_DISTANCE_TO_GOAL = 100;
+    private final int INIT_DISTANCE_TO_GOAL_SIDE = 25;
+
     private String track;
     private BufferedImage[] images;
 
-    private FragileCar[] players;
-    private FragileCar[] bots;
     private FragileCar[] cars;
     // private GameObject[] controllers;
-    private ArrayList<GameObject> objects;
-    private DrawableBot[] drawableBots;
+    private final CarSetup[] setups;
+    private List<GameObject> objects = new ArrayList<>();
     private DrawableCar[] drawables;
     private boolean[] passedBack;
     private boolean[] passedFront;
 
-    private Class botClass;
-
     private DirectionalRect goal;
 
-    private int nCars;
-    private int nPlayers;
     private int laps;
 
     private long startTime;
@@ -47,9 +45,10 @@ public class World implements Racetrack {
     private boolean finished = false;
     private double friction;
 
-    public World() {
+    public World(CarSetup[] setups) {
+        this.setups = setups;
         loadData();
-        createWorld();
+        createWorld(setups);
     }
 
     public void update(double deltaTime) {
@@ -63,15 +62,6 @@ public class World implements Racetrack {
     }
 
     public FragileCar[] getCars() {
-        FragileCar[] cars = new FragileCar[players.length + bots.length];
-
-        for (int i = 0; i < players.length; i++) {
-            cars[i] = players[i];
-        }
-        for (int i = 0; i < bots.length; i++) {
-            cars[i + players.length] = bots[i];
-        }
-
         return cars;
     }
 
@@ -80,12 +70,8 @@ public class World implements Racetrack {
         return drawables;
     }
 
-    // @Override
-    // public GameObject[] getObjects(){
-    // return controllers;
-    // }
-
-    public ArrayList<GameObject> getObjects() {
+    @Override
+    public List<GameObject> getObjects() {
         return objects;
     }
 
@@ -95,7 +81,14 @@ public class World implements Racetrack {
     }
 
     public FragileCar[] getPlayers() {
-        return players;
+        List<FragileCar> players = new ArrayList<>();
+        for (int i = 0; i < setups.length; i++) {
+            if (setups[i].driver == null) {
+                players.add(cars[i]);
+            }
+        }
+        FragileCar[] playerArr = new FragileCar[players.size()];
+        return players.toArray(playerArr);
     }
 
     @Override
@@ -136,30 +129,23 @@ public class World implements Racetrack {
         return laps;
     }
 
-    private void createWorld() {
+    private void createWorld(CarSetup[] setups) {
         initImages();
         findGoalLine();
-        createCars();
+        createCars(setups);
+        initBotDrivers(setups);
         createMiscGameObjects();
         startTime = System.currentTimeMillis();
-        System.out.println("World created with " + nPlayers + " players and " + bots.length + " bot(s).");
+        System.out.println("World created with " + getPlayers().length + " players and " + (cars.length - getPlayers().length) + " bot(s).");
     }
 
     private void loadData() {
         CfgParser cfg = new CfgParser(CfgParser.STD_PATH);
 
         track = cfg.readString("trackName");
-        nCars = cfg.readInt("nCars");
-        nPlayers = cfg.readInt("nPlayers");
         laps = cfg.readInt("laps");
         countdown = cfg.readLong("countdown");
         friction = cfg.readDouble("friction");
-        try {
-            botClass = cfg.readClass("botClass");
-        } catch (ClassNotFoundException e) {
-            System.out.println("No such class found!");
-            e.printStackTrace();
-        }
     }
 
     private void findGoalLine() {
@@ -200,29 +186,18 @@ public class World implements Racetrack {
         images[1] = ImageHandler.loadImage(track + "_fg");
     }
 
-    private void createCars() {
-        players = new FragileCar[Math.min(nCars, nPlayers)];
-        bots = new FragileCar[Math.max(nCars - nPlayers, 0)];
-        cars = new FragileCar[players.length + bots.length];
+    private void createCars(CarSetup[] setups) {
+        cars = new FragileCar[setups.length];
         drawables = new DrawableCar[cars.length];
-        drawableBots = new DrawableBot[bots.length];
 
-        // Create player cars and add to drawables and cars
-        for (int i = 0; i < players.length; i++) {
+        for (int i = 0; i < setups.length; i++) {
             if (goal.getDir() == DirectionalRect.Direction.LEFT) {
-                spawnCarsLeft(i, false);
+                cars[i] = spawnCarLeft(i, setups.length, setups[i]);
             } else {
-                spawnCarsUp(i, false);
+                cars[i] = spawnCarUp(i, setups.length, setups[i]);
             }
-        }
 
-        // Create bots and add to drawables and cars
-        for (int i = 0; i < bots.length; i++) {
-            if (goal.getDir() == DirectionalRect.Direction.LEFT) {
-                spawnCarsLeft(i, true);
-            } else {
-                spawnCarsUp(i, true);
-            }
+            drawables[i] = (Car) cars[i];
         }
 
         passedBack = new boolean[cars.length];
@@ -237,61 +212,60 @@ public class World implements Racetrack {
                 objects.add(drawables[i].getGameObjects()[j]);
             }
         }
+    }
 
+    private void initBotDrivers(CarSetup[] setups) {
         // Create car controllers for bots
-        try {
-            for (int i = 0; i < bots.length; i++) {
-                // GameObject bot = new CheckBot(bots[i], "1");
+        for (int i = 0; i < setups.length; i++) {
+            // My ugly hack for using custom bot-classes for other programmers to implement
+            if (setups[i].driver != null) {
+                try {
+                    GameObject bot = (GameObject) setups[i].driver
+                            .getDeclaredConstructor(new Class[]{FragileCar.class, String.class})
+                            .newInstance(cars[i], track);
 
-                // My ugly hack for using custom bot-classes for other programmers to implement
-                GameObject bot = (GameObject) botClass
-                        .getDeclaredConstructor(new Class[] { FragileCar.class, String.class })
-                        .newInstance(bots[i], track);
-
-                objects.add(bot);
+                    objects.add(bot);
+                } catch (Exception e) {
+                    System.out.println("A lot of things went wrong when loading your custom bot-class. Sorry... :/"
+                            + "Your code probably has a lot of bugs.");
+                    e.printStackTrace();
+                }
             }
-        } catch (Exception e) {
-            System.out.println("A lot of things went wrong when loading your custom bot-class. Sorry... :/"
-                    + "Your code probably has a lot of bugs.");
-            e.printStackTrace();
         }
     }
 
-    private void spawnCarsLeft(int carIndex, boolean isBot) {
-        if (!isBot) {
-            Car car = new Car(Car.Cars.values()[carIndex], goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 100 * (carIndex) + 25, Math.PI * 3 / 2,
-                    friction);
-            players[carIndex] = car;
-            cars[carIndex] = players[carIndex];
-            drawables[carIndex] = car;
-        } else {
-            Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
-                    goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + 100,
-                    100 * (carIndex + nPlayers) + goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + 25,
-                    Math.PI * 3 / 2, friction);
-            bots[carIndex] = car;
-            cars[carIndex + players.length] = bots[carIndex];
-            drawables[carIndex + players.length] = car;
-        }
+    private Car spawnCarLeft(int carIndex, int totalCars, CarSetup setup) {
+        int goalHeight = goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y -
+                goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - INIT_DISTANCE_TO_GOAL_SIDE * 2;
+
+        double distBetweenCars = goalHeight / ((double) totalCars);
+        int y = goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y +
+                (int) (distBetweenCars * carIndex) + INIT_DISTANCE_TO_GOAL_SIDE;
+
+        return new Car(
+                setup.type,
+                goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x + INIT_DISTANCE_TO_GOAL,
+                y,
+                Math.PI * 3 / 2,
+                friction
+        );
     }
 
-    private void spawnCarsUp(int carIndex, boolean isBot) {
-        if (!isBot) {
-            Car car = new Car(Car.Cars.values()[carIndex],
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100 * (carIndex),
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0, friction);
-            players[carIndex] = car;
-            cars[carIndex] = players[carIndex];
-            drawables[carIndex] = car;
-        } else {
-            Car car = new Car(Car.Cars.values()[nPlayers + carIndex],
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x + 100 + 100 * (carIndex + nPlayers),
-                    goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).y - 100, 0, friction);
-            bots[carIndex] = car;
-            cars[carIndex + players.length] = bots[carIndex];
-            drawables[carIndex + players.length] = car;
-        }
+    private Car spawnCarUp(int carIndex, int totalCars, CarSetup setup) {
+        int goalWidth = goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x -
+                goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x - INIT_DISTANCE_TO_GOAL_SIDE * 2;
+
+        double distBetweenCars = goalWidth / ((double) totalCars);
+        int x = goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x +
+                (int) (distBetweenCars * carIndex) + INIT_DISTANCE_TO_GOAL_SIDE;
+
+        return new Car(
+                setup.type,
+                x,
+                goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).y + INIT_DISTANCE_TO_GOAL,
+                0,
+                friction
+        );
     }
 
     private void checkCollisions() {
@@ -372,6 +346,6 @@ public class World implements Racetrack {
 
     @Override
     public String toString() {
-        return "World with " + players.length + " players and " + bots.length + " bots.";
+        return "World with cars hehehe.";
     }
 }
