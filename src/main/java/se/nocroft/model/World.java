@@ -251,7 +251,7 @@ public class World implements Racetrack {
 
     private Car spawnCarUp(int carIndex, int totalCars, CarSetup setup) {
         int goalWidth = goal.getCorner(DirectionalRect.Corner.FRONT_RIGHT).x -
-                goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x - INIT_DISTANCE_TO_GOAL_SIDE * 2;
+                goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x - INIT_DISTANCE_TO_GOAL_SIDE * 2 - 50;
 
         double distBetweenCars = goalWidth / ((double) totalCars);
         int x = goal.getCorner(DirectionalRect.Corner.FRONT_LEFT).x +

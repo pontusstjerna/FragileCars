@@ -1,11 +1,10 @@
 package se.nocroft.controller;
 
 import se.nocroft.model.World;
-import se.nocroft.model.carcontrollers.TapeBot;
+import se.nocroft.model.drivers.*;
 import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.CarSetup;
 import se.nocroft.view.MainWindow;
-import se.nocroft.view.View;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -30,9 +29,17 @@ public class MainController implements ActionListener {
     public void init() {
         // Use accelerated graphics
         System.setProperty("sun.java2d.opengl", "true");
-        world = new World(new CarSetup[]{
-                        new CarSetup(Car.Cars.BLUE, TapeBot.class
-                        )});
+
+        //CarSetup[] carSetups = new CarSetup[20];
+        /*for (int i = 0; i < carSetups.length; i++) {
+            carSetups[i] = new CarSetup(Car.Cars.GREEN, TapeBot.class);
+        }*/
+        CarSetup[] carSetups = new CarSetup[]{
+                new CarSetup(Car.Cars.BLUE, CuteBot.class),
+                new CarSetup(Car.Cars.RED, TapeBot.class)
+        };
+
+        world = new World(carSetups);
         initView();
         startGame();
     }

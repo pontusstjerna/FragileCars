@@ -1,10 +1,9 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
-import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
-import se.nocroft.model.carcontrollers.util.Lap;
 import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.FragileCar;
+import se.nocroft.model.drivers.util.BotPoint;
+import se.nocroft.model.drivers.util.Lap;
 import se.nocroft.util.CfgParser;
 
 import java.awt.*;
@@ -17,7 +16,7 @@ import java.util.Stack;
 /**
  * Created by pontu on 2016-09-29.
  */
-public class TapeBot implements GameObject {
+public class TapeBot extends Driver {
 
     private enum Dir {
         STRAIGHT, LEFT, RIGHT
@@ -27,7 +26,6 @@ public class TapeBot implements GameObject {
         STRAIGHT, LEFT, RIGHT, RANDOM1, WEAK_LEFT, WEAK_RIGHT, SHARPER_LEFT, SHARPER_RIGHT
     }
 
-    private FragileCar car;
     private States state = States.STRAIGHT;
     private Dir dir = Dir.STRAIGHT;
     private Random rand;
@@ -53,7 +51,7 @@ public class TapeBot implements GameObject {
     private final String trackName;
 
     public TapeBot(FragileCar car, String trackName) {
-        this.car = car;
+        super(car, trackName);
         mainTape = new ArrayList<>();
         this.trackName = trackName;
         if (tryLoadLap()) {

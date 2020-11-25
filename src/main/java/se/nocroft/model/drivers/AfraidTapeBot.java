@@ -1,8 +1,8 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
-import se.nocroft.model.carcontrollers.util.TapePiece;
+import se.nocroft.model.drivers.util.BotPoint;
+import se.nocroft.model.drivers.util.TapePiece;
 import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.FragileCar;
 import se.nocroft.util.CfgParser;
@@ -15,7 +15,7 @@ import static se.nocroft.util.Geom.getPI;
 /**
  * Created by pontu on 2016-09-29.
  */
-public class AfraidTapeBot implements GameObject {
+public class AfraidTapeBot extends Driver {
 
     private enum Dir {
         STRAIGHT, LEFT, RIGHT
@@ -45,6 +45,7 @@ public class AfraidTapeBot implements GameObject {
     private ArrayList<TapePiece> tape;
 
     public AfraidTapeBot(FragileCar car, String trackName) {
+        super(car, trackName);
         this.car = car;
         rand = new Random();
         tape = new ArrayList<>();

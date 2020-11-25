@@ -1,7 +1,7 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.drivers.util.BotPoint;
 import se.nocroft.model.cars.FragileCar;
 
 import java.awt.*;
@@ -11,8 +11,7 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class BruteBot implements GameObject, DrawableBot {
-    private FragileCar car;
+public class BruteBot extends Driver implements DrawableBot {
     private List<BotPoint> walls;
 
     public enum Dir {
@@ -32,7 +31,7 @@ public class BruteBot implements GameObject, DrawableBot {
     private final double MAX_SEARCH_LENGTH = 200;
 
     public BruteBot(FragileCar car, String trackName) {
-        this.car = car;
+        super(car, trackName);
 
         walls = new ArrayList<>();
         spawnPoint = new Point(car.getX(), car.getY());
@@ -69,7 +68,10 @@ public class BruteBot implements GameObject, DrawableBot {
 
     @Override
     public void paint(Graphics2D g, double scale, int scaleX) {
+        int stickX = (int) (getStickX() * scale) + scaleX;
+        int stickY = (int) (getStickY() * scale);
 
+        g.drawLine((int) (car.getX() * scale) + scaleX, (int) (car.getY() * scale), stickX, stickY);
     }
 
     @Override

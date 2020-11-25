@@ -1,6 +1,6 @@
-package se.nocroft.model.carcontrollers.util;
+package se.nocroft.model.drivers.util;
 
-import se.nocroft.model.carcontrollers.BallsBot;
+import se.nocroft.model.drivers.BallsBot;
 
 import java.awt.*;
 

@@ -1,4 +1,4 @@
-package se.nocroft.model.carcontrollers.util;
+package se.nocroft.model.drivers.util;
 
 /**
  * Created by pontu on 2016-10-04.

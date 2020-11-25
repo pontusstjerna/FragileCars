@@ -1,7 +1,7 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.drivers.util.BotPoint;
 import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.FragileCar;
 
@@ -12,9 +12,8 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class CheckBot implements GameObject {
+public class CheckBot extends Driver {
 
-    private FragileCar car;
     private List<BotPoint> checkPoints = new ArrayList<>();
     private Queue<BotPoint> crashes = new ArrayDeque<>();
     private Random rand;
@@ -31,7 +30,7 @@ public class CheckBot implements GameObject {
     private int lastX, lastY;
 
     public CheckBot(FragileCar car, String trackName) {
-        this.car = car;
+        super(car, trackName);
         rand = new Random();
         spawnPoint = new Point(car.getX(), car.getY());
         lastX = spawnPoint.x;

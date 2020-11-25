@@ -1,6 +1,6 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
-import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.drivers.util.BotPoint;
 import se.nocroft.model.cars.FragileCar;
 
 import java.util.List;

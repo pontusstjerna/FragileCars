@@ -1,4 +1,4 @@
-package se.nocroft.model.carcontrollers.util;
+package se.nocroft.model.drivers.util;
 
 import java.io.Serializable;
 import java.util.ArrayList;

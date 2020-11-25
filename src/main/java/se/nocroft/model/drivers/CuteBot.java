@@ -1,8 +1,7 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
-import se.nocroft.model.cars.Car;
+import se.nocroft.model.drivers.util.BotPoint;
 import se.nocroft.model.cars.FragileCar;
 import se.nocroft.util.CfgParser;
 
@@ -12,13 +11,12 @@ import java.util.*;
 /**
  * Created by pontu on 2016-09-29.
  */
-public class CuteBot implements GameObject {
+public class CuteBot extends Driver {
 
     private enum Dir {
         STRAIGHT, LEFT, RIGHT
     }
 
-    private FragileCar car;
     private boolean onTape = true;
     private Dir dir = Dir.STRAIGHT;
     private Random rand;
@@ -39,7 +37,7 @@ public class CuteBot implements GameObject {
     private final int CRASH_RADIUS = 50;
 
     public CuteBot(FragileCar car, String trackName) {
-        this.car = car;
+        super(car, trackName);
         rand = new Random();
         walls = new ArrayList<>();
 

@@ -1,7 +1,7 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
-import se.nocroft.model.carcontrollers.util.BotPoint;
+import se.nocroft.model.drivers.util.BotPoint;
 import se.nocroft.model.cars.FragileCar;
 import se.nocroft.util.Vector2D;
 
@@ -12,8 +12,7 @@ import java.util.List;
 /**
  * Created by pontu on 2016-04-08.
  */
-public class BallsBot implements GameObject, DrawableBot {
-    private FragileCar car;
+public class BallsBot extends Driver implements DrawableBot {
     private List<BotPoint> walls;
 
     public enum Dir {
@@ -32,7 +31,7 @@ public class BallsBot implements GameObject, DrawableBot {
     private final int GAS_THRESHOLD = 100;
 
     public BallsBot(FragileCar car, String trackName) {
-        this.car = car;
+        super(car, trackName);
 
         walls = new ArrayList<>();
         spawnPoint = new Point(car.getX(), car.getY());

@@ -1,22 +1,17 @@
-package se.nocroft.model.carcontrollers;
+package se.nocroft.model.drivers;
 
 import se.nocroft.model.GameObject;
 import se.nocroft.model.cars.FragileCar;
 
 import java.awt.*;
 
-/**
- * Created by pontu on 2016-06-22.
- */
-public class AlfredBot implements GameObject {
+public abstract class Driver implements GameObject {
+    protected FragileCar car;
+    protected String trackName;
 
-    private FragileCar car;
-
-    // Alfreds asvackra konstruktor
-    public AlfredBot(FragileCar car, String trackName) {
+    public Driver(FragileCar car, String trackName) {
         this.car = car;
-
-        // Konstruktor-kod
+        this.trackName = trackName;
     }
 
     @Override
