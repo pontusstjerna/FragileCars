@@ -205,8 +205,6 @@ public class World implements Racetrack {
     }
 
     private void createMiscGameObjects() {
-        objects = new ArrayList<>();
-
         for (int i = 0; i < cars.length; i++) {
             for (int j = 0; j < drawables[0].getGameObjects().length; j++) {
                 objects.add(drawables[i].getGameObjects()[j]);
