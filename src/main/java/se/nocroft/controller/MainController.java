@@ -15,7 +15,7 @@ import java.awt.event.ActionListener;
 /**
  * Created by Pontus on 2016-03-04.
  */
-public class MainController implements ActionListener {
+public class MainController implements ActionListener, GameController {
     private MainWindow frame;
     private Timer timer;
     private World world;
@@ -36,12 +36,15 @@ public class MainController implements ActionListener {
         }*/
         CarSetup[] carSetups = new CarSetup[]{
                 new CarSetup(Car.Cars.BLUE, CuteBot.class),
-                new CarSetup(Car.Cars.RED, TapeBot.class)
+                new CarSetup(Car.Cars.RED, TapeBot.class),
+                new CarSetup(Car.Cars.GREEN, BruteBot.class),
+                new CarSetup(Car.Cars.YELLOW, TapeBot.class)
         };
 
         world = new World(carSetups);
         initView();
-        startGame();
+        frame.showMenu();
+        //startGame();
     }
 
     @Override
@@ -67,16 +70,8 @@ public class MainController implements ActionListener {
         return deltaTime;
     }
 
-    private PlayerController initPlayerControls(World world) {
-        return new PlayerController(world.getPlayers());
-    }
-
-    private void initView() {
-        frame = new MainWindow("Fragile Cars");
-        frame.init(world.getBackground().getWidth(), world.getBackground().getHeight());
-    }
-
-    private void startGame() {
+    @Override
+    public void startGame() {
         playerController = initPlayerControls(world);
         frame.startGame(world, playerController);
 
@@ -84,6 +79,15 @@ public class MainController implements ActionListener {
         timer.start();
         System.out.println("Game started!");
         System.out.println("------------------------------");
+    }
+
+    private PlayerController initPlayerControls(World world) {
+        return new PlayerController(world.getPlayers());
+    }
+
+    private void initView() {
+        frame = new MainWindow("Fragile Cars");
+        frame.init(world.getBackground().getWidth(), world.getBackground().getHeight(), this);
     }
 
     private void closeGame() {

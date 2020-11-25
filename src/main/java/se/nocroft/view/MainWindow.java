@@ -1,5 +1,6 @@
 package se.nocroft.view;
 
+import se.nocroft.controller.GameController;
 import se.nocroft.model.Racetrack;
 import se.nocroft.util.CfgParser;
 
@@ -12,6 +13,9 @@ import java.awt.event.*;
  * Created by Pontus on 2016-03-04.
  */
 public class MainWindow extends JFrame {
+    public static int WINDOW_WIDTH = 800;
+    public static int WINDOW_HEIGHT = 600;
+
     public static int WORLD_WIDTH = 800;
     public static int WORLD_HEIGHT = 600;
     public static int GUI_WIDTH;
@@ -21,6 +25,7 @@ public class MainWindow extends JFrame {
     private final String title;
     private MainSurface surface;
     private UISurface ui;
+    private MenuPanel menu;
     private double scale;
     private boolean fullScreen;
 
@@ -28,7 +33,7 @@ public class MainWindow extends JFrame {
         this.title = title;
     }
 
-    public void init(int width, int height) {
+    public void init(int width, int height, GameController gameController) {
         cfg = new CfgParser(CfgParser.STD_PATH);
 
         fullScreen = cfg.readBoolean("fullscreenEnabled");
@@ -45,6 +50,8 @@ public class MainWindow extends JFrame {
         initScale(numerator);
 
         initWindow();
+        menu = new MenuPanel(gameController);
+        add(menu);
         System.out.println("View initialized with dynamic size.");
     }
 
@@ -60,8 +67,14 @@ public class MainWindow extends JFrame {
         surface.requestFocusInWindow();
     }
 
+    public void showMenu() {
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+        menu.setVisible(true);
+        setVisible(true);
+    }
+
     public void startGame(Racetrack track, KeyListener listener) {
-        setResizable(false);
+        menu.setVisible(false);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.LINE_AXIS));
         surface = new MainSurface(track, scale);
         ui = new UISurface(track, scale);
@@ -86,8 +99,8 @@ public class MainWindow extends JFrame {
 
     private void initWindow() {
         setTitle(title);
-        // setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 
+        setResizable(false);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
