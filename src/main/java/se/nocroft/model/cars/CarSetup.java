@@ -1,19 +1,13 @@
 package se.nocroft.model.cars;
 
+import se.nocroft.model.drivers.Driver;
+
 public class CarSetup {
     public final Car.Cars type;
-    public final Class driver;
+    public final Class<? extends Driver> driver;
 
-    public CarSetup(Car.Cars type, Class driver) {
+    public CarSetup(Car.Cars type, Class<? extends Driver> driver) {
         this.type = type;
         this.driver = driver;
-    }
-
-    public Car.Cars getType() {
-        return type;
-    }
-
-    public Class getDriver() {
-        return driver;
     }
 }

@@ -4,6 +4,7 @@ import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.CarSetup;
 import se.nocroft.model.cars.DrawableCar;
 import se.nocroft.model.cars.FragileCar;
+import se.nocroft.model.drivers.Driver;
 import se.nocroft.util.CfgParser;
 import se.nocroft.util.DirectionalRect;
 import se.nocroft.util.ImageHandler;
@@ -218,9 +219,7 @@ public class World implements Racetrack {
             // My ugly hack for using custom bot-classes for other programmers to implement
             if (setups[i].driver != null) {
                 try {
-                    GameObject bot = (GameObject) setups[i].driver
-                            .getDeclaredConstructor(new Class[]{FragileCar.class, String.class})
-                            .newInstance(cars[i], track);
+                    Driver bot = setups[i].driver.getDeclaredConstructor(FragileCar.class, String.class).newInstance(cars[i], track);
 
                     objects.add(bot);
                 } catch (Exception e) {
