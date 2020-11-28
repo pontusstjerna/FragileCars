@@ -47,8 +47,9 @@ public class MenuPanel extends JPanel {
                         int classIndex = classPickers.get(i).getSelectedIndex();
                         int number = (Integer) spinners.get(i).getValue();
                         Car.Cars type = Car.Cars.values()[colorPickers.get(i).getSelectedIndex()];
+                        Class<? extends Driver> botClass = classIndex < botClasses.size() ? botClasses.get(classIndex) : null;
 
-                        return IntStream.range(0, number).boxed().map(j -> new CarSetup(type, botClasses.get(classIndex)));
+                        return IntStream.range(0, number).boxed().map(j -> new CarSetup(type, botClass));
                     }).toArray(CarSetup[]::new);
 
                     gameController.startGame(carSetups);
@@ -75,6 +76,7 @@ public class MenuPanel extends JPanel {
         botClasses = new ArrayList<>(reflections.getSubTypesOf(Driver.class));
         botClassNames = new String[botClasses.size() + 1];
         botClassNames = botClasses.stream().map(Class::getName).toArray(String[]::new);
+        botClassNames = Arrays.copyOf(botClassNames, botClassNames.length + 1);
         botClassNames[botClassNames.length - 1] = "Player controlled car";
     }
 
