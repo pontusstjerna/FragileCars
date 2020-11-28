@@ -1,5 +1,7 @@
 package se.nocroft.controller;
 
+import se.nocroft.model.cars.CarSetup;
+
 public interface GameController {
-    public void startGame();
+    void startGame(CarSetup[] carSetups);
 }

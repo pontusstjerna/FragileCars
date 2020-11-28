@@ -30,21 +30,9 @@ public class MainController implements ActionListener, GameController {
         // Use accelerated graphics
         System.setProperty("sun.java2d.opengl", "true");
 
-        //CarSetup[] carSetups = new CarSetup[20];
-        /*for (int i = 0; i < carSetups.length; i++) {
-            carSetups[i] = new CarSetup(Car.Cars.GREEN, TapeBot.class);
-        }*/
-        CarSetup[] carSetups = new CarSetup[]{
-                new CarSetup(Car.Cars.BLUE, CuteBot.class),
-                new CarSetup(Car.Cars.RED, TapeBot.class),
-                new CarSetup(Car.Cars.GREEN, BruteBot.class),
-                new CarSetup(Car.Cars.YELLOW, TapeBot.class)
-        };
-
-        world = new World(carSetups);
+        world = new World();
         initView();
         frame.showMenu();
-        //startGame();
     }
 
     @Override
@@ -71,7 +59,8 @@ public class MainController implements ActionListener, GameController {
     }
 
     @Override
-    public void startGame() {
+    public void startGame(CarSetup[] carSetups) {
+        world.start(carSetups);
         playerController = initPlayerControls(world);
         frame.startGame(world, playerController);
 

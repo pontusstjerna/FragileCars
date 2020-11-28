@@ -29,7 +29,7 @@ public class World implements Racetrack {
 
     private FragileCar[] cars;
     // private GameObject[] controllers;
-    private final CarSetup[] setups;
+    private CarSetup[] setups;
     private List<GameObject> objects = new ArrayList<>();
     private DrawableCar[] drawables;
     private boolean[] passedBack;
@@ -46,9 +46,13 @@ public class World implements Racetrack {
     private boolean finished = false;
     private double friction;
 
-    public World(CarSetup[] setups) {
-        this.setups = setups;
+    public World() {
         loadData();
+        initImages();
+    }
+
+    public void start(CarSetup[] setups) {
+        this.setups = setups;
         createWorld(setups);
     }
 
@@ -131,7 +135,6 @@ public class World implements Racetrack {
     }
 
     private void createWorld(CarSetup[] setups) {
-        initImages();
         findGoalLine();
         createCars(setups);
         initBotDrivers(setups);

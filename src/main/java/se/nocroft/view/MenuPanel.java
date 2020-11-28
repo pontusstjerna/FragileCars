@@ -2,22 +2,30 @@ package se.nocroft.view;
 
 import org.reflections.Reflections;
 import se.nocroft.controller.GameController;
+import se.nocroft.model.cars.Car;
+import se.nocroft.model.cars.CarSetup;
 import se.nocroft.model.drivers.Driver;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static javax.swing.SpringLayout.*;
 
 public class MenuPanel extends JPanel {
 
-    private Set<Class<? extends Driver>> botClasses;
+    private List<Class<? extends Driver>> botClasses;
     private String[] botClassNames;
+    private String[] typeNames;
 
     private final List<JPanel> classNameRows = new ArrayList<>();
-    private final List<JComboBox<String>> pickers = new ArrayList<>();
+    private final List<JComboBox<String>> classPickers = new ArrayList<>();
+    private final List<JComboBox<String>> colorPickers = new ArrayList<>();
+    private final List<JSpinner> spinners = new ArrayList<>();
     private final SpringLayout layout = new SpringLayout();
     private final JButton addBotBtn = new JButton("Add another driver");
     private final JLabel welcomeLabel = new JLabel("Welcome to Fragile Carz.");
@@ -25,6 +33,7 @@ public class MenuPanel extends JPanel {
 
     public MenuPanel(GameController gameController) {
         initClassNames();
+        initTypeNames();
         setLayout(layout);
 
         JButton startGameBtn = new JButton("Start");
@@ -33,8 +42,17 @@ public class MenuPanel extends JPanel {
             addClassPickerRow();
         });
 
-        startGameBtn.addActionListener(e ->
-            gameController.startGame()
+        startGameBtn.addActionListener(e -> {
+                    CarSetup[] carSetups = IntStream.range(0, classPickers.size()).boxed().flatMap(i -> {
+                        int classIndex = classPickers.get(i).getSelectedIndex();
+                        int number = (Integer) spinners.get(i).getValue();
+                        Car.Cars type = Car.Cars.values()[colorPickers.get(i).getSelectedIndex()];
+
+                        return IntStream.range(0, number).boxed().map(j -> new CarSetup(type, botClasses.get(classIndex)));
+                    }).toArray(CarSetup[]::new);
+
+                    gameController.startGame(carSetups);
+                }
         );
 
         add(welcomeLabel);
@@ -54,10 +72,14 @@ public class MenuPanel extends JPanel {
 
     private void initClassNames() {
         Reflections reflections = new Reflections("se.nocroft.model.drivers");
-        botClasses = reflections.getSubTypesOf(Driver.class);
+        botClasses = new ArrayList<>(reflections.getSubTypesOf(Driver.class));
         botClassNames = new String[botClasses.size() + 1];
         botClassNames = botClasses.stream().map(Class::getName).toArray(String[]::new);
         botClassNames[botClassNames.length - 1] = "Player controlled car";
+    }
+
+    private void initTypeNames() {
+        typeNames = Arrays.stream(Car.Cars.values()).map(Car.Cars::toString).toArray(String[]::new);
     }
 
     private void updateAddBotBtnConstraints() {
@@ -68,22 +90,29 @@ public class MenuPanel extends JPanel {
 
     private void addClassPickerRow() {
         JPanel container = new JPanel();
-        JComboBox<String> comboBox = new JComboBox<>(botClassNames);
+        JComboBox<String> classPicker = new JComboBox<>(botClassNames);
+        JComboBox<String> colorPicker = new JComboBox<>(typeNames);
         JSpinner spinner = new JSpinner();
         spinner.setValue(1);
         JButton removeBotBtn = new JButton("Remove");
 
         removeBotBtn.addActionListener(e -> {
             classNameRows.remove(container);
+            classPickers.remove(classPicker);
+            colorPickers.remove(colorPicker);
+            spinners.remove(spinner);
             updateAddBotBtnConstraints();
             remove(container);
             revalidate();
             repaint();
         });
 
-        pickers.add(comboBox);
+        classPickers.add(classPicker);
+        colorPickers.add(colorPicker);
+        spinners.add(spinner);
 
-        container.add(comboBox);
+        container.add(classPicker);
+        container.add(colorPicker);
         container.add(spinner);
 
         add(container);

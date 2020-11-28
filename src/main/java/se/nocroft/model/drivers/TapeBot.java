@@ -38,12 +38,12 @@ public class TapeBot extends Driver {
     private boolean onTape = false;
     private boolean debugMode = false;
     private boolean lastOnTape = false;
-    private boolean followMode;
+    private boolean followMode = false;
     private boolean suicide = false;
     private boolean altState = false;
     private boolean finished = false;
     private boolean passedGoalLine = false;
-    final private boolean runOnLoaded;
+    final private boolean runOnLoaded = false;
 
     private ArrayList<BotPoint> mainTape;
     private Stack<BotPoint> tapeStack;
@@ -54,12 +54,6 @@ public class TapeBot extends Driver {
         super(car, trackName);
         mainTape = new ArrayList<>();
         this.trackName = trackName;
-        if (tryLoadLap()) {
-            followMode = true;
-        } else {
-            followMode = false;
-        }
-        runOnLoaded = followMode;
 
         rand = new Random();
         tapeStack = new Stack<>();
@@ -107,9 +101,6 @@ public class TapeBot extends Driver {
                 } else {
                     slowDown();
                 }
-            }
-            if (car.getFinished() != 0) {
-                saveLap();
             }
 
             setLastPos();
@@ -386,49 +377,5 @@ public class TapeBot extends Driver {
     private void setLastPos() {
         lastX = (int) car.getMiddleX(car.getX());
         lastY = (int) car.getMiddleY(car.getY());
-    }
-
-    private boolean tryLoadLap() {
-        try {
-            String fileName = car.getName() + "_" + trackName + ".lap";
-            FileInputStream fis = new FileInputStream(fileName);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            Lap lap = (Lap) ois.readObject();
-            ois.close();
-
-            mainTape = lap.getLap();
-            speedLimit = lap.getSpeedLimit();
-            return true;
-        } catch (FileNotFoundException e) {
-            System.out.println("No saved lap found for " + car.getName() + " on track " + trackName + ".");
-        } catch (IOException e) {
-            System.out.println("Unable to load file.");
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private void saveLap() {
-        if (!runOnLoaded) { // Don't save if it's already saved
-            try {
-                String fileName = car.getName() + "_" + trackName + ".lap";
-                File yourFile = new File(fileName);
-                yourFile.createNewFile(); // if file already exists will do nothing
-                FileOutputStream fos = new FileOutputStream(fileName, false);
-                ObjectOutputStream oos = new ObjectOutputStream(fos);
-                oos.writeObject(new Lap(mainTape, speedLimit));
-                oos.close();
-
-                finished = true;
-                System.out.println("File " + fileName + " saved successfully.");
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("File could not be created for this reason: ");
-                e.printStackTrace();
-            }
-        }
     }
 }
