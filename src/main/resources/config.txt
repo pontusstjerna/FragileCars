@@ -9,3 +9,5 @@
 #fullscreenEnabled="false"
 #resX="1680"
 #resY="1050"
+#skipMenu="true"
+#defaultBotClass="se.nocroft.model.drivers.GateBot"

@@ -4,6 +4,7 @@ import se.nocroft.model.World;
 import se.nocroft.model.drivers.*;
 import se.nocroft.model.cars.Car;
 import se.nocroft.model.cars.CarSetup;
+import se.nocroft.util.CfgParser;
 import se.nocroft.view.MainWindow;
 
 import javax.swing.*;
@@ -32,7 +33,22 @@ public class MainController implements ActionListener, GameController {
 
         world = new World();
         initView();
-        frame.showMenu();
+
+        CfgParser cfg = new CfgParser(CfgParser.STD_PATH);
+        if (cfg.readBoolean("skipMenu")) {
+            String maybeClassName = cfg.readString("defaultBotClass");
+            Class<? extends Driver> driver = GateBot.class;
+            if (maybeClassName != null) {
+                try {
+                    driver = (Class<? extends Driver>) Class.forName(maybeClassName);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            startGame(new CarSetup[]{new CarSetup(Car.Cars.GREEN, driver)});
+        } else {
+            frame.showMenu();
+        }
     }
 
     @Override
