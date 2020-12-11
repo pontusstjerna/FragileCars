@@ -181,6 +181,16 @@ public class Car implements DrawableCar, FragileCar {
     }
 
     @Override
+    public double getMiddleX() {
+        return getMiddleX(x);
+    }
+
+    @Override
+    public double getMiddleY() {
+        return getMiddleY(y);
+    }
+
+    @Override
     public Point[] getWheels() {
         return wheels;
     }

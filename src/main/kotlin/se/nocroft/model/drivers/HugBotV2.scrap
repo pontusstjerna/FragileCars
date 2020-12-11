@@ -11,11 +11,11 @@ import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 
-class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
+class HugBotV2(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
     private var lastX: Int = car.middleX.toInt() ?: 0
     private var lastY: Int = car.middleY.toInt() ?: 0
-    private var closestPoint: BotPoint? = null
+    private var closestPoints: List<BotPoint> = emptyList()
     private var passedFirst = false
 
     private val initialHeading: Double = car.heading
@@ -24,16 +24,22 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
     override fun update(deltaTime: Double) {
 
-        closestPoint = closestWallPoint()
+        if (car.acceleration < 200) {
+            car.accelerate()
+        } else {
+            car.brake()
+        }
+
+        closestPoints = closestTwoWallPoints()
         when {
-            closestPoint == null -> {
+            closestPoints.isEmpty() -> {
                 findWall(deltaTime)
             }
-            closestPoint!!.distance(car.middleX, car.middleY) > closestPoint!!.radius -> {
+            closestPoints.first().let {  it.distance(car.middleX, car.middleY) > it.radius } -> {
                 findWall(deltaTime)
             }
             else -> {
-                hugWall(closestPoint!!, deltaTime)
+                hugWall(closestPoints.first(), deltaTime)
                 passedFirst = true
             }
         }
@@ -53,7 +59,7 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
             }
             for (p in crashPoints) {
                 val prevColor = g.color
-                if (closestPoint == p) {
+                if (closestPoints.contains(p)) {
                     g.color = Color.ORANGE
                 }
 
@@ -64,41 +70,39 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
                 g.drawRoundRect((p.x * scale).toInt() - dist / 2 + scaleX, (p.y * scale).toInt() - dist / 2, dist, dist,
                         dist, dist)
 
-                if (closestPoint == p) {
+                if (closestPoints.contains(p)) {
                     g.color = prevColor
                 }
             }
         }
     }
 
-    private fun closestWallPoint(): BotPoint? {
-        return crashPoints.filter {
+    private fun closestTwoWallPoints(): List<BotPoint> {
+        val closest = crashPoints.filter {
             it.distance(car.middleX, car.middleY) < it.radius
         }.lastOrNull()
+
+        val closestIndex = crashPoints.indexOf(closest)
+        val prev = crashPoints.getOrNull(closestIndex + 1)
+
+        return listOfNotNull(closest, prev)
     }
 
     private fun findWall(deltaTime: Double) {
         if ((car.heading - initialHeading).absoluteValue < PI / 2 || passedFirst) {
             car.turnRight(deltaTime)
         }
-        car.accelerate()
     }
 
     private fun hugWall(point: BotPoint, deltaTime: Double) {
-        val headingToPoint = headingToPoint(point)
+        val distanceToPoint = point.distance(car.middleX, car.middleY)
+        val targetDistance = point.radius * 0.5
         car.turnLeft(deltaTime)
-        if (headingToPoint < PI / 2) {
+        if (distanceToPoint < targetDistance) {
             car.turnLeft(deltaTime)
         } else {
             car.turnRight(deltaTime)
         }
-
-        if (car.acceleration < 200) {
-            car.accelerate()
-        } else {
-            car.brake()
-        }
-
     }
 
     private fun headingToPoint(point: BotPoint): Double {
@@ -110,7 +114,7 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         val middleY = car.middleY
 
         if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 100) {
-            crashPoints.add(BotPoint(lastX, lastY, car.width.toDouble() * (if (crashPoints.isEmpty()) 2.0 else 0.6)))
+            crashPoints.add(BotPoint(lastX, lastY, car.width.toDouble() * (if (crashPoints.isEmpty()) 0.8 else 0.6)))
             passedFirst = false
         }
     }

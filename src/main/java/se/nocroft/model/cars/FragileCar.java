@@ -19,6 +19,10 @@ public interface FragileCar {
 
     double getMiddleY(double y);
 
+    double getMiddleX();
+
+    double getMiddleY();
+
     Point[] getWheels();
 
     int getWidth();

@@ -10,16 +10,22 @@ import java.awt.Point
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
+import kotlin.math.max
 
-class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
+class HugBotV2(car: FragileCar, trackName: String?) : Driver(car, trackName) {
+
+    private class HugBotPoint(x: Int, y: Int, radius: kotlin.Double) : BotPoint(x, y, radius) {
+        var speed: Int = 300;
+    }
 
     private var lastX: Int = car.middleX.toInt() ?: 0
     private var lastY: Int = car.middleY.toInt() ?: 0
-    private var closestPoint: BotPoint? = null
+    private var closestPoint: HugBotPoint? = null
     private var passedFirst = false
+    private var deathsInsideWall = 0
 
     private val initialHeading: Double = car.heading
-    private val crashPoints = mutableListOf<BotPoint>()
+    private val crashPoints = mutableListOf<HugBotPoint>()
     private val debugMode = CfgParser(CfgParser.STD_PATH).readBoolean("debugEnabled")
 
     override fun update(deltaTime: Double) {
@@ -71,29 +77,33 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         }
     }
 
-    private fun closestWallPoint(): BotPoint? {
+    private fun closestWallPoint(): HugBotPoint? {
         return crashPoints.filter {
             it.distance(car.middleX, car.middleY) < it.radius
-        }.lastOrNull()
+        }.minBy { it.distance(car.middleX, car.middleY) }
     }
 
     private fun findWall(deltaTime: Double) {
         if ((car.heading - initialHeading).absoluteValue < PI / 2 || passedFirst) {
             car.turnRight(deltaTime)
         }
-        car.accelerate()
+        if (car.acceleration < 200) {
+            car.accelerate()
+        } else {
+            car.brake()
+        }
     }
 
-    private fun hugWall(point: BotPoint, deltaTime: Double) {
+    private fun hugWall(point: HugBotPoint, deltaTime: Double) {
         val headingToPoint = headingToPoint(point)
-        car.turnLeft(deltaTime)
+        val multiplier = max(10 - deathsInsideWall, 0)
         if (headingToPoint < PI / 2) {
             car.turnLeft(deltaTime)
-        } else {
+        } else if (headingToPoint > PI / 2 && point.distance(car.middleX, car.middleY) > point.radius * 0.9) {
             car.turnRight(deltaTime)
         }
 
-        if (car.acceleration < 200) {
+        if (car.acceleration < point.speed) {
             car.accelerate()
         } else {
             car.brake()
@@ -110,8 +120,19 @@ class HugBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         val middleY = car.middleY
 
         if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 100) {
-            crashPoints.add(BotPoint(lastX, lastY, car.width.toDouble() * (if (crashPoints.isEmpty()) 2.0 else 0.6)))
+            val possibleExistingPoint = crashPoints.find {
+                it.distance(lastX.toDouble(), lastY.toDouble()) < it.radius * 0.8
+            }?.apply {
+                speed = max(speed - 50, 50)
+                radius *= 1.1
+            }
+
+            // Only add new point if not crashing into another one
+            if (possibleExistingPoint == null) {
+                crashPoints.add(HugBotPoint(lastX, lastY, car.width.toDouble() * (if (crashPoints.isEmpty()) 1.0 else 0.6)))
+            }
             passedFirst = false
+
         }
     }
 }
