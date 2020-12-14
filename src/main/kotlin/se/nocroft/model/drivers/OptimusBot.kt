@@ -12,26 +12,26 @@ import kotlin.random.Random
 
 class OptimusBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
-    private inner class TapePoint(x: Int, y: Int, val angle: kotlin.Double = 0.0) : BotPoint(x, y, 30.0) {
-        var confirmed: Boolean = false
-
+    private inner class TapePoint(x: Int, y: Int, val angle: kotlin.Double = 0.0, radius: kotlin.Double) : BotPoint(x, y, radius) {
         constructor(prev: TapePoint, angle: kotlin.Double = 0.0) : this(
-                prev.x + ((prev.radius * 2) * sin(prev.angle + angle)).toInt(),
+                prev.x + ((prev.radius * 2) * sin( prev.angle + angle)).toInt(),
                 prev.y + ((prev.radius * 2) * -cos(prev.angle + angle)).toInt(),
-                angle
+                angle + prev.angle,
+                prev.radius
         )
     }
 
     private var lastX: Int = car.middleX.toInt() ?: 0
     private var lastY: Int = car.middleY.toInt() ?: 0
     private var tape = mutableListOf<TapePoint>()
+    private val speed = 200
 
     private val crashPoints = mutableListOf<BotPoint>()
     private val debugMode = CfgParser(CfgParser.STD_PATH).readBoolean("debugEnabled")
 
     override fun update(deltaTime: Double) {
 
-        if (car.acceleration < 100) {
+        if (car.acceleration < speed) {
             car.accelerate()
         } else {
             car.brake()
@@ -80,9 +80,6 @@ class OptimusBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         val tapeLeft = onTape(leftX, leftY)
         val tapeRight = onTape(rightX, rightY)
 
-        tapeLeft?.confirmed = true
-        tapeRight?.confirmed = true
-
         when {
             tapeRight != null && tapeLeft == null -> {
                 car.turnRight(deltaTime)
@@ -103,8 +100,6 @@ class OptimusBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
     private fun predictTape() {
         for (i in 0..200) {
 
-            val randomAngle = Random.nextDouble(-PI / 4, PI / 4)
-
             val steps = 20
             val step = (PI / 2) / steps
             val angles = (0..steps).map { (PI / 4) - it * step }
@@ -115,35 +110,23 @@ class OptimusBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         }
     }
 
-    private fun collidesWithCrashPoint(tapePoint: TapePoint): Boolean {
-        return crashPoints.last().let { it.distance(tapePoint) < tapePoint.radius + it.radius }
-    }
-
     private fun distToClosestCrashByAngle(angle: Double): Double {
         return crashPoints.map { it.distance(TapePoint(tape.last(), angle)) - it.radius }.min() ?: Double.MAX_VALUE
-    }
-
-    private fun distToThreeClosestCrashesByAngle(angle: Double): Double {
-        return crashPoints.map { it.distance(TapePoint(tape.last(), angle)) - it.radius }.sorted().take(3).sum() ?: Double.MAX_VALUE
     }
 
     private fun detectCrash() {
         val middleX = car.middleX
         val middleY = car.middleY
 
-        if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 20) {
+        if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 100) {
             crashPoints.add(BotPoint(lastX, lastY, car.width.toDouble() * 0.6))
 
             tape.clear()
-            tape.add(TapePoint(middleX.toInt(), middleY.toInt()).apply { confirmed = true })
+            tape.add(TapePoint(middleX.toInt(), middleY.toInt(), 0.0, car.width.toDouble() * 0.5))
             tape.add(TapePoint(tape.last(), PI / 4))
-            tape.add(TapePoint(tape.last()))
+            tape.add(TapePoint(tape.last(), 0.0))
 
             predictTape()
         }
-    }
-
-    private fun headingToPoint(pointA: BotPoint, pointB: BotPoint): Double {
-        return Geom.getPI(atan2((pointA.y - pointB.y).toDouble(), (pointA.x - pointB.x).toDouble()) - (PI / 2))
     }
 }
