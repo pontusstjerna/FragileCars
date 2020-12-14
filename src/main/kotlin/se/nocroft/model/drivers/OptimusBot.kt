@@ -10,38 +10,16 @@ import java.awt.Point
 import kotlin.math.*
 import kotlin.random.Random
 
-class OracleBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
+class OptimusBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
-    private inner class TapePoint(x: Int, y: Int, val angle: kotlin.Double? = null) : BotPoint(x, y, 50.0) {
+    private inner class TapePoint(x: Int, y: Int, val angle: kotlin.Double = 0.0) : BotPoint(x, y, 30.0) {
         var confirmed: Boolean = false
-        var closestCrashPoint: BotPoint? = null
-            set(value) {
-                field = value
-                value?.also {
-                    distanceToClosestPoint = distance(it)
-                    headingToClosestPoint = headingToPoint(this, it)
-                }
-            }
-        var penance: Int = 0
 
-        var distanceToClosestPoint: kotlin.Double? = null
-            private set
-        var headingToClosestPoint: kotlin.Double? = null
-            private set
-
-        constructor(prev: TapePoint, angle: kotlin.Double) : this(
-                prev.x + ((prev.radius * 2) * sin(angle)).toInt(),
-                prev.y + ((prev.radius * 2) * -cos(angle)).toInt(),
+        constructor(prev: TapePoint, angle: kotlin.Double = 0.0) : this(
+                prev.x + ((prev.radius * 2) * sin(prev.angle + angle)).toInt(),
+                prev.y + ((prev.radius * 2) * -cos(prev.angle + angle)).toInt(),
                 angle
-        ) {
-        }
-
-        fun treeDistance(other: TapePoint): kotlin.Double {
-            return sqrt(
-                    (other.distanceToClosestPoint!! - distanceToClosestPoint!!).pow(2.0) +
-                    (other.headingToClosestPoint!! - headingToClosestPoint!!).pow(2.0)
-            ) + penance
-        }
+        )
     }
 
     private var lastX: Int = car.middleX.toInt() ?: 0
@@ -53,7 +31,7 @@ class OracleBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
     override fun update(deltaTime: Double) {
 
-        if (car.acceleration < 200) {
+        if (car.acceleration < 100) {
             car.accelerate()
         } else {
             car.brake()
@@ -123,15 +101,16 @@ class OracleBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
     }
 
     private fun predictTape() {
-        tape = tape.filter { it.confirmed && !collidesWithCrashPoint(it) }.let { it.take(max(1, it.size - 2)) }.toMutableList()
+        for (i in 0..200) {
 
-        for (i in 0..3) {
-            val bestMatch = getClosestTreePoint(tape.last())
             val randomAngle = Random.nextDouble(-PI / 4, PI / 4)
-            val angle = /*if (tape.size < 5) randomAngle else */ bestMatch?.angle ?: randomAngle
-            val newPiece = TapePoint(tape.last(), angle).apply {
-                closestCrashPoint = crashPoints.minBy { it.distance(this) }
-            }
+
+            val steps = 20
+            val step = (PI / 2) / steps
+            val angles = (0..steps).map { (PI / 4) - it * step }
+            val angle = angles.maxBy { distToClosestCrashByAngle(it) } ?: 0.0
+
+            val newPiece = TapePoint(tape.last(), angle)
             tape.add(newPiece)
         }
     }
@@ -140,21 +119,25 @@ class OracleBot(car: FragileCar, trackName: String?) : Driver(car, trackName) {
         return crashPoints.last().let { it.distance(tapePoint) < tapePoint.radius + it.radius }
     }
 
-    private fun getClosestTreePoint(point: TapePoint): TapePoint? {
-        return tape.filter { it.distanceToClosestPoint != null && it.confirmed }.minBy { it.treeDistance(point) }
+    private fun distToClosestCrashByAngle(angle: Double): Double {
+        return crashPoints.map { it.distance(TapePoint(tape.last(), angle)) - it.radius }.min() ?: Double.MAX_VALUE
+    }
+
+    private fun distToThreeClosestCrashesByAngle(angle: Double): Double {
+        return crashPoints.map { it.distance(TapePoint(tape.last(), angle)) - it.radius }.sorted().take(3).sum() ?: Double.MAX_VALUE
     }
 
     private fun detectCrash() {
         val middleX = car.middleX
         val middleY = car.middleY
 
-        if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 50) {
+        if (Point.distance(middleX, middleY, lastX.toDouble(), lastY.toDouble()) > 20) {
             crashPoints.add(BotPoint(lastX, lastY, car.width.toDouble() * 0.6))
 
-
-            if (tape.isEmpty()) {
-                tape.add(TapePoint(middleX.toInt(), middleY.toInt()).apply { confirmed = true })
-            }
+            tape.clear()
+            tape.add(TapePoint(middleX.toInt(), middleY.toInt()).apply { confirmed = true })
+            tape.add(TapePoint(tape.last(), PI / 4))
+            tape.add(TapePoint(tape.last()))
 
             predictTape()
         }

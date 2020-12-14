@@ -22,7 +22,6 @@ class HugBotV2(car: FragileCar, trackName: String?) : Driver(car, trackName) {
     private var lastY: Int = car.middleY.toInt() ?: 0
     private var closestPoint: HugBotPoint? = null
     private var passedFirst = false
-    private var deathsInsideWall = 0
 
     private val initialHeading: Double = car.heading
     private val crashPoints = mutableListOf<HugBotPoint>()
@@ -96,7 +95,6 @@ class HugBotV2(car: FragileCar, trackName: String?) : Driver(car, trackName) {
 
     private fun hugWall(point: HugBotPoint, deltaTime: Double) {
         val headingToPoint = headingToPoint(point)
-        val multiplier = max(10 - deathsInsideWall, 0)
         if (headingToPoint < PI / 2) {
             car.turnLeft(deltaTime)
         } else if (headingToPoint > PI / 2 && point.distance(car.middleX, car.middleY) > point.radius * 0.9) {
@@ -124,7 +122,7 @@ class HugBotV2(car: FragileCar, trackName: String?) : Driver(car, trackName) {
                 it.distance(lastX.toDouble(), lastY.toDouble()) < it.radius * 0.8
             }?.apply {
                 speed = max(speed - 50, 50)
-                radius *= 1.1
+                radius *= 1.01
             }
 
             // Only add new point if not crashing into another one
